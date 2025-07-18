@@ -168,6 +168,57 @@
             border: 1px solid var(--glass-border);
         }
         
+        /* Mobile menu toggle - make it visible */
+        .mobile-menu-toggle {
+            display: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: white;
+        }
+        
+        /* Connection Status */
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 10px 20px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+            z-index: 100;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #00ff88;
+        }
+        
+        /* Alert Banner */
+        .alert-banner {
+            position: fixed;
+            top: 80px;
+            left: 0;
+            right: 0;
+            background: rgba(255, 68, 68, 0.9);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            z-index: 999;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .alert-banner.show {
+            transform: translateY(0);
+        }
+        
         /* Main Container */
         .container {
             max-width: 1400px;
@@ -718,41 +769,198 @@
             to { transform: translateX(0); }
         }
         
-        /* Mobile Menu */
-        .mobile-menu-toggle {
-            display: none;
-            font-size: 1.5em;
-            cursor: pointer;
-        }
-        
+        /* Mobile-First Responsive Design */
         @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
             .nav-menu {
                 display: none;
                 position: absolute;
                 top: 100%;
                 left: 0;
                 right: 0;
-                background: rgba(0, 0, 0, 0.9);
+                background: rgba(0, 0, 0, 0.95);
                 flex-direction: column;
                 padding: 20px;
                 gap: 10px;
+                border-radius: 0 0 20px 20px;
             }
             
             .nav-menu.show {
                 display: flex;
             }
             
-            .mobile-menu-toggle {
-                display: block;
-            }
-            
             h1 {
-                font-size: 2.5em;
+                font-size: 2em;
             }
             
             .dashboard {
                 grid-template-columns: 1fr;
             }
+            
+            .party-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .games-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .achievements-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .emergency-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .friend-card {
+                padding: 20px;
+            }
+            
+            .bac-value {
+                font-size: 2em;
+            }
+            
+            .stat-value {
+                font-size: 1.5em;
+            }
+            
+            .weather-widget {
+                position: static;
+                margin: 20px auto;
+                width: fit-content;
+            }
+            
+            .voice-indicator {
+                bottom: 80px;
+                right: 20px;
+            }
+            
+            .modal-content {
+                margin: 20px;
+                padding: 20px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            
+            .game-container {
+                padding: 20px;
+            }
+            
+            .timer-display {
+                font-size: 3em;
+            }
+            
+            .question-card {
+                font-size: 1.2em;
+                padding: 20px;
+            }
+            
+            .leaderboard h2 {
+                font-size: 1.5em;
+            }
+            
+            .playlist-track {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            /* Fix drink section on mobile */
+            #drinks .card {
+                padding: 15px;
+            }
+            
+            #drinkType, #drinkAmount, #alcoholPercent {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+            
+            .container {
+                padding: 80px 10px 20px;
+            }
+            
+            /* Fix overlapping elements */
+            .connection-status {
+                bottom: 80px;
+                font-size: 0.8em;
+            }
+            
+            /* Better touch targets */
+            .nav-item, .btn, .card {
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+            }
+        }
+        
+        /* Tablet adjustments */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .games-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        /* Prevent horizontal scroll on mobile */
+        html, body {
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+        
+        /* Fix iOS button styles */
+        input, select, button {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        
+        /* Better mobile form inputs */
+        input[type="number"],
+        input[type="text"],
+        input[type="tel"],
+        select {
+            font-size: 16px;
+            padding: 12px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* Loading state */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Error state */
+        .error {
+            background: rgba(255, 68, 68, 0.1);
+            border: 1px solid rgba(255, 68, 68, 0.3);
+            color: #ff4444;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
         }
         
         /* Loading Animation */
@@ -1206,6 +1414,11 @@
     <div class="background"></div>
     <div class="particles" id="particles"></div>
     
+    <!-- Alert Banner -->
+    <div class="alert-banner" id="alertBanner">
+        <span id="alertText"></span>
+    </div>
+    
     <!-- Navigation -->
     <nav>
         <div class="nav-container">
@@ -1238,6 +1451,12 @@
             </div>
         </div>
     </nav>
+    
+    <!-- Connection Status -->
+    <div class="connection-status">
+        <span class="status-dot"></span>
+        <span id="connectionStatus">Connecting...</span>
+    </div>
     
     <div class="container">
         <header>
@@ -1548,12 +1767,28 @@
     </div>
     
     <script>
-        // Demo mode
-        const DEMO_MODE = true;
+        // ========================================
+        // FIREBASE CONFIGURATION - YOUR REAL CONFIG
+        // ========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCuOjiHa8C0jgAte40E774CRJROTWTUdmg",
+            authDomain: "hsg-party-tracker.firebaseapp.com",
+            databaseURL: "https://hsg-party-tracker-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "hsg-party-tracker",
+            storageBucket: "hsg-party-tracker.firebasestorage.app",
+            messagingSenderId: "1047483086606",
+            appId: "1:1047483086606:web:a02d77baacd21166fb095f",
+            measurementId: "G-VFS4W30Z7P"
+        };
         
-        // Data
+        // Change this to false to use real Firebase data
+        const DEMO_MODE = true; // Set to false when ready to use real data!
+        
+        // ========================================
+        // GLOBAL VARIABLES AND DATA
+        // ========================================
         let partyData = {};
-        let currentUser = 'You';
+        let currentUser = localStorage.getItem('userName') || 'You';
         let partyMode = false;
         let currentGame = null;
         let gameScores = { team1: 0, team2: 0 };
@@ -1590,6 +1825,125 @@
             water: { amount: 250, alcohol: 0, emoji: '💧' },
             other: { amount: 200, alcohol: 5, emoji: '🍹' }
         };
+
+        // Update connection status
+        function updateConnectionStatus(connected) {
+            const statusElement = document.getElementById('connectionStatus');
+            const dotElement = document.querySelector('.status-dot');
+    
+            if (statusElement && dotElement) {
+                if (connected) {
+                    statusElement.textContent = 'Connected';
+                    dotElement.style.background = '#00ff88';
+                } else {
+                    statusElement.textContent = 'Offline';
+                    dotElement.style.background = '#ff4444';
+                }
+            }
+        }
+        
+        // ========================================
+        // FIREBASE INITIALIZATION
+        // ========================================
+        let database = null;
+        
+        function initializeFirebase() {
+            if (!DEMO_MODE) {
+                try {
+                    // Initialize Firebase
+                    firebase.initializeApp(firebaseConfig);
+                    database = firebase.database();
+                    
+                    // Set up listeners
+                    setupFirebaseListeners();
+                    
+                    console.log('Firebase initialized successfully');
+                    showNotification('✅ Connected to Firebase!');
+                    updateConnectionStatus(true);
+                } catch (error) {
+                    console.error('Firebase initialization error:', error);
+                    showNotification('❌ Firebase connection failed. Running in demo mode.');
+                    updateConnectionStatus(false);
+                }
+            } else {
+                updateConnectionStatus(false);
+            }
+        }
+        
+        // Setup Firebase listeners
+        function setupFirebaseListeners() {
+            if (!database) return;
+            
+            // Listen for breathalyzer readings
+            database.ref('readings').on('child_added', (snapshot) => {
+                const reading = snapshot.val();
+                processBreathalyzerReading(reading);
+            });
+            
+            // Listen for user updates
+            database.ref('users').on('value', (snapshot) => {
+                const users = snapshot.val();
+                if (users) {
+                    updatePartyData(users);
+                }
+            });
+            
+            // Connection status
+            database.ref('.info/connected').on('value', (snapshot) => {
+                const connected = snapshot.val();
+                updateConnectionStatus(connected);
+            });
+        }
+        
+        // Process incoming breathalyzer reading
+        function processBreathalyzerReading(reading) {
+            if (!reading) return;
+            
+            // Find or create user
+            const userId = reading.device || 'unknown';
+            const userName = reading.user || 'Anonymous';
+            
+            if (!partyData[userId]) {
+                partyData[userId] = {
+                    name: userName,
+                    bac: 0,
+                    lastUpdate: Date.now(),
+                    location: reading.location || 'Unknown',
+                    trend: 'steady',
+                    history: [],
+                    device: reading.device
+                };
+            }
+            
+            // Update BAC
+            const oldBac = partyData[userId].bac;
+            partyData[userId].bac = reading.bac || 0;
+            partyData[userId].lastUpdate = Date.now();
+            partyData[userId].trend = reading.bac > oldBac ? 'up' : reading.bac < oldBac ? 'down' : 'steady';
+            
+            // Add to history
+            partyData[userId].history.push({
+                time: Date.now(),
+                value: reading.bac
+            });
+            
+            // Update UI
+            updateUI();
+            
+            // Show notification
+            showNotification(`📊 ${userName}: ${reading.bac.toFixed(3)}‰`);
+        }
+        
+        // Update party data from Firebase
+        function updatePartyData(users) {
+            Object.entries(users).forEach(([userId, userData]) => {
+                partyData[userId] = {
+                    ...userData,
+                    lastUpdate: Date.now()
+                };
+            });
+            updateUI();
+        }
         
         // Error boundary
         window.addEventListener('error', (e) => {
@@ -2137,7 +2491,7 @@
         // Draw friend's BAC chart
         function drawFriendChart(friend) {
             const canvas = document.getElementById('friendChart');
-            if (!canvas || !friend.history) return;
+            if (!canvas || !friend.history || friend.history.length === 0) return;
             
             const ctx = canvas.getContext('2d');
             const chart = new Chart(ctx, {
@@ -2985,158 +3339,206 @@
             showNotification('✅ Settings saved successfully!');
         }
         
-        // Drink tracking functions
+        // Drink tracking functions with error handling
         function logDrink() {
-            const type = document.getElementById('drinkType').value;
-            const amount = parseInt(document.getElementById('drinkAmount').value) || 0;
-            const alcoholPercent = parseFloat(document.getElementById('alcoholPercent').value) || 0;
-            
-            if (amount <= 0) {
-                showNotification('❌ Please enter a valid amount');
-                return;
+            try {
+                const type = document.getElementById('drinkType').value;
+                const amount = parseInt(document.getElementById('drinkAmount').value) || 0;
+                const alcoholPercent = parseFloat(document.getElementById('alcoholPercent').value) || 0;
+                
+                if (amount <= 0) {
+                    showNotification('❌ Please enter a valid amount');
+                    return;
+                }
+                
+                const drink = {
+                    id: Date.now(),
+                    type: type,
+                    amount: amount,
+                    alcoholPercent: alcoholPercent,
+                    pureAlcohol: (amount * alcoholPercent / 100).toFixed(1),
+                    time: new Date(),
+                    emoji: drinkPresets[type].emoji
+                };
+                
+                drinkHistory.unshift(drink);
+                
+                // Save to localStorage
+                saveDrinkHistory();
+                
+                // Update UI
+                updateDrinkStats();
+                updateDrinkHistory();
+                updateDrinkChart();
+                updateEmergencySummary();
+                
+                // Send to Firebase if connected
+                if (!DEMO_MODE && database) {
+                    database.ref('drinks/' + currentUser + '/' + drink.id).set({
+                        ...drink,
+                        time: drink.time.toISOString()
+                    });
+                }
+                
+                // Confetti for water!
+                if (type === 'water') {
+                    confetti({
+                        particleCount: 50,
+                        spread: 60,
+                        colors: ['#00d4ff', '#0099ff', '#0066ff'],
+                        origin: { y: 0.6 }
+                    });
+                    showNotification('💧 Great job staying hydrated!');
+                } else {
+                    showNotification(`${drink.emoji} Drink logged!`);
+                }
+                
+                // Reset form to defaults
+                document.getElementById('drinkAmount').value = drinkPresets[type].amount;
+                document.getElementById('alcoholPercent').value = drinkPresets[type].alcohol;
+            } catch (error) {
+                console.error('Error logging drink:', error);
+                showNotification('❌ Failed to log drink');
             }
-            
-            const drink = {
-                id: Date.now(),
-                type: type,
-                amount: amount,
-                alcoholPercent: alcoholPercent,
-                pureAlcohol: (amount * alcoholPercent / 100).toFixed(1),
-                time: new Date(),
-                emoji: drinkPresets[type].emoji
-            };
-            
-            drinkHistory.unshift(drink);
-            
-            // Save to localStorage
-            saveDrinkHistory();
-            
-            // Update UI
-            updateDrinkStats();
-            updateDrinkHistory();
-            updateDrinkChart();
-            updateEmergencySummary();
-            
-            // Confetti for water!
-            if (type === 'water') {
-                confetti({
-                    particleCount: 50,
-                    spread: 60,
-                    colors: ['#00d4ff', '#0099ff', '#0066ff'],
-                    origin: { y: 0.6 }
-                });
-                showNotification('💧 Great job staying hydrated!');
-            } else {
-                showNotification(`${drink.emoji} Drink logged!`);
-            }
-            
-            // Reset form to defaults
-            document.getElementById('drinkAmount').value = drinkPresets[type].amount;
-            document.getElementById('alcoholPercent').value = drinkPresets[type].alcohol;
         }
         
         function updateDrinkStats() {
-            const now = Date.now();
-            const oneHourAgo = now - 3600000;
-            
-            // Calculate totals
-            const totalDrinks = drinkHistory.filter(d => d.type !== 'water').length;
-            const totalWater = drinkHistory.filter(d => d.type === 'water').length;
-            const totalAlcohol = drinkHistory.reduce((sum, d) => sum + parseFloat(d.pureAlcohol), 0);
-            const recentDrinks = drinkHistory.filter(d => d.time > oneHourAgo && d.type !== 'water').length;
-            
-            // Update display
-            document.getElementById('totalDrinks').textContent = totalDrinks;
-            document.getElementById('totalWater').textContent = totalWater;
-            document.getElementById('totalAlcohol').textContent = totalAlcohol.toFixed(0) + 'ml';
-            document.getElementById('drinkRate').textContent = recentDrinks + '/hr';
+            try {
+                const now = Date.now();
+                const oneHourAgo = now - 3600000;
+                
+                // Calculate totals
+                const totalDrinks = drinkHistory.filter(d => d.type !== 'water').length;
+                const totalWater = drinkHistory.filter(d => d.type === 'water').length;
+                const totalAlcohol = drinkHistory.reduce((sum, d) => sum + parseFloat(d.pureAlcohol || 0), 0);
+                const recentDrinks = drinkHistory.filter(d => new Date(d.time).getTime() > oneHourAgo && d.type !== 'water').length;
+                
+                // Update display with null checks
+                const totalDrinksEl = document.getElementById('totalDrinks');
+                if (totalDrinksEl) totalDrinksEl.textContent = totalDrinks;
+                
+                const totalWaterEl = document.getElementById('totalWater');
+                if (totalWaterEl) totalWaterEl.textContent = totalWater;
+                
+                const totalAlcoholEl = document.getElementById('totalAlcohol');
+                if (totalAlcoholEl) totalAlcoholEl.textContent = totalAlcohol.toFixed(0) + 'ml';
+                
+                const drinkRateEl = document.getElementById('drinkRate');
+                if (drinkRateEl) drinkRateEl.textContent = recentDrinks + '/hr';
+            } catch (error) {
+                console.error('Error updating drink stats:', error);
+            }
         }
         
         function updateDrinkHistory() {
-            const historyContainer = document.getElementById('drinkHistory');
-            if (!historyContainer) return;
-            
-            if (drinkHistory.length === 0) {
-                historyContainer.innerHTML = '<p style="text-align: center; opacity: 0.7;">No drinks logged yet</p>';
-                return;
-            }
-            
-            historyContainer.innerHTML = drinkHistory.map(drink => `
-                <div class="playlist-track" style="margin: 10px 0;">
-                    <div class="track-info">
-                        <div style="font-size: 2em;">${drink.emoji}</div>
-                        <div>
-                            <div style="font-weight: bold;">${drink.type.charAt(0).toUpperCase() + drink.type.slice(1)}</div>
-                            <div style="opacity: 0.7; font-size: 0.9em;">
-                                ${drink.amount}ml • ${drink.alcoholPercent}% • ${drink.pureAlcohol}ml pure
+            try {
+                const historyContainer = document.getElementById('drinkHistory');
+                if (!historyContainer) return;
+                
+                if (drinkHistory.length === 0) {
+                    historyContainer.innerHTML = '<p style="text-align: center; opacity: 0.7;">No drinks logged yet</p>';
+                    return;
+                }
+                
+                historyContainer.innerHTML = drinkHistory.slice(0, 20).map(drink => `
+                    <div class="playlist-track" style="margin: 10px 0;">
+                        <div class="track-info">
+                            <div style="font-size: 2em;">${drink.emoji}</div>
+                            <div>
+                                <div style="font-weight: bold;">${drink.type.charAt(0).toUpperCase() + drink.type.slice(1)}</div>
+                                <div style="opacity: 0.7; font-size: 0.9em;">
+                                    ${drink.amount}ml • ${drink.alcoholPercent}% • ${drink.pureAlcohol}ml pure
+                                </div>
                             </div>
                         </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.9em;">${formatDrinkTime(drink.time)}</div>
+                            <button class="btn" style="padding: 5px 10px; margin-top: 5px;" onclick="removeDrink(${drink.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 0.9em;">${formatDrinkTime(drink.time)}</div>
-                        <button class="btn" style="padding: 5px 10px; margin-top: 5px;" onclick="removeDrink(${drink.id})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
+                `).join('');
+            } catch (error) {
+                console.error('Error updating drink history:', error);
+            }
         }
         
         function updateDrinkChart() {
-            const ctx = document.getElementById('drinkChart');
-            if (!ctx) return;
-            
-            // Count drinks by type
-            const drinkCounts = {};
-            drinkHistory.forEach(drink => {
-                if (!drinkCounts[drink.type]) {
-                    drinkCounts[drink.type] = 0;
+            try {
+                const ctx = document.getElementById('drinkChart');
+                if (!ctx) return;
+                
+                // Count drinks by type
+                const drinkCounts = {};
+                drinkHistory.forEach(drink => {
+                    if (!drinkCounts[drink.type]) {
+                        drinkCounts[drink.type] = 0;
+                    }
+                    drinkCounts[drink.type]++;
+                });
+                
+                if (Object.keys(drinkCounts).length === 0) {
+                    // No data yet
+                    if (drinkChart) {
+                        drinkChart.destroy();
+                        drinkChart = null;
+                    }
+                    return;
                 }
-                drinkCounts[drink.type]++;
-            });
-            
-            const labels = Object.keys(drinkCounts);
-            const data = Object.values(drinkCounts);
-            const emojis = labels.map(type => drinkPresets[type].emoji);
-            
-            if (drinkChart) {
-                drinkChart.destroy();
-            }
-            
-            drinkChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels.map((label, i) => `${emojis[i]} ${label}`),
-                    datasets: [{
-                        data: data,
-                        backgroundColor: [
-                            '#00ff88',
-                            '#00d4ff',
-                            '#ff00ff',
-                            '#ffcc00',
-                            '#ff4444',
-                            '#0099ff',
-                            '#00ccff',
-                            '#ff0088'
-                        ],
-                        borderColor: 'rgba(255, 255, 255, 0.1)',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                color: '#fff',
-                                padding: 20
+                
+                const labels = Object.keys(drinkCounts);
+                const data = Object.values(drinkCounts);
+                const emojis = labels.map(type => drinkPresets[type]?.emoji || '🍹');
+                
+                if (drinkChart) {
+                    // Update existing chart
+                    drinkChart.data.labels = labels.map((label, i) => `${emojis[i]} ${label}`);
+                    drinkChart.data.datasets[0].data = data;
+                    drinkChart.update();
+                } else {
+                    // Create new chart
+                    drinkChart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: labels.map((label, i) => `${emojis[i]} ${label}`),
+                            datasets: [{
+                                data: data,
+                                backgroundColor: [
+                                    '#00ff88',
+                                    '#00d4ff',
+                                    '#ff00ff',
+                                    '#ffcc00',
+                                    '#ff4444',
+                                    '#0099ff',
+                                    '#00ccff',
+                                    '#ff0088'
+                                ],
+                                borderColor: 'rgba(255, 255, 255, 0.1)',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                    labels: {
+                                        color: '#fff',
+                                        padding: 10,
+                                        font: {
+                                            size: window.innerWidth < 768 ? 10 : 12
+                                        }
+                                    }
+                                }
                             }
                         }
-                    }
+                    });
                 }
-            });
+            } catch (error) {
+                console.error('Error updating drink chart:', error);
+            }
         }
         
         function updateEmergencySummary() {
@@ -3226,23 +3628,23 @@
         }
         
         function showEmergencyReport() {
-            const report = {
-                timestamp: new Date().toISOString(),
-                estimatedBAC: estimateBAC().toFixed(3),
-                drinkHistory: drinkHistory,
-                totalAlcohol: drinkHistory.reduce((sum, d) => sum + parseFloat(d.pureAlcohol), 0),
-                userData: {
-                    name: currentUser,
-                    emergencyContact: localStorage.getItem('emergencyContact')
-                }
-            };
-            
-            const reportText = `
-EMERGENCY MEDICAL REPORT
+            try {
+                const report = {
+                    timestamp: new Date().toISOString(),
+                    estimatedBAC: estimateBAC().toFixed(3),
+                    drinkHistory: drinkHistory,
+                    totalAlcohol: drinkHistory.reduce((sum, d) => sum + parseFloat(d.pureAlcohol || 0), 0),
+                    userData: {
+                        name: currentUser,
+                        emergencyContact: localStorage.getItem('emergencyContact') || 'Not provided'
+                    }
+                };
+                
+                const reportText = `EMERGENCY MEDICAL REPORT
 ========================
 Generated: ${new Date().toLocaleString()}
 Patient: ${report.userData.name}
-Emergency Contact: ${report.userData.emergencyContact || 'Not provided'}
+Emergency Contact: ${report.userData.emergencyContact}
 
 ALCOHOL CONSUMPTION SUMMARY
 ---------------------------
@@ -3262,50 +3664,88 @@ MEDICAL NOTES
 - Monitor for signs of alcohol poisoning
 - Ensure airway remains clear
 - Check vitals regularly
-- Consider IV fluids if dehydrated
-            `;
-            
-            // Create modal with report
-            const modalContent = `
-                <h2>🚨 Emergency Medical Report</h2>
-                <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 15px; margin: 20px 0;">
-                    <pre style="white-space: pre-wrap; font-family: monospace; font-size: 0.9em;">${escapeHtml(reportText)}</pre>
-                </div>
-                <div style="display: flex; gap: 10px; justify-content: center;">
-                    <button class="btn btn-primary" onclick="copyEmergencyReport('${btoa(reportText)}')">
-                        <i class="fas fa-copy"></i> Copy Report
-                    </button>
-                    <button class="btn btn-danger" onclick="window.print()">
-                        <i class="fas fa-print"></i> Print Report
-                    </button>
-                    <button class="btn" onclick="closeModal()">Close</button>
-                </div>
-            `;
-            
-            document.getElementById('modalBody').innerHTML = modalContent;
-            document.getElementById('modal').classList.add('show');
-        }
-        
-        function copyEmergencyReport(encodedReport) {
-            const report = atob(encodedReport);
-            navigator.clipboard.writeText(report).then(() => {
-                showNotification('📋 Report copied to clipboard!');
-            }).catch(() => {
-                showNotification('❌ Failed to copy report');
-            });
-        }
-        
-        // Update drink type selection to auto-fill amounts
-        document.addEventListener('DOMContentLoaded', function() {
-            const drinkTypeSelect = document.getElementById('drinkType');
-            if (drinkTypeSelect) {
-                drinkTypeSelect.addEventListener('change', function() {
-                    const preset = drinkPresets[this.value];
-                    document.getElementById('drinkAmount').value = preset.amount;
-                    document.getElementById('alcoholPercent').value = preset.alcohol;
-                });
+- Consider IV fluids if dehydrated`;
+                
+                // Create modal with report
+                const modalContent = `
+                    <h2>🚨 Emergency Medical Report</h2>
+                    <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 15px; margin: 20px 0; max-height: 400px; overflow-y: auto;">
+                        <pre style="white-space: pre-wrap; font-family: monospace; font-size: 0.9em;">${escapeHtml(reportText)}</pre>
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="copyEmergencyReport()">
+                            <i class="fas fa-copy"></i> Copy Report
+                        </button>
+                        <button class="btn btn-primary" onclick="downloadEmergencyReport()">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <button class="btn btn-danger" onclick="shareEmergencyReport()">
+                            <i class="fas fa-share"></i> Share
+                        </button>
+                        <button class="btn" onclick="closeModal()">Close</button>
+                    </div>
+                `;
+                
+                // Store report in window for other functions
+                window.currentEmergencyReport = reportText;
+                
+                document.getElementById('modalBody').innerHTML = modalContent;
+                document.getElementById('modal').classList.add('show');
+            } catch (error) {
+                console.error('Error generating emergency report:', error);
+                showNotification('❌ Error generating report');
             }
-        });
+        }
+        
+        function copyEmergencyReport() {
+            if (window.currentEmergencyReport) {
+                navigator.clipboard.writeText(window.currentEmergencyReport)
+                    .then(() => showNotification('📋 Report copied to clipboard!'))
+                    .catch(() => {
+                        // Fallback for older browsers
+                        const textArea = document.createElement('textarea');
+                        textArea.value = window.currentEmergencyReport;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textArea);
+                        showNotification('📋 Report copied!');
+                    });
+            }
+        }
+        
+        function downloadEmergencyReport() {
+            try {
+                const blob = new Blob([window.currentEmergencyReport], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `emergency_report_${new Date().toISOString().slice(0,10)}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                showNotification('📥 Report downloaded!');
+            } catch (error) {
+                console.error('Download error:', error);
+                showNotification('❌ Download failed - use copy instead');
+            }
+        }
+        
+        function shareEmergencyReport() {
+            if (navigator.share && window.currentEmergencyReport) {
+                navigator.share({
+                    title: 'Emergency Medical Report',
+                    text: window.currentEmergencyReport
+                })
+                .then(() => showNotification('📤 Report shared!'))
+                .catch(() => showNotification('❌ Sharing cancelled'));
+            } else {
+                // Fallback - copy to clipboard
+                copyEmergencyReport();
+                showNotification('📋 Report copied - share manually');
+            }
+        }
         
         // Playlist functions
         function createPlaylist() {
@@ -3415,13 +3855,136 @@ MEDICAL NOTES
             return div.innerHTML;
         }
         
-        // Advanced initialization
+        // Advanced initialization with error handling
         function advancedInit() {
-            // Create particles
-            createParticles();
+            try {
+                // Show loading state
+                showLoadingState();
+                
+                // Initialize Firebase first
+                initializeFirebase();
+                
+                // Create particles
+                createParticles();
+                
+                // Initialize voice commands if supported
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    initializeVoiceCommands();
+                }
+                
+                // Load saved data
+                loadSavedData();
+                
+                // Initialize UI components
+                initializeUIComponents();
+                
+                // Start demo data if in demo mode
+                if (DEMO_MODE) {
+                    generateDemoData();
+                    setInterval(generateDemoData, 3000);
+                }
+                
+                // Update intervals
+                setInterval(updateVisualizer, 500);
+                
+                // Hydration reminders
+                setInterval(() => {
+                    const minutes = new Date().getMinutes();
+                    if (minutes % 15 === 0) {
+                        showHydrationReminder();
+                    }
+                }, 60000);
+                
+                // Auto-save
+                setInterval(saveLocalData, 30000);
+                
+                // Hide loading state
+                hideLoadingState();
+                
+                // Welcome message
+                setTimeout(() => {
+                    showNotification('🎉 Welcome to HSG Party Tracker! Stay safe and have fun!');
+                }, 1000);
+                
+                // Add weather widget if not mobile
+                if (window.innerWidth > 768) {
+                    updateWeather();
+                    setInterval(updateWeather, 300000);
+                }
+                
+            } catch (error) {
+                console.error('Initialization error:', error);
+                hideLoadingState();
+                showError('Failed to initialize app. Please refresh.');
+            }
+        }
+        
+        function showLoadingState() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = 'appLoading';
+            loadingDiv.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: #0a0a0a;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+            `;
+            loadingDiv.innerHTML = `
+                <div style="text-align: center;">
+                    <div class="loading" style="width: 50px; height: 50px; margin: 0 auto 20px;"></div>
+                    <h2 style="color: white;">Loading Party Tracker...</h2>
+                </div>
+            `;
+            document.body.appendChild(loadingDiv);
+        }
+        
+        function hideLoadingState() {
+            const loadingDiv = document.getElementById('appLoading');
+            if (loadingDiv) {
+                loadingDiv.style.opacity = '0';
+                setTimeout(() => loadingDiv.remove(), 300);
+            }
+        }
+        
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                max-width: 90%;
+                z-index: 9999;
+            `;
+            errorDiv.innerHTML = `
+                <h3>⚠️ Error</h3>
+                <p>${message}</p>
+                <button class="btn" onclick="location.reload()">Reload App</button>
+            `;
+            document.body.appendChild(errorDiv);
+        }
+        
+        function initializeUIComponents() {
+            // Fix drink type selector
+            const drinkTypeSelect = document.getElementById('drinkType');
+            if (drinkTypeSelect) {
+                drinkTypeSelect.addEventListener('change', function() {
+                    const preset = drinkPresets[this.value];
+                    if (preset) {
+                        document.getElementById('drinkAmount').value = preset.amount;
+                        document.getElementById('alcoholPercent').value = preset.alcohol;
+                    }
+                });
+            }
             
-            // Initialize voice commands
-            initializeVoiceCommands();
+            // Initialize charts
+            updateDrinkChart();
             
             // Create playlist
             createPlaylist();
@@ -3429,55 +3992,64 @@ MEDICAL NOTES
             // Create prediction engine
             createPredictionEngine();
             
-            // Load saved data
-            loadSavedData();
+            // Fix mobile viewport height
+            const setVH = () => {
+                const vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            };
+            setVH();
+            window.addEventListener('resize', setVH);
             
-            // Start data generation
-            generateDemoData();
+            // Prevent pull-to-refresh on mobile
+            let lastTouchY = 0;
+            document.addEventListener('touchstart', e => {
+                lastTouchY = e.touches[0].clientY;
+            }, { passive: true });
             
-            // Update intervals
-            setInterval(generateDemoData, 3000);
-            setInterval(updateVisualizer, 500);
-            
-            // Hydration reminders
-            setInterval(() => {
-                const minutes = new Date().getMinutes();
-                if (minutes % 15 === 0) {
-                    showHydrationReminder();
+            document.addEventListener('touchmove', e => {
+                const touchY = e.touches[0].clientY;
+                const touchDiff = touchY - lastTouchY;
+                
+                if (window.scrollY === 0 && touchDiff > 0) {
+                    e.preventDefault();
                 }
-            }, 60000);
-            
-            // Auto-save
-            setInterval(saveLocalData, 30000);
-            
-            // Welcome message
-            setTimeout(() => {
-                showNotification('🎉 Welcome to HSG Party Tracker! Stay safe and have fun!');
-            }, 1000);
-            
-            // Add weather widget
-            updateWeather();
-            setInterval(updateWeather, 300000); // Update every 5 minutes
+                lastTouchY = touchY;
+            }, { passive: false });
         }
         
         function loadSavedData() {
-            const savedName = localStorage.getItem('userName');
-            if (savedName) {
-                document.getElementById('userName').value = savedName;
-                currentUser = savedName;
-            }
-            
-            const emergencyContact = localStorage.getItem('emergencyContact');
-            if (emergencyContact) {
-                document.getElementById('emergencyContact').value = emergencyContact;
-            }
-            
-            // Load achievements
-            Object.keys(achievements).forEach(key => {
-                if (localStorage.getItem(`achievement_${key}`)) {
-                    achievements[key] = true;
+            try {
+                const savedName = localStorage.getItem('userName');
+                if (savedName) {
+                    const userNameInput = document.getElementById('userName');
+                    if (userNameInput) userNameInput.value = savedName;
+                    currentUser = savedName;
                 }
-            });
+                
+                const emergencyContact = localStorage.getItem('emergencyContact');
+                if (emergencyContact) {
+                    const emergencyInput = document.getElementById('emergencyContact');
+                    if (emergencyInput) emergencyInput.value = emergencyContact;
+                }
+                
+                // Load drink history with error handling
+                loadDrinkHistory();
+                
+                // Load achievements
+                Object.keys(achievements).forEach(key => {
+                    if (localStorage.getItem(`achievement_${key}`)) {
+                        achievements[key] = true;
+                    }
+                });
+                
+                // Update displays
+                updateDrinkStats();
+                updateDrinkHistory();
+                updateEmergencySummary();
+                
+            } catch (error) {
+                console.error('Error loading saved data:', error);
+            }
         }
         
         function saveLocalData() {
@@ -3506,8 +4078,26 @@ MEDICAL NOTES
             showNotification('⚠️ Something went wrong. Try refreshing.');
         });
         
-        // Initialize everything
-        advancedInit();
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                // Update drink type selection to auto-fill amounts
+                const drinkTypeSelect = document.getElementById('drinkType');
+                if (drinkTypeSelect) {
+                    drinkTypeSelect.addEventListener('change', function() {
+                        const preset = drinkPresets[this.value];
+                        document.getElementById('drinkAmount').value = preset.amount;
+                        document.getElementById('alcoholPercent').value = preset.alcohol;
+                    });
+                }
+                
+                // Start initialization
+                advancedInit();
+            });
+        } else {
+            // DOM already loaded
+            advancedInit();
+        }
     </script>
 </body>
 </html>
