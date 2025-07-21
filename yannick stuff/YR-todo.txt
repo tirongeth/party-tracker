@@ -1,2 +1,2 @@
 NICO TO-DO Liste:
--AD's per AdMob, falls App - https://www.youtube.com/watch?v=AZFV0L0DXoU&list=PLcJhXDSkclw16you_lO2SnWlJF2fzUgwL
+-AD's per AdMob, falls App - https://www.youtube.com/watch?v=AZFV0L0DXoU&list=PLcJhXDSkclw16you_lO2SnWlJF2fzUgwL - Google Analytics - AdMob App mit Firebase verbinden um User-experience zu verbessern
