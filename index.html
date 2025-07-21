@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HSG Party Tracker 🎉 | Live BAC Monitor</title>
     
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK v9 -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -30,6 +31,8 @@
             --accent-gradient: linear-gradient(45deg, #00ff88, #00d4ff, #ff00ff);
             --glass-bg: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
+            --error-bg: rgba(255, 68, 68, 0.9);
+            --success-bg: rgba(0, 255, 136, 0.9);
         }
         
         body {
@@ -198,6 +201,36 @@
             height: 10px;
             border-radius: 50%;
             background: #00ff88;
+        }
+        
+        /* User Profile Widget */
+        .user-profile {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            font-size: 0.9em;
+            z-index: 100;
+            min-width: 200px;
+        }
+        
+        .user-profile h4 {
+            margin-bottom: 10px;
+            color: #00ff88;
+        }
+        
+        .user-profile p {
+            margin: 5px 0;
+            opacity: 0.8;
+        }
+        
+        .user-profile button {
+            margin-top: 10px;
+            width: 100%;
         }
         
         /* Alert Banner */
@@ -766,9 +799,298 @@
             max-width: 300px;
         }
         
+        .notification.error {
+            background: var(--error-bg);
+            color: white;
+        }
+        
+        .notification.success {
+            background: var(--success-bg);
+            color: #000;
+        }
+        
         @keyframes slideInRight {
             from { transform: translateX(400px); }
             to { transform: translateX(0); }
+        }
+        
+        /* Auth Container */
+        .auth-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+        }
+        
+        .auth-box {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 400px;
+            width: 90%;
+            backdrop-filter: blur(20px);
+            animation: modalIn 0.5s ease;
+        }
+        
+        .auth-box h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1em;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #00ff88;
+            box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.2);
+        }
+        
+        .auth-error {
+            background: rgba(255, 68, 68, 0.2);
+            border: 1px solid rgba(255, 68, 68, 0.5);
+            color: #ff4444;
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .auth-error.show {
+            display: block;
+            animation: shake 0.5s ease;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .auth-toggle {
+            text-align: center;
+            margin-top: 20px;
+            opacity: 0.8;
+        }
+        
+        .auth-toggle a {
+            color: #00ff88;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .auth-toggle a:hover {
+            text-decoration: underline;
+        }
+        
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 5px;
+        }
+        
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            opacity: 0.7;
+        }
+        
+        .auth-tab.active {
+            background: var(--accent-gradient);
+            color: #000;
+            font-weight: bold;
+            opacity: 1;
+        }
+        
+        /* Device Management */
+        .device-list {
+            display: grid;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .device-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .device-info h4 {
+            margin-bottom: 5px;
+            color: #00ff88;
+        }
+        
+        .device-info p {
+            opacity: 0.7;
+            font-size: 0.9em;
+        }
+        
+        .pairing-code-display {
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px dashed rgba(0, 255, 136, 0.5);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .pairing-code {
+            font-size: 2.5em;
+            font-weight: bold;
+            font-family: monospace;
+            letter-spacing: 0.2em;
+            color: #00ff88;
+            margin: 20px 0;
+        }
+        
+        /* Friends System */
+        .friends-search {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 15px 25px;
+            border: 2px solid var(--glass-border);
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #00ff88;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+        }
+        
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .friend-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .friend-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+        }
+        
+        .friend-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .friend-avatar-small {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+        }
+        
+        .friend-details h4 {
+            margin-bottom: 5px;
+        }
+        
+        .friend-details p {
+            opacity: 0.7;
+            font-size: 0.9em;
+        }
+        
+        .friend-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .permission-select {
+            padding: 8px 15px;
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        
+        .friend-permission {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            margin-left: 10px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .permission-observer { color: #ffcc00; }
+        .permission-buddy { color: #00d4ff; }
+        .permission-guardian { color: #00ff88; }
+        
+        /* Friend Request */
+        .friend-request {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            padding: 15px;
+            border-radius: 15px;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         /* Collapsible Chart Container */
@@ -805,26 +1127,6 @@
             height: 0;
         }
         
-        /* Friend Management */
-        .friend-management {
-            margin: 20px 0;
-        }
-        
-        .add-friend-form {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        
-        .add-friend-form input {
-            flex: 1;
-            padding: 10px 20px;
-            border: 1px solid var(--glass-border);
-            border-radius: 25px;
-            background: rgba(255, 255, 255, 0.05);
-            color: white;
-        }
-        
         /* Info Box */
         .info-box {
             background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 212, 255, 0.1));
@@ -851,37 +1153,203 @@
             font-family: monospace;
         }
         
-        /* Settings Form */
+        /* Settings/Profile Section */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: var(--glass-bg);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .profile-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+        }
+        
+        .profile-info h2 {
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+        
+        .profile-info p {
+            opacity: 0.8;
+            margin: 5px 0;
+        }
+        
+        .settings-grid {
+            display: grid;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .settings-section {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+        }
+        
+        .settings-section h3 {
+            margin-bottom: 20px;
+            color: #00ff88;
+            font-size: 1.5em;
+        }
+        
         .settings-form {
             display: grid;
             gap: 20px;
         }
         
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
         .form-group label {
-            font-weight: bold;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
             opacity: 0.9;
         }
         
         .form-group input,
-        .form-group textarea {
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
             padding: 12px 20px;
             border: 1px solid var(--glass-border);
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.05);
             color: white;
             font-size: 1em;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #00ff88;
+            background: rgba(255, 255, 255, 0.08);
         }
         
         .form-group textarea {
             resize: vertical;
             min-height: 100px;
         }
+        
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .toggle-group:last-child {
+            border-bottom: none;
+        }
+        
+        .toggle-label {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .toggle-label span {
+            font-weight: 600;
+        }
+        
+        .toggle-label small {
+            opacity: 0.7;
+            font-size: 0.9em;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-switch input:checked + .toggle-slider {
+            transform: translateX(30px);
+        }
+        
+        .toggle-switch input:checked ~ .toggle-switch {
+            background: #00ff88;
+        }
+        
+        .toggle-switch.active {
+            background: #00ff88;
+        }
+        
+        .linked-accounts {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .account-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+        
+        .account-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .account-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+        }
+        
+        .phone-icon { background: rgba(0, 255, 136, 0.2); }
+        .email-icon { background: rgba(0, 212, 255, 0.2); }
         
         /* Mobile-First Responsive Design */
         @media (max-width: 768px) {
@@ -904,6 +1372,12 @@
             
             .nav-menu.show {
                 display: flex;
+            }
+            
+            .user-profile {
+                position: static;
+                margin: 20px auto;
+                max-width: 300px;
             }
             
             h1 {
@@ -950,12 +1424,6 @@
             
             .stat-value {
                 font-size: 1.5em;
-            }
-            
-            .weather-widget {
-                position: static;
-                margin: 20px auto;
-                width: fit-content;
             }
             
             .modal-content {
@@ -1007,6 +1475,17 @@
                 display: flex;
                 align-items: center;
             }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5em;
+            }
         }
         
         /* Tablet adjustments */
@@ -1037,6 +1516,8 @@
         input[type="number"],
         input[type="text"],
         input[type="tel"],
+        input[type="email"],
+        input[type="password"],
         select {
             font-size: 16px;
             padding: 12px;
@@ -1079,16 +1560,6 @@
         
         @keyframes spin {
             to { transform: rotate(360deg); }
-        }
-        
-        /* Party Mode */
-        body.party-mode {
-            animation: partyColors 2s linear infinite;
-        }
-        
-        @keyframes partyColors {
-            0% { filter: hue-rotate(0deg); }
-            100% { filter: hue-rotate(360deg); }
         }
         
         /* Custom Scrollbar */
@@ -1393,35 +1864,93 @@
             -webkit-text-fill-color: transparent;
         }
         
-        /* Weather Widget */
-        .weather-widget {
-            position: fixed;
-            top: 100px;
-            left: 20px;
-            background: var(--glass-bg);
+        .phone-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .country-code {
+            width: 100px;
+            padding: 12px;
             border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 20px;
-            backdrop-filter: blur(10px);
-            text-align: center;
-            min-width: 150px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1em;
         }
         
-        .weather-temp {
-            font-size: 2em;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        
-        .weather-condition {
-            opacity: 0.8;
-            font-size: 0.9em;
+        .phone-number {
+            flex: 1;
         }
     </style>
 </head>
 <body>
     <div class="background"></div>
     <div class="particles" id="particles"></div>
+    
+    <!-- Auth Container (Login/Signup) -->
+    <div class="auth-container" id="authContainer">
+        <div class="auth-box">
+            <h2 id="authTitle">Welcome to HSG Party Tracker</h2>
+            
+            <div class="auth-tabs">
+                <div class="auth-tab active" onclick="switchAuthMethod('email')">Email</div>
+                <div class="auth-tab" onclick="switchAuthMethod('phone')">Phone</div>
+            </div>
+            
+            <div class="auth-error" id="authError"></div>
+            
+            <form id="authForm">
+                <!-- Email Auth -->
+                <div id="emailAuth">
+                    <div class="form-group">
+                        <label for="authEmail">Email</label>
+                        <input type="email" id="authEmail" required autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="authPassword">Password</label>
+                        <input type="password" id="authPassword" required autocomplete="current-password">
+                    </div>
+                    <div class="form-group" id="usernameGroup" style="display: none;">
+                        <label for="authUsername">Username</label>
+                        <input type="text" id="authUsername" autocomplete="username">
+                    </div>
+                </div>
+                
+                <!-- Phone Auth -->
+                <div id="phoneAuth" style="display: none;">
+                    <div class="form-group">
+                        <label for="authPhone">Phone Number</label>
+                        <div class="phone-input-group">
+                            <select class="country-code" id="countryCode">
+                                <option value="+41">🇨🇭 +41</option>
+                                <option value="+1">🇺🇸 +1</option>
+                                <option value="+44">🇬🇧 +44</option>
+                                <option value="+49">🇩🇪 +49</option>
+                                <option value="+33">🇫🇷 +33</option>
+                                <option value="+86">🇨🇳 +86</option>
+                                <option value="+91">🇮🇳 +91</option>
+                            </select>
+                            <input type="tel" id="authPhone" class="phone-number" placeholder="79 123 45 67" required>
+                        </div>
+                    </div>
+                    <div class="form-group" id="verificationGroup" style="display: none;">
+                        <label for="verificationCode">Verification Code</label>
+                        <input type="text" id="verificationCode" placeholder="123456" maxlength="6">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <span id="authButton">Continue</span>
+                </button>
+            </form>
+            <div class="auth-toggle">
+                <span id="authToggleText">Don't have an account?</span>
+                <a onclick="toggleAuthMode()" id="authToggleLink">Sign up</a>
+            </div>
+        </div>
+    </div>
     
     <!-- Alert Banner -->
     <div class="alert-banner" id="alertBanner">
@@ -1438,6 +1967,9 @@
             <ul class="nav-menu" id="navMenu">
                 <li class="nav-item active" onclick="switchSection('dashboard')">
                     <i class="fas fa-home"></i> Dashboard
+                </li>
+                <li class="nav-item" onclick="switchSection('devices')">
+                    <i class="fas fa-microchip"></i> Devices
                 </li>
                 <li class="nav-item" onclick="switchSection('friends')">
                     <i class="fas fa-users"></i> Friends
@@ -1464,6 +1996,17 @@
         </div>
     </nav>
     
+    <!-- User Profile Widget -->
+    <div class="user-profile" id="userProfile" style="display: none;">
+        <h4 id="profileName">Loading...</h4>
+        <p id="profileEmail">...</p>
+        <p>Devices: <span id="deviceCount">0</span></p>
+        <p>Friends: <span id="friendCount">0</span></p>
+        <button class="btn" onclick="signOut()">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </button>
+    </div>
+    
     <!-- Connection Status -->
     <div class="connection-status">
         <span class="status-dot"></span>
@@ -1476,8 +2019,8 @@
             <p class="subtitle">Where memories are made and safety comes first!</p>
             
             <div class="action-buttons">
-                <button class="btn btn-primary" onclick="startPartyMode()">
-                    <i class="fas fa-music"></i> Party Mode
+                <button class="btn btn-primary" onclick="showModal('pair-device')">
+                    <i class="fas fa-link"></i> Pair Device
                 </button>
                 <button class="btn" onclick="showModal('checkin')">
                     <i class="fas fa-location-dot"></i> Check In
@@ -1494,7 +2037,7 @@
         <!-- Dashboard Section -->
         <section id="dashboard" class="section active">
             <div class="party-stats">
-                <div class="stat-card" onclick="showNotification('Party started 3 hours ago!')">
+                <div class="stat-card" onclick="showNotification('Party statistics!')">
                     <div class="stat-icon">🎊</div>
                     <div class="stat-value" id="partyAverage">0.00‰</div>
                     <div class="stat-label">Party Average</div>
@@ -1535,12 +2078,11 @@
                 <h3>🔌 How to Connect Your Breathalyzer</h3>
                 <p><strong>For Arduino/ESP32 Devices:</strong></p>
                 <ol style="margin-left: 20px;">
-                    <li>Upload the provided code to your device</li>
-                    <li>Replace <code>YOUR_WIFI_SSID</code> and <code>YOUR_WIFI_PASSWORD</code> in the code</li>
-                    <li>The device will automatically send readings to this app</li>
-                    <li>Your BAC will update in real-time on the dashboard</li>
+                    <li>Power on your device and connect to its WiFi hotspot</li>
+                    <li>Complete the setup and note your unique Device ID</li>
+                    <li>Click "Pair Device" and enter your Device ID</li>
+                    <li>Your BAC readings will update in real-time</li>
                 </ol>
-                <p><strong>Demo Mode:</strong> Currently showing simulated data. Change <code>DEMO_MODE = false</code> in the code to use real data.</p>
             </div>
             
             <div class="chat-container">
@@ -1559,23 +2101,67 @@
             </div>
         </section>
         
-        <!-- Friends Section -->
-        <section id="friends" class="section">
-            <h2>👥 Friends Management</h2>
+        <!-- Devices Section -->
+        <section id="devices" class="section">
+            <h2>📱 My Devices</h2>
             
-            <div class="card friend-management">
-                <h3>Add Friend</h3>
-                <div class="add-friend-form">
-                    <input type="text" id="friendName" placeholder="Friend's name">
-                    <input type="text" id="friendDevice" placeholder="Device ID (optional)">
-                    <button class="btn btn-primary" onclick="addFriend()">
-                        <i class="fas fa-plus"></i> Add
-                    </button>
+            <div class="card">
+                <h3>Pair New Device</h3>
+                <p>After setting up your breathalyzer via its WiFi hotspot, enter the Device ID shown on the device:</p>
+                
+                <div class="form-group" style="margin: 20px 0;">
+                    <input type="text" id="deviceIdInput" placeholder="Enter Device ID (e.g., HSG_abc123)" style="text-transform: uppercase;">
+                </div>
+                
+                <button class="btn btn-primary" onclick="pairDeviceById()">
+                    <i class="fas fa-link"></i> Pair Device
+                </button>
+                
+                <div class="info-box" style="margin-top: 20px;">
+                    <h4>Setup Instructions:</h4>
+                    <ol>
+                        <li>Power on your breathalyzer device</li>
+                        <li>Double-flip the switch to enter setup mode</li>
+                        <li>Connect to the device's WiFi network</li>
+                        <li>Complete the setup in your browser</li>
+                        <li>Note the Device ID shown on the screen</li>
+                        <li>Enter the Device ID above to pair</li>
+                    </ol>
                 </div>
             </div>
             
-            <div class="dashboard" id="friendsList">
-                <!-- Friends list will be populated here -->
+            <div class="device-list" id="deviceList">
+                <!-- Devices will be populated here -->
+            </div>
+        </section>
+        
+        <!-- Friends Section -->
+        <section id="friends" class="section">
+            <h2>👥 Friends</h2>
+            
+            <div class="friends-search">
+                <input type="text" class="search-input" id="friendSearchInput" placeholder="Search for friends by username or email...">
+                <button class="btn btn-primary" onclick="searchFriends()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+            
+            <div id="searchResults" style="margin-bottom: 30px;">
+                <!-- Search results will appear here -->
+            </div>
+            
+            <div class="card">
+                <h3>Friend Requests</h3>
+                <div id="friendRequests">
+                    <!-- Friend requests will be shown here -->
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>My Friends</h3>
+                <div id="friendsList">
+                    <!-- Friends list will be populated here -->
+                </div>
             </div>
         </section>
         
@@ -1784,56 +2370,137 @@
         
         <!-- Settings Section -->
         <section id="settings" class="section">
-            <h2>⚙️ Settings ⚙️</h2>
-            <div class="card">
-                <h3>Profile Settings</h3>
-                <div class="settings-form">
-                    <div class="form-group">
-                        <label>Your Name:</label>
-                        <input type="text" id="userName" placeholder="Enter your name">
-                    </div>
-                    <div class="form-group">
-                        <label>Home Address:</label>
-                        <textarea id="homeAddress" placeholder="Enter your home address for quick Uber rides"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Emergency Contact:</label>
-                        <input type="tel" id="emergencyContact" placeholder="+41 XX XXX XX XX">
-                    </div>
-                    <div class="form-group">
-                        <label>Medical Information (allergies, conditions, etc.):</label>
-                        <textarea id="medicalInfo" placeholder="Any medical information emergency services should know"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Safety Notes:</label>
-                        <textarea id="safetyNotes" placeholder="Any other safety information (medications, etc.)"></textarea>
-                    </div>
-                    <div style="margin: 20px 0;">
-                        <label>
-                            <input type="checkbox" id="shareLocation"> Share location with friends
-                        </label>
-                    </div>
-                    <div style="margin: 20px 0;">
-                        <label>
-                            <input type="checkbox" id="notifications" checked> Enable notifications
-                        </label>
-                    </div>
-                    <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+            <div class="profile-header">
+                <div class="profile-avatar" onclick="showNotification('Profile picture upload coming soon!')">
+                    <span id="profileInitial">?</span>
+                </div>
+                <div class="profile-info">
+                    <h2 id="settingsUsername">Loading...</h2>
+                    <p id="settingsEmail">...</p>
+                    <p id="settingsPhone" style="display: none;">...</p>
                 </div>
             </div>
             
-            <div class="card" style="margin-top: 20px;">
-                <h3>⚡ Quick Actions</h3>
-                <div style="display: grid; gap: 10px; margin-top: 20px;">
-                    <button class="btn" onclick="exportData()">
-                        <i class="fas fa-download"></i> Export All Data
+            <div class="settings-grid">
+                <div class="settings-section">
+                    <h3>👤 Profile Information</h3>
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" id="username" placeholder="Enter your username">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="emailDisplay" disabled style="opacity: 0.7;">
+                        </div>
+                        <button class="btn btn-primary" onclick="updateProfile()">Update Profile</button>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>🔒 Account Security</h3>
+                    <div class="linked-accounts">
+                        <div class="account-item">
+                            <div class="account-info">
+                                <div class="account-icon email-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div>
+                                    <strong>Email</strong>
+                                    <p id="linkedEmail" style="margin: 0; opacity: 0.7;">...</p>
+                                </div>
+                            </div>
+                            <span style="color: #00ff88;">✓ Linked</span>
+                        </div>
+                        <div class="account-item" id="phoneAccountItem">
+                            <div class="account-info">
+                                <div class="account-icon phone-icon">
+                                    <i class="fas fa-phone"></i>
+                                </div>
+                                <div>
+                                    <strong>Phone</strong>
+                                    <p id="linkedPhone" style="margin: 0; opacity: 0.7;">Not linked</p>
+                                </div>
+                            </div>
+                            <button class="btn" onclick="linkPhoneNumber()">Link Phone</button>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="changePassword()" style="margin-top: 20px; width: 100%;">
+                        <i class="fas fa-key"></i> Change Password
                     </button>
-                    <button class="btn" onclick="clearDrinkHistory()">
-                        <i class="fas fa-trash"></i> Clear Drink History
-                    </button>
-                    <button class="btn btn-danger" onclick="resetApp()">
-                        <i class="fas fa-redo"></i> Reset App
-                    </button>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>🚨 Emergency Information</h3>
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label>Home Address</label>
+                            <textarea id="homeAddress" placeholder="Enter your home address for quick Uber rides"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Emergency Contact</label>
+                            <input type="tel" id="emergencyContact" placeholder="+41 XX XXX XX XX">
+                        </div>
+                        <div class="form-group">
+                            <label>Medical Information</label>
+                            <textarea id="medicalInfo" placeholder="Allergies, conditions, medications..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Safety Notes</label>
+                            <textarea id="safetyNotes" placeholder="Any other important information"></textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="saveEmergencyInfo()">Save Emergency Info</button>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>🔔 Privacy & Notifications</h3>
+                    <div class="toggle-group">
+                        <div class="toggle-label">
+                            <span>Share Location with Friends</span>
+                            <small>Allow friends to see your party location</small>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="shareLocation">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-group">
+                        <div class="toggle-label">
+                            <span>Enable Notifications</span>
+                            <small>Get alerts for friend requests and safety reminders</small>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="notifications" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-group">
+                        <div class="toggle-label">
+                            <span>Public Profile</span>
+                            <small>Allow others to find you by username</small>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="publicProfile" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <button class="btn btn-primary" onclick="savePrivacySettings()" style="margin-top: 20px; width: 100%;">Save Privacy Settings</button>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>💾 Data Management</h3>
+                    <div style="display: grid; gap: 10px;">
+                        <button class="btn" onclick="exportData()">
+                            <i class="fas fa-download"></i> Export All Data
+                        </button>
+                        <button class="btn" onclick="clearDrinkHistory()">
+                            <i class="fas fa-trash"></i> Clear Drink History
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteAccount()">
+                            <i class="fas fa-user-times"></i> Delete Account
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1848,7 +2515,7 @@
     
     <script>
         // ========================================
-        // FIREBASE CONFIGURATION - YOUR REAL CONFIG
+        // FIREBASE CONFIGURATION
         // ========================================
         const firebaseConfig = {
             apiKey: "AIzaSyCuOjiHa8C0jgAte40E774CRJROTWTUdmg",
@@ -1861,15 +2528,17 @@
             measurementId: "G-VFS4W30Z7P"
         };
         
-        // Change this to false to use real Firebase data
-        const DEMO_MODE = false; // Set to false when you have real breathalyzer!
-        
         // ========================================
         // GLOBAL VARIABLES AND DATA
         // ========================================
+        let auth = null;
+        let database = null;
+        let currentUser = null;
+        let userData = {};
         let partyData = {};
-        let currentUser = localStorage.getItem('userName') || 'You';
-        let partyMode = false;
+        let deviceData = {};
+        let friendsData = {};
+        let friendRequests = [];
         let currentGame = null;
         let gameScores = { team1: 0, team2: 0 };
         let partyStartTime = Date.now();
@@ -1887,6 +2556,9 @@
         let drinkHistory = [];
         let drinkChart = null;
         let chartVisible = true;
+        let authMethod = 'email';
+        let isSignUp = false;
+        let phoneVerificationId = null;
         
         // Drink presets
         const drinkPresets = {
@@ -1899,68 +2571,332 @@
             water: { amount: 250, alcohol: 0, emoji: '💧' },
             other: { amount: 200, alcohol: 5, emoji: '🍹' }
         };
-
-        // Update connection status
-        function updateConnectionStatus(connected) {
-            const statusElement = document.getElementById('connectionStatus');
-            const dotElement = document.querySelector('.status-dot');
-    
-            if (statusElement && dotElement) {
-                if (connected) {
-                    statusElement.textContent = 'Connected';
-                    dotElement.style.background = '#00ff88';
-                } else {
-                    statusElement.textContent = 'Offline';
-                    dotElement.style.background = '#ff4444';
-                }
-            }
-        }
         
         // ========================================
         // FIREBASE INITIALIZATION
         // ========================================
-        let database = null;
-        
         function initializeFirebase() {
-            if (!DEMO_MODE) {
-                try {
-                    // Initialize Firebase
-                    firebase.initializeApp(firebaseConfig);
-                    database = firebase.database();
-                    
-                    // Set up listeners
-                    setupFirebaseListeners();
-                    
-                    console.log('Firebase initialized successfully');
-                    showNotification('✅ Connected to Firebase!');
-                    updateConnectionStatus(true);
-                } catch (error) {
-                    console.error('Firebase initialization error:', error);
-                    showNotification('❌ Firebase connection failed. Running in demo mode.');
-                    updateConnectionStatus(false);
-                }
-            } else {
+            try {
+                // Initialize Firebase
+                firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                auth = firebase.auth();
+                
+                // Configure phone auth
+                auth.useDeviceLanguage();
+                
+                // Setup reCAPTCHA for phone auth
+                window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('authForm', {
+                    'size': 'invisible',
+                    'callback': (response) => {
+                        // reCAPTCHA solved
+                    }
+                });
+                
+                // Set up auth listener
+                auth.onAuthStateChanged((user) => {
+                    if (user) {
+                        currentUser = user;
+                        onUserAuthenticated();
+                    } else {
+                        currentUser = null;
+                        showAuthScreen();
+                    }
+                });
+                
+                console.log('Firebase initialized successfully');
+                updateConnectionStatus(true);
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                showNotification('❌ Firebase connection failed.', 'error');
                 updateConnectionStatus(false);
-                showNotification('🎮 Running in DEMO MODE - Connect a real breathalyzer for live data!');
             }
         }
         
-        // Setup Firebase listeners
-        function setupFirebaseListeners() {
-            if (!database) return;
+        // ========================================
+        // AUTHENTICATION FUNCTIONS
+        // ========================================
+        function showAuthScreen() {
+            document.getElementById('authContainer').style.display = 'flex';
+            document.getElementById('userProfile').style.display = 'none';
+            document.querySelector('.container').style.display = 'none';
+        }
+        
+        function hideAuthScreen() {
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('userProfile').style.display = 'block';
+            document.querySelector('.container').style.display = 'block';
+        }
+        
+        function showAuthError(message) {
+            const errorDiv = document.getElementById('authError');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
             
-            // Listen for breathalyzer readings
-            database.ref('readings').on('child_added', (snapshot) => {
-                const reading = snapshot.val();
-                processBreathalyzerReading(reading);
+            setTimeout(() => {
+                errorDiv.classList.remove('show');
+            }, 5000);
+        }
+        
+        function switchAuthMethod(method) {
+            authMethod = method;
+            const tabs = document.querySelectorAll('.auth-tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (method === 'email') {
+                document.getElementById('emailAuth').style.display = 'block';
+                document.getElementById('phoneAuth').style.display = 'none';
+            } else {
+                document.getElementById('emailAuth').style.display = 'none';
+                document.getElementById('phoneAuth').style.display = 'block';
+            }
+        }
+        
+        function toggleAuthMode() {
+            isSignUp = !isSignUp;
+            
+            if (isSignUp) {
+                // Switch to signup
+                document.getElementById('authTitle').textContent = 'Create Your Account';
+                document.getElementById('authButton').textContent = 'Sign Up';
+                document.getElementById('usernameGroup').style.display = 'block';
+                document.getElementById('authToggleText').textContent = 'Already have an account?';
+                document.getElementById('authToggleLink').textContent = 'Login';
+            } else {
+                // Switch to login
+                document.getElementById('authTitle').textContent = 'Welcome Back';
+                document.getElementById('authButton').textContent = 'Login';
+                document.getElementById('usernameGroup').style.display = 'none';
+                document.getElementById('authToggleText').textContent = "Don't have an account?";
+                document.getElementById('authToggleLink').textContent = 'Sign up';
+            }
+        }
+        
+        // Handle auth form submission
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (authMethod === 'email') {
+                await handleEmailAuth();
+            } else {
+                await handlePhoneAuth();
+            }
+        });
+        
+        async function handleEmailAuth() {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            const username = document.getElementById('authUsername').value;
+            
+            try {
+                if (!isSignUp) {
+                    // Login
+                    await auth.signInWithEmailAndPassword(email, password);
+                    showNotification('✅ Welcome back!', 'success');
+                } else {
+                    // Signup
+                    if (!username || username.trim().length < 3) {
+                        showAuthError('Username must be at least 3 characters');
+                        return;
+                    }
+                    
+                    // Check if username is taken
+                    const usernameCheck = await database.ref('usernames/' + username.toLowerCase()).once('value');
+                    if (usernameCheck.exists()) {
+                        showAuthError('Username already taken');
+                        return;
+                    }
+                    
+                    // Create account
+                    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                    const user = userCredential.user;
+                    
+                    // Save user data
+                    await database.ref('users/' + user.uid).set({
+                        username: username,
+                        email: email,
+                        createdAt: firebase.database.ServerValue.TIMESTAMP,
+                        devices: {},
+                        friends: {},
+                        achievements: {},
+                        settings: {
+                            notifications: true,
+                            shareLocation: false,
+                            publicProfile: true
+                        }
+                    });
+                    
+                    // Reserve username
+                    await database.ref('usernames/' + username.toLowerCase()).set(user.uid);
+                    
+                    showNotification('✅ Account created successfully!', 'success');
+                }
+            } catch (error) {
+                console.error('Auth error:', error);
+                let errorMessage = 'Authentication failed';
+                
+                switch(error.code) {
+                    case 'auth/user-not-found':
+                        errorMessage = 'No account found with this email';
+                        break;
+                    case 'auth/wrong-password':
+                        errorMessage = 'Incorrect password';
+                        break;
+                    case 'auth/email-already-in-use':
+                        errorMessage = 'Email already registered';
+                        break;
+                    case 'auth/weak-password':
+                        errorMessage = 'Password should be at least 6 characters';
+                        break;
+                    case 'auth/invalid-email':
+                        errorMessage = 'Invalid email address';
+                        break;
+                    default:
+                        errorMessage = error.message;
+                }
+                
+                showAuthError(errorMessage);
+            }
+        }
+        
+        async function handlePhoneAuth() {
+            const countryCode = document.getElementById('countryCode').value;
+            const phoneNumber = document.getElementById('authPhone').value.replace(/\s/g, '');
+            const fullPhoneNumber = countryCode + phoneNumber;
+            const verificationCode = document.getElementById('verificationCode').value;
+            
+            try {
+                if (!verificationCode) {
+                    // Send verification code
+                    const appVerifier = window.recaptchaVerifier;
+                    phoneVerificationId = await auth.signInWithPhoneNumber(fullPhoneNumber, appVerifier);
+                    
+                    document.getElementById('verificationGroup').style.display = 'block';
+                    document.getElementById('authButton').textContent = 'Verify Code';
+                    showNotification('📱 Verification code sent!', 'success');
+                } else {
+                    // Verify code
+                    const credential = firebase.auth.PhoneAuthProvider.credential(
+                        phoneVerificationId.verificationId,
+                        verificationCode
+                    );
+                    
+                    const result = await auth.signInWithCredential(credential);
+                    
+                    // Check if new user
+                    if (result.additionalUserInfo.isNewUser) {
+                        // New phone user - create profile
+                        await database.ref('users/' + result.user.uid).set({
+                            phone: fullPhoneNumber,
+                            createdAt: firebase.database.ServerValue.TIMESTAMP,
+                            devices: {},
+                            friends: {},
+                            achievements: {},
+                            settings: {
+                                notifications: true,
+                                shareLocation: false,
+                                publicProfile: true
+                            }
+                        });
+                    }
+                    
+                    showNotification('✅ Phone verified successfully!', 'success');
+                }
+            } catch (error) {
+                console.error('Phone auth error:', error);
+                showAuthError(error.message);
+            }
+        }
+        
+        async function signOut() {
+            try {
+                await auth.signOut();
+                showNotification('👋 Signed out successfully');
+                location.reload();
+            } catch (error) {
+                console.error('Sign out error:', error);
+                showNotification('❌ Error signing out', 'error');
+            }
+        }
+        
+        // ========================================
+        // USER AUTHENTICATED - SETUP
+        // ========================================
+        async function onUserAuthenticated() {
+            hideAuthScreen();
+            
+            // Load user data
+            const userRef = database.ref('users/' + currentUser.uid);
+            const snapshot = await userRef.once('value');
+            userData = snapshot.val() || {};
+            
+            // Update profile displays
+            const displayName = userData.username || userData.phone || currentUser.email;
+            document.getElementById('profileName').textContent = displayName;
+            document.getElementById('profileEmail').textContent = currentUser.email || 'Phone user';
+            
+            // Update settings page
+            document.getElementById('settingsUsername').textContent = displayName;
+            document.getElementById('settingsEmail').textContent = currentUser.email || 'Not set';
+            document.getElementById('settingsPhone').textContent = userData.phone || 'Not linked';
+            document.getElementById('username').value = userData.username || '';
+            document.getElementById('emailDisplay').value = currentUser.email || '';
+            document.getElementById('linkedEmail').textContent = currentUser.email || 'Not set';
+            document.getElementById('linkedPhone').textContent = userData.phone || 'Not linked';
+            
+            // Update profile initial
+            const initial = displayName.charAt(0).toUpperCase();
+            document.getElementById('profileInitial').textContent = initial;
+            
+            // Setup listeners
+            setupFirebaseListeners();
+            
+            // Load saved settings
+            loadUserSettings();
+            
+            // Initialize UI
+            updateUI();
+            
+            showNotification(`🎉 Welcome, ${displayName}!`, 'success');
+        }
+        
+        // Setup Firebase listeners for authenticated user
+        function setupFirebaseListeners() {
+            if (!database || !currentUser) return;
+            
+            // Listen for user's devices
+            database.ref('users/' + currentUser.uid + '/devices').on('value', (snapshot) => {
+                deviceData = snapshot.val() || {};
+                updateDeviceList();
+                document.getElementById('deviceCount').textContent = Object.keys(deviceData).length;
             });
             
-            // Listen for user updates
-            database.ref('users').on('value', (snapshot) => {
-                const users = snapshot.val();
-                if (users) {
-                    updatePartyData(users);
-                }
+            // Listen for readings from user's devices
+            Object.keys(deviceData).forEach(deviceId => {
+                listenToDevice(deviceId);
+            });
+            
+            // Listen for friends
+            database.ref('users/' + currentUser.uid + '/friends').on('value', (snapshot) => {
+                friendsData = snapshot.val() || {};
+                updateFriendsList();
+                document.getElementById('friendCount').textContent = Object.keys(friendsData).length;
+                
+                // Listen to friends' data
+                Object.keys(friendsData).forEach(friendId => {
+                    listenToFriend(friendId);
+                });
+            });
+            
+            // Listen for friend requests
+            database.ref('friendRequests/' + currentUser.uid).on('value', (snapshot) => {
+                const requests = snapshot.val() || {};
+                friendRequests = Object.entries(requests).map(([id, data]) => ({
+                    id,
+                    ...data
+                }));
+                updateFriendRequests();
             });
             
             // Connection status
@@ -1970,265 +2906,680 @@
             });
         }
         
-        // Process incoming breathalyzer reading
-        function processBreathalyzerReading(reading) {
-            if (!reading) return;
+        // Listen to specific device
+        function listenToDevice(deviceId) {
+            database.ref('readings/' + deviceId).on('value', (snapshot) => {
+                const reading = snapshot.val();
+                if (reading) {
+                    processDeviceReading(deviceId, reading);
+                }
+            });
+        }
+        
+        // Listen to friend's data
+        function listenToFriend(friendId) {
+            const permission = friendsData[friendId]?.permission || 'observer';
             
-            // Find or create user
-            const userId = reading.device || 'unknown';
-            const userName = reading.user || 'Anonymous';
+            if (permission !== 'none') {
+                database.ref('users/' + friendId).on('value', (snapshot) => {
+                    const friendData = snapshot.val();
+                    if (friendData) {
+                        processFriendData(friendId, friendData);
+                    }
+                });
+            }
+        }
+        
+        // ========================================
+        // DEVICE PAIRING SYSTEM
+        // ========================================
+        async function pairDeviceById() {
+            const deviceId = document.getElementById('deviceIdInput').value.trim().toUpperCase();
             
-            if (!partyData[userId]) {
-                partyData[userId] = {
-                    name: userName,
+            if (!deviceId) {
+                showNotification('❌ Please enter a Device ID', 'error');
+                return;
+            }
+            
+            try {
+                // Check if device exists in readings
+                const deviceSnapshot = await database.ref('readings/' + deviceId).once('value');
+                
+                if (!deviceSnapshot.exists()) {
+                    showNotification('❌ Device not found. Make sure it\'s connected.', 'error');
+                    return;
+                }
+                
+                // Check if already paired
+                if (deviceData[deviceId]) {
+                    showNotification('ℹ️ Device already paired');
+                    return;
+                }
+                
+                // Add device to user
+                await database.ref('users/' + currentUser.uid + '/devices/' + deviceId).set({
+                    pairedAt: firebase.database.ServerValue.TIMESTAMP,
+                    name: 'My Breathalyzer'
+                });
+                
+                // Clear input
+                document.getElementById('deviceIdInput').value = '';
+                
+                showNotification('✅ Device paired successfully!', 'success');
+                
+                // Start listening to this device
+                listenToDevice(deviceId);
+                
+            } catch (error) {
+                console.error('Pairing error:', error);
+                showNotification('❌ Pairing failed', 'error');
+            }
+        }
+        
+        // Update device list display
+        function updateDeviceList() {
+            const deviceList = document.getElementById('deviceList');
+            deviceList.innerHTML = '';
+            
+            if (Object.keys(deviceData).length === 0) {
+                deviceList.innerHTML = '<p style="text-align: center; opacity: 0.7;">No devices paired yet</p>';
+                return;
+            }
+            
+            Object.entries(deviceData).forEach(([deviceId, device]) => {
+                const lastReading = partyData[deviceId];
+                const item = document.createElement('div');
+                item.className = 'device-item';
+                item.innerHTML = `
+                    <div class="device-info">
+                        <h4>${device.name || 'Breathalyzer'}</h4>
+                        <p>ID: ${deviceId}</p>
+                        <p>Last Reading: ${lastReading ? lastReading.bac.toFixed(3) + '‰' : 'No data'}</p>
+                    </div>
+                    <div>
+                        <button class="btn" onclick="renameDevice('${deviceId}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-danger" onclick="unpairDevice('${deviceId}')">
+                            <i class="fas fa-unlink"></i>
+                        </button>
+                    </div>
+                `;
+                deviceList.appendChild(item);
+            });
+        }
+        
+        async function unpairDevice(deviceId) {
+            if (confirm('Unpair this device?')) {
+                await database.ref('users/' + currentUser.uid + '/devices/' + deviceId).remove();
+                showNotification('🔓 Device unpaired');
+            }
+        }
+        
+        async function renameDevice(deviceId) {
+            const newName = prompt('Enter new name for device:', deviceData[deviceId]?.name || 'My Breathalyzer');
+            if (newName) {
+                await database.ref('users/' + currentUser.uid + '/devices/' + deviceId + '/name').set(newName);
+                showNotification('✏️ Device renamed');
+            }
+        }
+        
+        // Process device reading
+        function processDeviceReading(deviceId, reading) {
+            if (!partyData[deviceId]) {
+                partyData[deviceId] = {
+                    name: userData.username || 'You',
                     bac: 0,
                     lastUpdate: Date.now(),
-                    location: reading.location || 'Unknown',
+                    location: 'Party',
                     trend: 'steady',
                     history: [],
-                    device: reading.device
+                    isOwn: true
                 };
             }
             
-            // Update BAC
-            const oldBac = partyData[userId].bac;
-            partyData[userId].bac = reading.bac || 0;
-            partyData[userId].lastUpdate = Date.now();
-            partyData[userId].trend = reading.bac > oldBac ? 'up' : reading.bac < oldBac ? 'down' : 'steady';
+            const oldBac = partyData[deviceId].bac;
+            partyData[deviceId].bac = reading.bac || 0;
+            partyData[deviceId].lastUpdate = Date.now();
+            partyData[deviceId].trend = reading.bac > oldBac ? 'up' : reading.bac < oldBac ? 'down' : 'steady';
             
             // Add to history
-            partyData[userId].history.push({
+            partyData[deviceId].history.push({
                 time: Date.now(),
                 value: reading.bac
             });
             
-            // Update UI
+            // Keep history reasonable
+            if (partyData[deviceId].history.length > 50) {
+                partyData[deviceId].history.shift();
+            }
+            
             updateUI();
             
-            // Show notification
-            showNotification(`📊 ${userName}: ${reading.bac.toFixed(3)}‰`);
-        }
-        
-        // Update party data from Firebase
-        function updatePartyData(users) {
-            Object.entries(users).forEach(([userId, userData]) => {
-                partyData[userId] = {
-                    ...userData,
-                    lastUpdate: Date.now()
-                };
-            });
-            updateUI();
-        }
-        
-        // Error boundary
-        window.addEventListener('error', (e) => {
-            console.error('Application error:', e);
-            showNotification('⚠️ Something went wrong. Refreshing might help.');
-        });
-        
-        // Initialize particles
-        function createParticles() {
-            try {
-                const particlesContainer = document.getElementById('particles');
-                for (let i = 0; i < 50; i++) {
-                    const particle = document.createElement('div');
-                    particle.className = 'particle';
-                    particle.style.left = Math.random() * 100 + '%';
-                    particle.style.animationDelay = Math.random() * 20 + 's';
-                    particle.style.animationDuration = (15 + Math.random() * 10) + 's';
-                    particlesContainer.appendChild(particle);
-                }
-            } catch (error) {
-                console.error('Particle creation failed:', error);
+            // Check for alerts
+            if (reading.bac >= 0.08) {
+                showNotification(`⚠️ Your BAC is too high: ${reading.bac.toFixed(3)}‰`, 'error');
             }
         }
         
-        // Navigation - Fixed to handle clicks properly
-        function switchSection(sectionId) {
-            try {
-                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                
-                const section = document.getElementById(sectionId);
-                if (section) {
-                    section.classList.add('active');
-                }
-                
-                // Find and activate the correct nav item
-                const navItems = document.querySelectorAll('.nav-item');
-                navItems.forEach(item => {
-                    if (item.onclick && item.onclick.toString().includes(sectionId)) {
-                        item.classList.add('active');
-                    }
-                });
-                
-                // Close mobile menu
-                document.getElementById('navMenu').classList.remove('show');
-                
-                // Section-specific initializations
-                if (sectionId === 'achievements') {
-                    updateAchievements();
-                } else if (sectionId === 'drinks') {
-                    updateDrinkStats();
-                    updateDrinkChart();
-                } else if (sectionId === 'friends') {
-                    updateFriendsList();
-                }
-            } catch (error) {
-                console.error('Section switch failed:', error);
-            }
-        }
-        
-        function toggleMobileMenu() {
-            document.getElementById('navMenu').classList.toggle('show');
-        }
-        
-        // Toggle chart visibility
-        function toggleChart() {
-            chartVisible = !chartVisible;
-            const wrapper = document.getElementById('chartWrapper');
-            const toggleText = document.getElementById('chartToggleText');
+        // ========================================
+        // FRIENDS SYSTEM
+        // ========================================
+        async function searchFriends() {
+            const searchTerm = document.getElementById('friendSearchInput').value.trim().toLowerCase();
             
-            if (chartVisible) {
-                wrapper.classList.remove('collapsed');
-                toggleText.textContent = 'Hide Chart';
-            } else {
-                wrapper.classList.add('collapsed');
-                toggleText.textContent = 'Show Chart';
-            }
-        }
-        
-        // Friend management
-        function addFriend() {
-            const name = document.getElementById('friendName').value.trim();
-            const device = document.getElementById('friendDevice').value.trim();
-            
-            if (!name) {
-                showNotification('❌ Please enter a friend\'s name');
+            if (!searchTerm || searchTerm.length < 3) {
+                showNotification('❌ Please enter at least 3 characters', 'error');
                 return;
             }
             
-            const friendId = device || `friend_${Date.now()}`;
+            const resultsDiv = document.getElementById('searchResults');
+            resultsDiv.innerHTML = '<p>Searching...</p>';
             
-            partyData[friendId] = {
-                name: name + ' 🎉',
-                bac: 0,
-                lastUpdate: Date.now(),
-                location: 'Unknown',
-                trend: 'steady',
-                history: [],
-                device: device,
-                status: 'online',
-                manual: true
-            };
-            
-            // Save to Firebase if connected
-            if (!DEMO_MODE && database) {
-                database.ref('users/' + friendId).set(partyData[friendId]);
+            try {
+                // Search by username
+                const usersSnapshot = await database.ref('users').once('value');
+                const users = usersSnapshot.val() || {};
+                
+                const results = [];
+                Object.entries(users).forEach(([uid, user]) => {
+                    if (uid !== currentUser.uid && 
+                        user.settings?.publicProfile !== false &&
+                        (user.username?.toLowerCase().includes(searchTerm) || 
+                         user.email?.toLowerCase().includes(searchTerm))) {
+                        results.push({ uid, ...user });
+                    }
+                });
+                
+                if (results.length === 0) {
+                    resultsDiv.innerHTML = '<p style="text-align: center; opacity: 0.7;">No users found</p>';
+                } else {
+                    resultsDiv.innerHTML = '<h4>Search Results:</h4>' + results.map(user => `
+                        <div class="friend-item">
+                            <div class="friend-info">
+                                <div class="friend-avatar-small">
+                                    ${(user.username || user.email).charAt(0).toUpperCase()}
+                                </div>
+                                <div class="friend-details">
+                                    <h4>${user.username || 'User'}</h4>
+                                    <p>${user.email || 'Phone user'}</p>
+                                </div>
+                            </div>
+                            <div class="friend-actions">
+                                ${friendsData[user.uid] ? 
+                                    '<span style="color: #00ff88;">✓ Friends</span>' : 
+                                    `<button class="btn btn-primary" onclick="sendFriendRequest('${user.uid}')">
+                                        <i class="fas fa-user-plus"></i> Add Friend
+                                    </button>`
+                                }
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                resultsDiv.innerHTML = '<p style="color: #ff4444;">Search failed. Try again.</p>';
             }
-            
-            // Clear form
-            document.getElementById('friendName').value = '';
-            document.getElementById('friendDevice').value = '';
-            
-            showNotification(`✅ Added ${name} to your friends!`);
-            updateUI();
-            updateFriendsList();
         }
         
-        function removeFriend(friendId) {
-            if (confirm('Remove this friend?')) {
-                delete partyData[friendId];
-                
-                // Remove from Firebase if connected
-                if (!DEMO_MODE && database) {
-                    database.ref('users/' + friendId).remove();
+        async function sendFriendRequest(friendId) {
+            try {
+                // Check if already friends
+                if (friendsData[friendId]) {
+                    showNotification('ℹ️ Already friends');
+                    return;
                 }
                 
-                updateUI();
-                updateFriendsList();
+                // Send friend request
+                await database.ref('friendRequests/' + friendId + '/' + currentUser.uid).set({
+                    from: userData.username || currentUser.email,
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+                
+                showNotification('📤 Friend request sent!', 'success');
+                
+                // Update UI
+                searchFriends();
+                
+            } catch (error) {
+                console.error('Friend request error:', error);
+                showNotification('❌ Failed to send request', 'error');
+            }
+        }
+        
+        // Update friend requests display
+        function updateFriendRequests() {
+            const container = document.getElementById('friendRequests');
+            
+            if (friendRequests.length === 0) {
+                container.innerHTML = '<p style="opacity: 0.7;">No pending requests</p>';
+                return;
+            }
+            
+            container.innerHTML = friendRequests.map(request => `
+                <div class="friend-request">
+                    <div>
+                        <strong>${request.from}</strong>
+                        <small style="opacity: 0.7; margin-left: 10px;">
+                            ${getTimeSince(request.timestamp)}
+                        </small>
+                    </div>
+                    <div>
+                        <button class="btn" onclick="acceptFriendRequest('${request.id}')">
+                            <i class="fas fa-check"></i> Accept
+                        </button>
+                        <button class="btn btn-danger" onclick="declineFriendRequest('${request.id}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function acceptFriendRequest(friendId) {
+            try {
+                // Show permission selection modal
+                const permission = await selectFriendPermission();
+                if (!permission) return;
+                
+                // Add friend to both users
+                await database.ref('users/' + currentUser.uid + '/friends/' + friendId).set({
+                    permission: permission,
+                    addedAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                
+                await database.ref('users/' + friendId + '/friends/' + currentUser.uid).set({
+                    permission: permission,
+                    addedAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                
+                // Remove request
+                await database.ref('friendRequests/' + currentUser.uid + '/' + friendId).remove();
+                
+                showNotification('✅ Friend added!', 'success');
+                
+            } catch (error) {
+                console.error('Accept friend error:', error);
+                showNotification('❌ Failed to accept request', 'error');
+            }
+        }
+        
+        async function selectFriendPermission() {
+            return new Promise((resolve) => {
+                const modalContent = `
+                    <h2>Set Friend Permissions</h2>
+                    <p>Choose what this friend can see:</p>
+                    <div style="margin: 20px 0;">
+                        <div class="friend-item" style="cursor: pointer; margin: 10px 0;" onclick="resolvePermission('observer')">
+                            <div>
+                                <h4>👀 Observer</h4>
+                                <p>Can see if you're at a party (no BAC data)</p>
+                            </div>
+                        </div>
+                        <div class="friend-item" style="cursor: pointer; margin: 10px 0;" onclick="resolvePermission('buddy')">
+                            <div>
+                                <h4>🤝 Buddy</h4>
+                                <p>Can see your BAC and get notifications</p>
+                            </div>
+                        </div>
+                        <div class="friend-item" style="cursor: pointer; margin: 10px 0;" onclick="resolvePermission('guardian')">
+                            <div>
+                                <h4>🛡️ Guardian</h4>
+                                <p>Full access including emergency info</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="resolvePermission(null)">Cancel</button>
+                `;
+                
+                document.getElementById('modalBody').innerHTML = modalContent;
+                document.getElementById('modal').classList.add('show');
+                
+                window.resolvePermission = (permission) => {
+                    closeModal();
+                    resolve(permission);
+                };
+            });
+        }
+        
+        async function declineFriendRequest(friendId) {
+            await database.ref('friendRequests/' + currentUser.uid + '/' + friendId).remove();
+            showNotification('❌ Request declined');
+        }
+        
+        // Process friend data
+        function processFriendData(friendId, friendData) {
+            const permission = friendsData[friendId]?.permission || 'observer';
+            
+            // Get friend's device data based on permission
+            if (permission === 'guardian' || permission === 'buddy') {
+                // Can see BAC data
+                Object.keys(friendData.devices || {}).forEach(deviceId => {
+                    if (!partyData[deviceId]) {
+                        partyData[deviceId] = {
+                            name: friendData.username,
+                            bac: 0,
+                            lastUpdate: Date.now(),
+                            location: 'Unknown',
+                            trend: 'steady',
+                            history: [],
+                            isFriend: true,
+                            friendId: friendId,
+                            permission: permission
+                        };
+                    }
+                });
+            }
+        }
+        
+        // Update friends list display
+        function updateFriendsList() {
+            const friendsList = document.getElementById('friendsList');
+            friendsList.innerHTML = '';
+            
+            if (Object.keys(friendsData).length === 0) {
+                friendsList.innerHTML = '<p style="text-align: center; opacity: 0.7;">No friends added yet</p>';
+                return;
+            }
+            
+            // Load friend details
+            Object.entries(friendsData).forEach(async ([friendId, friend]) => {
+                const friendSnapshot = await database.ref('users/' + friendId).once('value');
+                const friendInfo = friendSnapshot.val();
+                
+                if (friendInfo) {
+                    const friendDiv = document.createElement('div');
+                    friendDiv.className = 'friend-item';
+                    friendDiv.innerHTML = `
+                        <div class="friend-info">
+                            <div class="friend-avatar-small">
+                                ${(friendInfo.username || friendInfo.email || 'U').charAt(0).toUpperCase()}
+                            </div>
+                            <div class="friend-details">
+                                <h4>${friendInfo.username || 'Friend'}</h4>
+                                <p>${friendInfo.email || 'Phone user'}</p>
+                            </div>
+                        </div>
+                        <div class="friend-actions">
+                            <select class="permission-select" onchange="updateFriendPermission('${friendId}', this.value)">
+                                <option value="observer" ${friend.permission === 'observer' ? 'selected' : ''}>Observer</option>
+                                <option value="buddy" ${friend.permission === 'buddy' ? 'selected' : ''}>Buddy</option>
+                                <option value="guardian" ${friend.permission === 'guardian' ? 'selected' : ''}>Guardian</option>
+                            </select>
+                            <button class="btn btn-danger" onclick="removeFriend('${friendId}')">
+                                <i class="fas fa-user-minus"></i>
+                            </button>
+                        </div>
+                    `;
+                    friendsList.appendChild(friendDiv);
+                }
+            });
+        }
+        
+        async function updateFriendPermission(friendId, newPermission) {
+            try {
+                await database.ref('users/' + currentUser.uid + '/friends/' + friendId + '/permission').set(newPermission);
+                await database.ref('users/' + friendId + '/friends/' + currentUser.uid + '/permission').set(newPermission);
+                showNotification('✅ Permission updated', 'success');
+            } catch (error) {
+                console.error('Update permission error:', error);
+                showNotification('❌ Failed to update permission', 'error');
+            }
+        }
+        
+        async function removeFriend(friendId) {
+            if (confirm('Remove this friend?')) {
+                await database.ref('users/' + currentUser.uid + '/friends/' + friendId).remove();
+                await database.ref('users/' + friendId + '/friends/' + currentUser.uid).remove();
                 showNotification('👋 Friend removed');
             }
         }
         
-        function updateFriendsList() {
-            const friendsList = document.getElementById('friendsList');
-            if (!friendsList) return;
+        // ========================================
+        // SETTINGS FUNCTIONS
+        // ========================================
+        async function updateProfile() {
+            const username = document.getElementById('username').value.trim();
             
-            friendsList.innerHTML = '';
+            if (!username || username.length < 3) {
+                showNotification('❌ Username must be at least 3 characters', 'error');
+                return;
+            }
             
-            Object.entries(partyData).forEach(([id, friend]) => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <h3>${friend.name}</h3>
-                            <p>Device: ${friend.device || 'Not connected'}</p>
-                            <p>Last Update: ${getTimeSince(friend.lastUpdate)}</p>
-                        </div>
-                        <button class="btn btn-danger" onclick="removeFriend('${id}')">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-                friendsList.appendChild(card);
-            });
-        }
-        
-        // Demo data generator with error handling
-        function generateDemoData() {
             try {
-                const names = ['Alex 🎓', 'Jordan 🎯', 'Sam 🎸', 'Casey 🎨', 'Morgan 🏀', 'Taylor 🎭', 'Jamie 🎪', 'Riley 🎵'];
-                const locations = ['Dorm A', 'Dorm B', 'Library Cafe', 'Student Bar', 'Main Campus', 'Sports Center'];
-                const now = Date.now();
+                // Check if username changed
+                if (username.toLowerCase() !== userData.username?.toLowerCase()) {
+                    // Check if new username is available
+                    const usernameCheck = await database.ref('usernames/' + username.toLowerCase()).once('value');
+                    if (usernameCheck.exists() && usernameCheck.val() !== currentUser.uid) {
+                        showNotification('❌ Username already taken', 'error');
+                        return;
+                    }
+                    
+                    // Remove old username
+                    if (userData.username) {
+                        await database.ref('usernames/' + userData.username.toLowerCase()).remove();
+                    }
+                    
+                    // Reserve new username
+                    await database.ref('usernames/' + username.toLowerCase()).set(currentUser.uid);
+                }
                 
-                names.forEach((name, index) => {
-                    if (!partyData[name]) {
-                        partyData[name] = {
-                            name: name,
-                            bac: 0,
-                            lastUpdate: now,
-                            location: locations[Math.floor(Math.random() * locations.length)],
-                            trend: 'steady',
-                            history: [],
-                            status: 'online',
-                            lastMessage: ''
-                        };
-                    }
-                    
-                    // Simulate BAC changes
-                    const currentBac = partyData[name].bac;
-                    const change = (Math.random() - 0.3) * 0.02;
-                    const newBac = Math.max(0, Math.min(currentBac + change, 0.12));
-                    
-                    partyData[name].trend = newBac > currentBac ? 'up' : newBac < currentBac ? 'down' : 'steady';
-                    partyData[name].bac = newBac;
-                    partyData[name].lastUpdate = now;
-                    
-                    // Add to history for charts
-                    if (!partyData[name].history) partyData[name].history = [];
-                    partyData[name].history.push({ time: now, value: newBac });
-                    if (partyData[name].history.length > 50) {
-                        partyData[name].history.shift();
-                    }
-                    
-                    // Random location changes
-                    if (Math.random() < 0.1) {
-                        partyData[name].location = locations[Math.floor(Math.random() * locations.length)];
-                    }
-                    
-                    // Random online/offline status
-                    partyData[name].status = Math.random() < 0.9 ? 'online' : 'offline';
-                });
+                // Update user data
+                await database.ref('users/' + currentUser.uid + '/username').set(username);
                 
-                updateUI();
+                showNotification('✅ Profile updated!', 'success');
+                
+                // Update UI
+                userData.username = username;
+                document.getElementById('profileName').textContent = username;
+                document.getElementById('settingsUsername').textContent = username;
+                document.getElementById('profileInitial').textContent = username.charAt(0).toUpperCase();
+                
             } catch (error) {
-                console.error('Data generation failed:', error);
+                console.error('Update profile error:', error);
+                showNotification('❌ Failed to update profile', 'error');
             }
         }
         
-        // Update UI with error handling
+        async function linkPhoneNumber() {
+            // TODO: Implement phone number linking
+            showNotification('📱 Phone linking coming soon!');
+        }
+        
+        async function changePassword() {
+            const newPassword = prompt('Enter new password (min 6 characters):');
+            if (newPassword && newPassword.length >= 6) {
+                try {
+                    await currentUser.updatePassword(newPassword);
+                    showNotification('✅ Password changed successfully', 'success');
+                } catch (error) {
+                    console.error('Password change error:', error);
+                    if (error.code === 'auth/requires-recent-login') {
+                        showNotification('❌ Please sign out and sign in again before changing password', 'error');
+                    } else {
+                        showNotification('❌ Failed to change password', 'error');
+                    }
+                }
+            }
+        }
+        
+        async function saveEmergencyInfo() {
+            const homeAddress = document.getElementById('homeAddress').value;
+            const emergencyContact = document.getElementById('emergencyContact').value;
+            const medicalInfo = document.getElementById('medicalInfo').value;
+            const safetyNotes = document.getElementById('safetyNotes').value;
+            
+            try {
+                await database.ref('users/' + currentUser.uid + '/emergency').set({
+                    homeAddress,
+                    emergencyContact,
+                    medicalInfo,
+                    safetyNotes,
+                    updatedAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                
+                // Also save locally
+                localStorage.setItem('homeAddress', homeAddress);
+                localStorage.setItem('emergencyContact', emergencyContact);
+                localStorage.setItem('medicalInfo', medicalInfo);
+                localStorage.setItem('safetyNotes', safetyNotes);
+                
+                showNotification('✅ Emergency information saved', 'success');
+                showSettingsSaved();
+            } catch (error) {
+                console.error('Save emergency info error:', error);
+                showNotification('❌ Failed to save emergency info', 'error');
+            }
+        }
+        
+        async function savePrivacySettings() {
+            const shareLocation = document.getElementById('shareLocation').checked;
+            const notifications = document.getElementById('notifications').checked;
+            const publicProfile = document.getElementById('publicProfile').checked;
+            
+            try {
+                await database.ref('users/' + currentUser.uid + '/settings').update({
+                    shareLocation,
+                    notifications,
+                    publicProfile
+                });
+                
+                localStorage.setItem('shareLocation', shareLocation);
+                localStorage.setItem('notifications', notifications);
+                
+                showNotification('✅ Privacy settings saved', 'success');
+                showSettingsSaved();
+            } catch (error) {
+                console.error('Save privacy settings error:', error);
+                showNotification('❌ Failed to save settings', 'error');
+            }
+        }
+        
+        function showSettingsSaved() {
+            const savedIcon = document.createElement('div');
+            savedIcon.className = 'settings-saved';
+            savedIcon.innerHTML = '✅';
+            document.body.appendChild(savedIcon);
+            
+            setTimeout(() => savedIcon.remove(), 1000);
+        }
+        
+        async function deleteAccount() {
+            if (!confirm('Delete your account? This cannot be undone!')) return;
+            if (!confirm('Are you absolutely sure? All your data will be permanently deleted.')) return;
+            
+            try {
+                // Delete user data
+                await database.ref('users/' + currentUser.uid).remove();
+                
+                // Remove username
+                if (userData.username) {
+                    await database.ref('usernames/' + userData.username.toLowerCase()).remove();
+                }
+                
+                // Remove friend connections
+                if (friendsData) {
+                    for (const friendId in friendsData) {
+                        await database.ref('users/' + friendId + '/friends/' + currentUser.uid).remove();
+                    }
+                }
+                
+                // Delete auth account
+                await currentUser.delete();
+                
+                showNotification('Account deleted. Goodbye!');
+                location.reload();
+            } catch (error) {
+                console.error('Delete account error:', error);
+                if (error.code === 'auth/requires-recent-login') {
+                    showNotification('❌ Please sign out and sign in again before deleting account', 'error');
+                } else {
+                    showNotification('❌ Failed to delete account', 'error');
+                }
+            }
+        }
+        
+        function loadUserSettings() {
+            // Load from Firebase
+            if (userData.settings) {
+                const settings = userData.settings;
+                
+                if (settings.shareLocation !== undefined) {
+                    document.getElementById('shareLocation').checked = settings.shareLocation;
+                }
+                if (settings.notifications !== undefined) {
+                    document.getElementById('notifications').checked = settings.notifications;
+                }
+                if (settings.publicProfile !== undefined) {
+                    document.getElementById('publicProfile').checked = settings.publicProfile;
+                }
+            }
+            
+            // Load emergency info
+            if (userData.emergency) {
+                const emergency = userData.emergency;
+                
+                if (emergency.homeAddress) {
+                    document.getElementById('homeAddress').value = emergency.homeAddress;
+                    localStorage.setItem('homeAddress', emergency.homeAddress);
+                }
+                if (emergency.emergencyContact) {
+                    document.getElementById('emergencyContact').value = emergency.emergencyContact;
+                    localStorage.setItem('emergencyContact', emergency.emergencyContact);
+                }
+                if (emergency.medicalInfo) {
+                    document.getElementById('medicalInfo').value = emergency.medicalInfo;
+                    localStorage.setItem('medicalInfo', emergency.medicalInfo);
+                }
+                if (emergency.safetyNotes) {
+                    document.getElementById('safetyNotes').value = emergency.safetyNotes;
+                    localStorage.setItem('safetyNotes', emergency.safetyNotes);
+                }
+            }
+            
+            // Update toggle switches visual state
+            updateToggleSwitches();
+            
+            // Load local data as fallback
+            loadDrinkHistory();
+            
+            // Load achievements
+            Object.keys(achievements).forEach(key => {
+                if (localStorage.getItem(`achievement_${key}`)) {
+                    achievements[key] = true;
+                }
+            });
+        }
+        
+        function updateToggleSwitches() {
+            document.querySelectorAll('.toggle-switch').forEach(toggle => {
+                const input = toggle.querySelector('input');
+                if (input && input.checked) {
+                    toggle.classList.add('active');
+                } else {
+                    toggle.classList.remove('active');
+                }
+            });
+        }
+        
+        // Add event listeners for toggle switches
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.toggle-switch input').forEach(input => {
+                input.addEventListener('change', function() {
+                    const toggle = this.closest('.toggle-switch');
+                    if (this.checked) {
+                        toggle.classList.add('active');
+                    } else {
+                        toggle.classList.remove('active');
+                    }
+                });
+            });
+        });
+        
+        // ========================================
+        // UI UPDATE FUNCTIONS
+        // ========================================
         function updateUI() {
             try {
                 updateFriendsGrid();
@@ -2236,9 +3587,24 @@
                 updateLeaderboard();
                 updateVisualizer();
                 checkForAlerts();
-                updateWeather();
             } catch (error) {
                 console.error('UI update failed:', error);
+            }
+        }
+        
+        // Update connection status
+        function updateConnectionStatus(connected) {
+            const statusElement = document.getElementById('connectionStatus');
+            const dotElement = document.querySelector('.status-dot');
+            
+            if (statusElement && dotElement) {
+                if (connected) {
+                    statusElement.textContent = 'Connected';
+                    dotElement.style.background = '#00ff88';
+                } else {
+                    statusElement.textContent = 'Offline';
+                    dotElement.style.background = '#ff4444';
+                }
             }
         }
         
@@ -2257,29 +3623,31 @@
             
             grid.innerHTML = '';
             
-            Object.values(partyData).forEach(friend => {
-                const status = getBACStatus(friend.bac);
-                const timeSince = getTimeSince(friend.lastUpdate);
+            Object.entries(partyData).forEach(([deviceId, data]) => {
+                const status = getBACStatus(data.bac);
+                const timeSince = getTimeSince(data.lastUpdate);
                 
                 const card = document.createElement('div');
                 card.className = 'card friend-card';
-                card.onclick = () => showFriendDetails(friend);
+                card.onclick = () => showFriendDetails(data);
                 
-                const trendIcon = friend.trend === 'up' ? '📈' : friend.trend === 'down' ? '📉' : '➡️';
-                const trendClass = friend.trend === 'up' ? 'trend-up' : friend.trend === 'down' ? 'trend-down' : '';
+                const trendIcon = data.trend === 'up' ? '📈' : data.trend === 'down' ? '📉' : '➡️';
+                const trendClass = data.trend === 'up' ? 'trend-up' : data.trend === 'down' ? 'trend-down' : '';
+                
+                const emoji = data.isOwn ? '👤' : data.permission === 'guardian' ? '🛡️' : '👥';
                 
                 card.innerHTML = `
-                    <div class="friend-avatar">${friend.name.split(' ')[1]}</div>
-                    <div class="friend-name">${friend.name.split(' ')[0]}</div>
+                    <div class="friend-avatar">${emoji}</div>
+                    <div class="friend-name">${data.name}</div>
                     <div class="bac-value ${status.class}">
-                        ${friend.bac.toFixed(3)}‰
+                        ${data.bac.toFixed(3)}‰
                         <span class="bac-trend ${trendClass}">${trendIcon}</span>
                     </div>
                     <div class="friend-status">
                         <span class="status-badge">${status.emoji} ${status.text}</span>
                     </div>
                     <div class="location-tag">
-                        <i class="fas fa-map-marker-alt"></i> ${friend.location}
+                        <i class="fas fa-map-marker-alt"></i> ${data.location}
                     </div>
                     <div class="last-update" style="margin-top: 10px; opacity: 0.7; font-size: 0.9em;">
                         Updated ${timeSince}
@@ -2287,7 +3655,7 @@
                 `;
                 
                 // Add pulse animation for high BAC
-                if (friend.bac >= 0.08) {
+                if (data.bac >= 0.08) {
                     card.classList.add('pulse');
                 }
                 
@@ -2338,7 +3706,7 @@
                         spread: 70,
                         origin: { y: 0.6 }
                     });
-                    showNotification(`${friend.name.split(' ')[0]} is winning! 🏆`);
+                    showNotification(`${friend.name} is winning! 🏆`);
                 };
                 
                 item.innerHTML = `
@@ -2369,37 +3737,94 @@
             });
         }
         
-        // Party mode
-        function startPartyMode() {
-            partyMode = !partyMode;
-            document.body.classList.toggle('party-mode');
+        // Alert system
+        function checkForAlerts() {
+            const criticalFriends = Object.values(partyData).filter(f => f.bac >= 0.08);
             
-            if (partyMode) {
-                showNotification('🎉 PARTY MODE ACTIVATED! 🎉');
-                // More frequent visualizer updates
-                const vizInterval = setInterval(updateVisualizer, 100);
+            if (criticalFriends.length > 0) {
+                const alertBanner = document.getElementById('alertBanner');
+                const alertText = document.getElementById('alertText');
                 
-                // Random confetti
-                const confettiInterval = setInterval(() => {
-                    if (!partyMode) {
-                        clearInterval(vizInterval);
-                        clearInterval(confettiInterval);
-                        return;
+                if (alertBanner && alertText) {
+                    const names = criticalFriends.map(f => f.name).join(', ');
+                    alertText.textContent = `⚠️ ${names} need${criticalFriends.length > 1 ? '' : 's'} attention! BAC too high!`;
+                    
+                    if (!alertBanner.classList.contains('show')) {
+                        alertBanner.classList.add('show');
+                        playSound('alert');
                     }
-                    if (Math.random() < 0.3) {
-                        confetti({
-                            particleCount: 50,
-                            spread: 60,
-                            origin: { x: Math.random(), y: Math.random() }
-                        });
-                    }
-                }, 5000);
-                
-                // Play party sound effect (if implemented)
-                playSound('party-horn');
+                }
             } else {
-                showNotification('Party mode deactivated');
+                const alertBanner = document.getElementById('alertBanner');
+                if (alertBanner) {
+                    alertBanner.classList.remove('show');
+                }
             }
+        }
+        
+        // ========================================
+        // EXISTING FUNCTIONS (Chat, Games, etc.)
+        // ========================================
+        
+        // Initialize particles
+        function createParticles() {
+            try {
+                const particlesContainer = document.getElementById('particles');
+                for (let i = 0; i < 50; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 20 + 's';
+                    particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                    particlesContainer.appendChild(particle);
+                }
+            } catch (error) {
+                console.error('Particle creation failed:', error);
+            }
+        }
+        
+        // Navigation
+        function switchSection(sectionId) {
+            try {
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.classList.add('active');
+                }
+                
+                // Find and activate the correct nav item
+                const navItems = document.querySelectorAll('.nav-item');
+                navItems.forEach(item => {
+                    if (item.onclick && item.onclick.toString().includes(sectionId)) {
+                        item.classList.add('active');
+                    }
+                });
+                
+                // Close mobile menu
+                document.getElementById('navMenu').classList.remove('show');
+                
+                // Section-specific initializations
+                if (sectionId === 'achievements') {
+                    updateAchievements();
+                } else if (sectionId === 'drinks') {
+                    updateDrinkStats();
+                    updateDrinkChart();
+                } else if (sectionId === 'devices') {
+                    updateDeviceList();
+                } else if (sectionId === 'friends') {
+                    updateFriendsList();
+                } else if (sectionId === 'settings') {
+                    updateToggleSwitches();
+                }
+            } catch (error) {
+                console.error('Section switch failed:', error);
+            }
+        }
+        
+        function toggleMobileMenu() {
+            document.getElementById('navMenu').classList.toggle('show');
         }
         
         // Chat functionality
@@ -2412,41 +3837,22 @@
                 const messageDiv = document.createElement('div');
                 messageDiv.className = 'chat-message own';
                 messageDiv.innerHTML = `
-                    <div class="chat-author">You</div>
+                    <div class="chat-author">${userData.username || 'You'}</div>
                     <div>${escapeHtml(message)}</div>
                 `;
                 chatMessages.appendChild(messageDiv);
                 chatMessages.scrollTop = chatMessages.scrollHeight;
                 input.value = '';
                 
-                // Check for commands
-                processCommand(message);
-                
-                // Simulate response
-                setTimeout(() => {
-                    const names = Object.keys(partyData);
-                    const randomName = names[Math.floor(Math.random() * names.length)];
-                    const responses = [
-                        "Haha that's awesome! 😂",
-                        "See you there! 🎉",
-                        "Who's up for another round? 🍻",
-                        "Stay safe everyone! ❤️",
-                        "Best party ever! 🔥",
-                        "Let's gooo! 🚀",
-                        "Anyone need a ride? 🚗",
-                        "Water break time! 💧"
-                    ];
-                    const response = responses[Math.floor(Math.random() * responses.length)];
-                    
-                    const responseDiv = document.createElement('div');
-                    responseDiv.className = 'chat-message';
-                    responseDiv.innerHTML = `
-                        <div class="chat-author">${randomName.split(' ')[0]}</div>
-                        <div>${response}</div>
-                    `;
-                    chatMessages.appendChild(responseDiv);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                }, 1000 + Math.random() * 2000);
+                // Save to Firebase
+                if (database && currentUser) {
+                    database.ref('chat').push({
+                        uid: currentUser.uid,
+                        username: userData.username,
+                        message: message,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    });
+                }
             }
         }
         
@@ -2456,21 +3862,85 @@
             }
         }
         
-        // Command processing
-        function processCommand(message) {
-            const lower = message.toLowerCase();
+        // Hydration reminder
+        function showHydrationReminder() {
+            showNotification('💧 Time for a water break! Stay hydrated!');
+            confetti({
+                particleCount: 50,
+                spread: 60,
+                colors: ['#00d4ff', '#0099ff', '#0066ff'],
+                origin: { y: 0.6 }
+            });
             
-            if (lower.includes('party mode')) {
-                startPartyMode();
-            } else if (lower.includes('emergency')) {
-                showModal('emergency');
-            } else if (lower.includes('uber') || lower.includes('taxi')) {
-                callUber();
-            } else if (lower.includes('water') || lower.includes('hydrate')) {
-                showHydrationReminder();
-            } else if (lower.includes('game')) {
-                switchSection('games');
+            // Achievement check
+            const hydrationCount = parseInt(localStorage.getItem('hydrationCount') || '0') + 1;
+            localStorage.setItem('hydrationCount', hydrationCount);
+            
+            if (hydrationCount >= 12) { // 3 hours worth
+                achievements.hydroHomie = true;
+                showAchievementUnlocked('Hydro Homie');
             }
+        }
+        
+        // Show friend details
+        function showFriendDetails(friend) {
+            showModal('friend-details');
+            setTimeout(() => {
+                const content = document.getElementById('friendDetailsContent');
+                const status = getBACStatus(friend.bac);
+                
+                content.innerHTML = `
+                    <div style="text-align: center; margin: 20px 0;">
+                        <div class="friend-avatar" style="width: 100px; height: 100px; font-size: 3em; margin: 0 auto 20px;">
+                            ${friend.isOwn ? '👤' : '👥'}
+                        </div>
+                        <h3>${friend.name}</h3>
+                        <div class="bac-value ${status.class}" style="font-size: 2em; margin: 20px 0;">
+                            ${friend.bac.toFixed(3)}‰
+                        </div>
+                        <p><i class="fas fa-map-marker-alt"></i> ${friend.location}</p>
+                        <div style="margin: 20px 0;">
+                            <canvas id="friendChart" width="400" height="200"></canvas>
+                        </div>
+                    </div>
+                `;
+                
+                // Draw friend's BAC chart
+                drawFriendChart(friend);
+            }, 100);
+        }
+        
+        // Draw friend's BAC chart
+        function drawFriendChart(friend) {
+            const canvas = document.getElementById('friendChart');
+            if (!canvas || !friend.history || friend.history.length === 0) return;
+            
+            const ctx = canvas.getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: friend.history.map((_, i) => i),
+                    datasets: [{
+                        label: 'BAC Level',
+                        data: friend.history.map(h => h.value),
+                        borderColor: '#00ff88',
+                        backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 0.15
+                        }
+                    }
+                }
+            });
         }
         
         // Modal functions
@@ -2481,6 +3951,32 @@
             let content = '';
             
             switch(type) {
+                case 'pair-device':
+                    content = `
+                        <h2>📱 Pair New Device</h2>
+                        <p>After setting up your breathalyzer, enter the Device ID shown on its screen:</p>
+                        
+                        <div class="form-group" style="margin: 20px 0;">
+                            <input type="text" id="modalDeviceId" placeholder="Enter Device ID (e.g., HSG_abc123)" style="text-transform: uppercase;">
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="pairDeviceFromModal()">
+                            <i class="fas fa-link"></i> Pair Device
+                        </button>
+                        <button class="btn" onclick="closeModal()">Cancel</button>
+                        
+                        <div class="info-box" style="margin-top: 20px;">
+                            <p><strong>Can't find your Device ID?</strong></p>
+                            <ol>
+                                <li>Power on your device</li>
+                                <li>Double-flip the switch for setup mode</li>
+                                <li>Connect to the device's WiFi</li>
+                                <li>Complete setup to see your Device ID</li>
+                            </ol>
+                        </div>
+                    `;
+                    break;
+                    
                 case 'checkin':
                     content = `
                         <h2>📍 Check In</h2>
@@ -2557,9 +4053,8 @@
                         <div class="buddy-list">
                             ${Object.values(partyData).map(friend => `
                                 <div class="buddy-card" onclick="selectBuddy('${friend.name}')">
-                                    <div style="font-size: 2em; margin-bottom: 10px;">${friend.name.split(' ')[1]}</div>
-                                    <div>${friend.name.split(' ')[0]}</div>
-                                    <div class="buddy-status ${friend.status}"></div>
+                                    <div style="font-size: 2em; margin-bottom: 10px;">${friend.isOwn ? '👤' : '👥'}</div>
+                                    <div>${friend.name}</div>
                                 </div>
                             `).join('')}
                         </div>
@@ -2576,9 +4071,6 @@
                                 <div class="buddy-card" style="margin: 10px 0;">
                                     <div>${friend.name}</div>
                                     <div>BAC: ${friend.bac.toFixed(3)}‰</div>
-                                    <button class="btn" onclick="callFriend('${friend.name}')">
-                                        <i class="fas fa-phone"></i> Call
-                                    </button>
                                 </div>
                             `).join('') : '<p>No friends are currently safe to drive.</p>'}
                         </div>
@@ -2619,76 +4111,128 @@
             document.getElementById('modal').classList.remove('show');
         }
         
-        // Show friend details
-        function showFriendDetails(friend) {
-            showModal('friend-details');
-            setTimeout(() => {
-                const content = document.getElementById('friendDetailsContent');
-                const status = getBACStatus(friend.bac);
+        async function pairDeviceFromModal() {
+            const deviceId = document.getElementById('modalDeviceId').value.trim().toUpperCase();
+            
+            if (!deviceId) {
+                showNotification('❌ Please enter a Device ID', 'error');
+                return;
+            }
+            
+            try {
+                // Check if device exists in readings
+                const deviceSnapshot = await database.ref('readings/' + deviceId).once('value');
                 
-                content.innerHTML = `
-                    <div style="text-align: center; margin: 20px 0;">
-                        <div class="friend-avatar" style="width: 100px; height: 100px; font-size: 3em; margin: 0 auto 20px;">
-                            ${friend.name.split(' ')[1]}
-                        </div>
-                        <h3>${friend.name}</h3>
-                        <div class="bac-value ${status.class}" style="font-size: 2em; margin: 20px 0;">
-                            ${friend.bac.toFixed(3)}‰
-                        </div>
-                        <p><i class="fas fa-map-marker-alt"></i> ${friend.location}</p>
-                        <div style="margin: 20px 0;">
-                            <canvas id="friendChart" width="400" height="200"></canvas>
-                        </div>
-                        <div style="margin: 20px 0;">
-                            <button class="btn" onclick="messageFriend('${friend.name}')">
-                                <i class="fas fa-message"></i> Send Message
-                            </button>
-                            <button class="btn" onclick="callFriend('${friend.name}')">
-                                <i class="fas fa-phone"></i> Call
-                            </button>
-                            <button class="btn" onclick="shareLocation('${friend.name}')">
-                                <i class="fas fa-location-arrow"></i> Share Location
-                            </button>
-                        </div>
-                    </div>
-                `;
+                if (!deviceSnapshot.exists()) {
+                    showNotification('❌ Device not found. Make sure it\'s connected.', 'error');
+                    return;
+                }
                 
-                // Draw friend's BAC chart
-                drawFriendChart(friend);
-            }, 100);
+                // Check if already paired
+                if (deviceData[deviceId]) {
+                    showNotification('ℹ️ Device already paired');
+                    closeModal();
+                    return;
+                }
+                
+                // Add device to user
+                await database.ref('users/' + currentUser.uid + '/devices/' + deviceId).set({
+                    pairedAt: firebase.database.ServerValue.TIMESTAMP,
+                    name: 'My Breathalyzer'
+                });
+                
+                showNotification('✅ Device paired successfully!', 'success');
+                closeModal();
+                
+                // Start listening to this device
+                listenToDevice(deviceId);
+                
+            } catch (error) {
+                console.error('Pairing error:', error);
+                showNotification('❌ Pairing failed', 'error');
+            }
         }
         
-        // Draw friend's BAC chart
-        function drawFriendChart(friend) {
-            const canvas = document.getElementById('friendChart');
-            if (!canvas || !friend.history || friend.history.length === 0) return;
-            
-            const ctx = canvas.getContext('2d');
-            const chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: friend.history.map((_, i) => i),
-                    datasets: [{
-                        label: 'BAC Level',
-                        data: friend.history.map(h => h.value),
-                        borderColor: '#00ff88',
-                        backgroundColor: 'rgba(0, 255, 136, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 0.15
-                        }
-                    }
-                }
+        // Location functions
+        function checkInLocation(location) {
+            locationHistory.push({
+                location: location,
+                time: Date.now(),
+                user: userData.username
             });
+            
+            showNotification(`📍 Checked in at ${location}!`);
+            
+            // Update achievement
+            if (locationHistory.length >= 10) {
+                achievements.partyAnimal = true;
+                showAchievementUnlocked('Party Animal');
+            }
+            
+            closeModal();
+        }
+        
+        function createLocationMap() {
+            // Simulated map with dots
+            const locations = getActiveLocations();
+            let mapHtml = '<div style="position: relative; width: 100%; height: 100%; background: rgba(255,255,255,0.05); border-radius: 20px;">';
+            
+            locations.forEach((loc, index) => {
+                const x = 20 + (index % 3) * 30;
+                const y = 20 + Math.floor(index / 3) * 30;
+                mapHtml += `
+                    <div class="location-dot" style="left: ${x}%; top: ${y}%;" title="${loc.name}: ${loc.count} people">
+                        <span style="position: absolute; top: -20px; left: -20px; font-size: 0.8em; white-space: nowrap;">${loc.name}</span>
+                    </div>
+                `;
+            });
+            
+            mapHtml += '</div>';
+            return mapHtml;
+        }
+        
+        function initializeLocationMap() {
+            // Add interactive features to location map
+            const dots = document.querySelectorAll('.location-dot');
+            dots.forEach(dot => {
+                dot.addEventListener('click', function() {
+                    const location = this.getAttribute('title');
+                    showNotification(`📍 ${location}`);
+                });
+            });
+        }
+        
+        function getActiveLocations() {
+            const locationCounts = {};
+            
+            Object.values(partyData).forEach(friend => {
+                if (!locationCounts[friend.location]) {
+                    locationCounts[friend.location] = { count: 0, totalBac: 0 };
+                }
+                locationCounts[friend.location].count++;
+                locationCounts[friend.location].totalBac += friend.bac;
+            });
+            
+            return Object.entries(locationCounts).map(([name, data]) => ({
+                name,
+                count: data.count,
+                avgBac: data.totalBac / data.count
+            }));
+        }
+        
+        function selectBuddy(buddyName) {
+            localStorage.setItem('buddy', buddyName);
+            showNotification(`👥 ${buddyName} is now your buddy!`);
+            
+            // Achievement check
+            achievements.guardianAngel = true;
+            showAchievementUnlocked('Guardian Angel');
+            
+            closeModal();
+        }
+        
+        function showFirstAid() {
+            showModal('first-aid');
         }
         
         // Emergency functions
@@ -2763,8 +4307,14 @@
             document.getElementById('modal').classList.add('show');
         }
         
-        function showFirstAid() {
-            showModal('first-aid');
+        function callSoberFriend() {
+            const soberFriends = Object.values(partyData).filter(f => f.bac < 0.02);
+            if (soberFriends.length > 0) {
+                const friend = soberFriends[0];
+                showNotification(`📞 Calling ${friend.name}...`);
+            } else {
+                showNotification('❌ No sober friends available right now');
+            }
         }
         
         // Game functions
@@ -3064,9 +4614,9 @@
         }
         
         function selectRandomPlayer() {
-            const players = Object.keys(partyData);
+            const players = Object.values(partyData).map(p => p.name);
             const random = Math.floor(Math.random() * players.length);
-            const player = players[random].split(' ')[0];
+            const player = players[random];
             document.getElementById('playerName').textContent = `${player}'s turn!`;
         }
         
@@ -3213,139 +4763,6 @@
             return titles[gameType] || 'Party Game';
         }
         
-        // Location functions
-        function checkInLocation(location) {
-            locationHistory.push({
-                location: location,
-                time: Date.now(),
-                user: currentUser
-            });
-            
-            showNotification(`📍 Checked in at ${location}!`);
-            
-            // Update achievement
-            if (locationHistory.length >= 10) {
-                achievements.partyAnimal = true;
-                showAchievementUnlocked('Party Animal');
-            }
-            
-            closeModal();
-        }
-        
-        function createLocationMap() {
-            // Simulated map with dots
-            const locations = getActiveLocations();
-            let mapHtml = '<div style="position: relative; width: 100%; height: 100%; background: rgba(255,255,255,0.05); border-radius: 20px;">';
-            
-            locations.forEach((loc, index) => {
-                const x = 20 + (index % 3) * 30;
-                const y = 20 + Math.floor(index / 3) * 30;
-                mapHtml += `
-                    <div class="location-dot" style="left: ${x}%; top: ${y}%;" title="${loc.name}: ${loc.count} people">
-                        <span style="position: absolute; top: -20px; left: -20px; font-size: 0.8em; white-space: nowrap;">${loc.name}</span>
-                    </div>
-                `;
-            });
-            
-            mapHtml += '</div>';
-            return mapHtml;
-        }
-        
-        function initializeLocationMap() {
-            // Add interactive features to location map
-            const dots = document.querySelectorAll('.location-dot');
-            dots.forEach(dot => {
-                dot.addEventListener('click', function() {
-                    const location = this.getAttribute('title');
-                    showNotification(`📍 ${location}`);
-                });
-            });
-        }
-        
-        function getActiveLocations() {
-            const locationCounts = {};
-            
-            Object.values(partyData).forEach(friend => {
-                if (!locationCounts[friend.location]) {
-                    locationCounts[friend.location] = { count: 0, totalBac: 0 };
-                }
-                locationCounts[friend.location].count++;
-                locationCounts[friend.location].totalBac += friend.bac;
-            });
-            
-            return Object.entries(locationCounts).map(([name, data]) => ({
-                name,
-                count: data.count,
-                avgBac: data.totalBac / data.count
-            }));
-        }
-        
-        // Friend functions
-        function messageFriend(friendName) {
-            const messages = [
-                "Hey! How's the party going? 🎉",
-                "You okay? Need anything? 💚",
-                "Where are you? Let's meet up! 📍",
-                "Having fun? Stay safe! 🎊",
-                "Water break time! 💧"
-            ];
-            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-            showNotification(`📱 Sent to ${friendName.split(' ')[0]}: "${randomMsg}"`);
-            closeModal();
-        }
-        
-        function callFriend(friendName) {
-            showNotification(`📞 Calling ${friendName.split(' ')[0]}...`);
-            // In real app, would initiate call
-            closeModal();
-        }
-        
-        function shareLocation(friendName) {
-            showNotification(`📍 Location shared with ${friendName.split(' ')[0]}`);
-            closeModal();
-        }
-        
-        function selectBuddy(buddyName) {
-            localStorage.setItem('buddy', buddyName);
-            showNotification(`👥 ${buddyName.split(' ')[0]} is now your buddy!`);
-            
-            // Achievement check
-            achievements.guardianAngel = true;
-            showAchievementUnlocked('Guardian Angel');
-            
-            closeModal();
-        }
-        
-        function callSoberFriend() {
-            const soberFriends = Object.values(partyData).filter(f => f.bac < 0.02);
-            if (soberFriends.length > 0) {
-                const friend = soberFriends[0];
-                showNotification(`📞 Calling ${friend.name.split(' ')[0]}...`);
-            } else {
-                showNotification('❌ No sober friends available right now');
-            }
-        }
-        
-        // Hydration reminder
-        function showHydrationReminder() {
-            showNotification('💧 Time for a water break! Stay hydrated!');
-            confetti({
-                particleCount: 50,
-                spread: 60,
-                colors: ['#00d4ff', '#0099ff', '#0066ff'],
-                origin: { y: 0.6 }
-            });
-            
-            // Achievement check
-            const hydrationCount = parseInt(localStorage.getItem('hydrationCount') || '0') + 1;
-            localStorage.setItem('hydrationCount', hydrationCount);
-            
-            if (hydrationCount >= 12) { // 3 hours worth
-                achievements.hydroHomie = true;
-                showAchievementUnlocked('Hydro Homie');
-            }
-        }
-        
         // Achievements
         function updateAchievements() {
             const achievementElements = document.querySelectorAll('.achievement');
@@ -3388,140 +4805,22 @@
             }
         }
         
-        // Alert system
-        function checkForAlerts() {
-            const criticalFriends = Object.values(partyData).filter(f => f.bac >= 0.08);
+        // Toggle chart visibility
+        function toggleChart() {
+            chartVisible = !chartVisible;
+            const wrapper = document.getElementById('chartWrapper');
+            const toggleText = document.getElementById('chartToggleText');
             
-            if (criticalFriends.length > 0) {
-                const alertBanner = document.getElementById('alertBanner');
-                const alertText = document.getElementById('alertText');
-                
-                if (alertBanner && alertText) {
-                    const names = criticalFriends.map(f => f.name.split(' ')[0]).join(', ');
-                    alertText.textContent = `⚠️ ${names} need${criticalFriends.length > 1 ? '' : 's'} attention! BAC too high!`;
-                    
-                    if (!alertBanner.classList.contains('show')) {
-                        alertBanner.classList.add('show');
-                        playSound('alert');
-                    }
-                }
+            if (chartVisible) {
+                wrapper.classList.remove('collapsed');
+                toggleText.textContent = 'Hide Chart';
             } else {
-                const alertBanner = document.getElementById('alertBanner');
-                if (alertBanner) {
-                    alertBanner.classList.remove('show');
-                }
+                wrapper.classList.add('collapsed');
+                toggleText.textContent = 'Show Chart';
             }
         }
         
-        // Weather widget
-        function updateWeather() {
-            // Simulated weather for St. Gallen
-            const weather = {
-                temp: Math.floor(Math.random() * 10) + 5,
-                condition: ['Clear', 'Cloudy', 'Rainy', 'Snowy'][Math.floor(Math.random() * 4)],
-                icon: ['☀️', '☁️', '🌧️', '❄️'][Math.floor(Math.random() * 4)]
-            };
-            
-            const weatherHtml = `
-                <div class="weather-widget" id="weatherWidget">
-                    <div style="font-size: 2em;">${weather.icon}</div>
-                    <div class="weather-temp">${weather.temp}°C</div>
-                    <div class="weather-condition">${weather.condition}</div>
-                    <div style="font-size: 0.8em; margin-top: 10px; opacity: 0.7;">St. Gallen</div>
-                </div>
-            `;
-            
-            const existingWidget = document.getElementById('weatherWidget');
-            if (existingWidget) {
-                existingWidget.innerHTML = weatherHtml;
-            } else {
-                const widget = document.createElement('div');
-                widget.innerHTML = weatherHtml;
-                document.body.appendChild(widget.firstElementChild);
-            }
-        }
-        
-        // Settings
-        function saveSettings() {
-            const userName = document.getElementById('userName').value;
-            const homeAddress = document.getElementById('homeAddress').value;
-            const emergencyContact = document.getElementById('emergencyContact').value;
-            const medicalInfo = document.getElementById('medicalInfo').value;
-            const safetyNotes = document.getElementById('safetyNotes').value;
-            const shareLocation = document.getElementById('shareLocation').checked;
-            const notifications = document.getElementById('notifications').checked;
-            
-            if (userName) currentUser = userName;
-            
-            localStorage.setItem('userName', userName);
-            localStorage.setItem('homeAddress', homeAddress);
-            localStorage.setItem('emergencyContact', emergencyContact);
-            localStorage.setItem('medicalInfo', medicalInfo);
-            localStorage.setItem('safetyNotes', safetyNotes);
-            localStorage.setItem('shareLocation', shareLocation);
-            localStorage.setItem('notifications', notifications);
-            
-            // Show saved animation
-            const savedIcon = document.createElement('div');
-            savedIcon.className = 'settings-saved';
-            savedIcon.innerHTML = '✅';
-            document.body.appendChild(savedIcon);
-            
-            setTimeout(() => savedIcon.remove(), 1000);
-            
-            showNotification('✅ Settings saved successfully!');
-        }
-        
-        // Export data
-        function exportData() {
-            const data = {
-                settings: {
-                    userName: localStorage.getItem('userName'),
-                    homeAddress: localStorage.getItem('homeAddress'),
-                    emergencyContact: localStorage.getItem('emergencyContact'),
-                    medicalInfo: localStorage.getItem('medicalInfo'),
-                    safetyNotes: localStorage.getItem('safetyNotes')
-                },
-                drinkHistory: drinkHistory,
-                achievements: achievements,
-                partyData: partyData
-            };
-            
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `hsg_party_tracker_${new Date().toISOString().slice(0,10)}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-            
-            showNotification('📥 Data exported successfully!');
-        }
-        
-        // Clear drink history
-        function clearDrinkHistory() {
-            if (confirm('Clear all drink history? This cannot be undone!')) {
-                drinkHistory = [];
-                saveDrinkHistory();
-                updateDrinkStats();
-                updateDrinkHistory();
-                updateDrinkChart();
-                updateEmergencySummary();
-                showNotification('🗑️ Drink history cleared');
-            }
-        }
-        
-        // Reset app
-        function resetApp() {
-            if (confirm('Reset all app data? This will clear everything!')) {
-                localStorage.clear();
-                location.reload();
-            }
-        }
-        
-        // Drink tracking functions with error handling
+        // Drink tracking functions
         function logDrink() {
             try {
                 const type = document.getElementById('drinkType').value;
@@ -3529,7 +4828,7 @@
                 const alcoholPercent = parseFloat(document.getElementById('alcoholPercent').value) || 0;
                 
                 if (amount <= 0) {
-                    showNotification('❌ Please enter a valid amount');
+                    showNotification('❌ Please enter a valid amount', 'error');
                     return;
                 }
                 
@@ -3555,8 +4854,8 @@
                 updateEmergencySummary();
                 
                 // Send to Firebase if connected
-                if (!DEMO_MODE && database) {
-                    database.ref('drinks/' + currentUser + '/' + drink.id).set({
+                if (database && currentUser) {
+                    database.ref('users/' + currentUser.uid + '/drinks/' + drink.id).set({
                         ...drink,
                         time: drink.time.toISOString()
                     });
@@ -3570,7 +4869,7 @@
                         colors: ['#00d4ff', '#0099ff', '#0066ff'],
                         origin: { y: 0.6 }
                     });
-                    showNotification('💧 Great job staying hydrated!');
+                    showNotification('💧 Great job staying hydrated!', 'success');
                 } else {
                     showNotification(`${drink.emoji} Drink logged!`);
                 }
@@ -3580,7 +4879,7 @@
                 document.getElementById('alcoholPercent').value = drinkPresets[type].alcohol;
             } catch (error) {
                 console.error('Error logging drink:', error);
-                showNotification('❌ Failed to log drink');
+                showNotification('❌ Failed to log drink', 'error');
             }
         }
         
@@ -3595,7 +4894,7 @@
                 const totalAlcohol = drinkHistory.reduce((sum, d) => sum + parseFloat(d.pureAlcohol || 0), 0);
                 const recentDrinks = drinkHistory.filter(d => new Date(d.time).getTime() > oneHourAgo && d.type !== 'water').length;
                 
-                // Update display with null checks
+                // Update display
                 const totalDrinksEl = document.getElementById('totalDrinks');
                 if (totalDrinksEl) totalDrinksEl.textContent = totalDrinks;
                 
@@ -3824,7 +5123,7 @@
                     drinkHistory: drinkHistory,
                     totalAlcohol: drinkHistory.reduce((sum, d) => sum + parseFloat(d.pureAlcohol || 0), 0),
                     userData: {
-                        name: currentUser,
+                        name: userData.username || currentUser?.email || 'Unknown',
                         address: localStorage.getItem('homeAddress') || 'Not provided',
                         emergencyContact: localStorage.getItem('emergencyContact') || 'Not provided',
                         medicalInfo: localStorage.getItem('medicalInfo') || 'None',
@@ -3894,14 +5193,14 @@ MEDICAL NOTES
                 document.getElementById('modal').classList.add('show');
             } catch (error) {
                 console.error('Error generating emergency report:', error);
-                showNotification('❌ Error generating report');
+                showNotification('❌ Error generating report', 'error');
             }
         }
         
         function copyEmergencyReport() {
             if (window.currentEmergencyReport) {
                 navigator.clipboard.writeText(window.currentEmergencyReport)
-                    .then(() => showNotification('📋 Report copied to clipboard!'))
+                    .then(() => showNotification('📋 Report copied to clipboard!', 'success'))
                     .catch(() => {
                         // Fallback for older browsers
                         const textArea = document.createElement('textarea');
@@ -3910,7 +5209,7 @@ MEDICAL NOTES
                         textArea.select();
                         document.execCommand('copy');
                         document.body.removeChild(textArea);
-                        showNotification('📋 Report copied!');
+                        showNotification('📋 Report copied!', 'success');
                     });
             }
         }
@@ -3926,10 +5225,10 @@ MEDICAL NOTES
                 a.click();
                 document.body.removeChild(a);
                 window.URL.revokeObjectURL(url);
-                showNotification('📥 Report downloaded!');
+                showNotification('📥 Report downloaded!', 'success');
             } catch (error) {
                 console.error('Download error:', error);
-                showNotification('❌ Download failed - use copy instead');
+                showNotification('❌ Download failed - use copy instead', 'error');
             }
         }
         
@@ -3939,12 +5238,61 @@ MEDICAL NOTES
                     title: 'Emergency Medical Report',
                     text: window.currentEmergencyReport
                 })
-                .then(() => showNotification('📤 Report shared!'))
+                .then(() => showNotification('📤 Report shared!', 'success'))
                 .catch(() => showNotification('❌ Sharing cancelled'));
             } else {
                 // Fallback - copy to clipboard
                 copyEmergencyReport();
                 showNotification('📋 Report copied - share manually');
+            }
+        }
+        
+        // Export data
+        function exportData() {
+            const data = {
+                user: {
+                    email: currentUser?.email,
+                    username: userData.username,
+                    phone: userData.phone
+                },
+                settings: userData.settings,
+                emergency: userData.emergency,
+                devices: deviceData,
+                friends: friendsData,
+                drinkHistory: drinkHistory,
+                achievements: achievements,
+                partyData: partyData
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `hsg_party_tracker_${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showNotification('📥 Data exported successfully!', 'success');
+        }
+        
+        // Clear drink history
+        function clearDrinkHistory() {
+            if (confirm('Clear all drink history? This cannot be undone!')) {
+                drinkHistory = [];
+                saveDrinkHistory();
+                updateDrinkStats();
+                updateDrinkHistory();
+                updateDrinkChart();
+                updateEmergencySummary();
+                
+                // Clear from Firebase
+                if (database && currentUser) {
+                    database.ref('users/' + currentUser.uid + '/drinks').remove();
+                }
+                
+                showNotification('🗑️ Drink history cleared');
             }
         }
         
@@ -3962,9 +5310,9 @@ MEDICAL NOTES
             return `${Math.floor(seconds / 3600)}h ago`;
         }
         
-        function showNotification(message) {
+        function showNotification(message, type = 'success') {
             const notif = document.createElement('div');
-            notif.className = 'notification';
+            notif.className = `notification ${type}`;
             notif.innerHTML = escapeHtml(message);
             notif.onclick = () => notif.remove();
             document.body.appendChild(notif);
@@ -3982,219 +5330,14 @@ MEDICAL NOTES
             return div.innerHTML;
         }
         
-        // Advanced initialization with error handling
-        function advancedInit() {
-            try {
-                // Show loading state
-                showLoadingState();
-                
-                // Initialize Firebase first
-                initializeFirebase();
-                
-                // Create particles
-                createParticles();
-                
-                // Load saved data
-                loadSavedData();
-                
-                // Initialize UI components
-                initializeUIComponents();
-                
-                // Start demo data if in demo mode
-                if (DEMO_MODE) {
-                    generateDemoData();
-                    setInterval(generateDemoData, 3000);
-                }
-                
-                // Update intervals
-                setInterval(updateVisualizer, 500);
-                
-                // Hydration reminders
-                setInterval(() => {
-                    const minutes = new Date().getMinutes();
-                    if (minutes % 15 === 0) {
-                        showHydrationReminder();
-                    }
-                }, 60000);
-                
-                // Auto-save
-                setInterval(saveLocalData, 30000);
-                
-                // Hide loading state
-                hideLoadingState();
-                
-                // Welcome message
-                setTimeout(() => {
-                    if (DEMO_MODE) {
-                        showNotification('🎮 Running in DEMO MODE - Connect a breathalyzer for real data!');
-                    } else {
-                        showNotification('🎉 Welcome to HSG Party Tracker! Stay safe and have fun!');
-                    }
-                }, 1000);
-                
-                // Add weather widget if not mobile
-                if (window.innerWidth > 768) {
-                    updateWeather();
-                    setInterval(updateWeather, 300000);
-                }
-                
-            } catch (error) {
-                console.error('Initialization error:', error);
-                hideLoadingState();
-                showError('Failed to initialize app. Please refresh.');
+        // Error boundary
+        window.addEventListener('error', (e) => {
+            console.error('Application error:', e);
+            // Don't show error notifications for minor issues
+            if (e.message && !e.message.includes('ResizeObserver')) {
+                showNotification('⚠️ Something went wrong. Refreshing might help.', 'error');
             }
-        }
-        
-        function showLoadingState() {
-            const loadingDiv = document.createElement('div');
-            loadingDiv.id = 'appLoading';
-            loadingDiv.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: #0a0a0a;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 9999;
-            `;
-            loadingDiv.innerHTML = `
-                <div style="text-align: center;">
-                    <div class="loading" style="width: 50px; height: 50px; margin: 0 auto 20px;"></div>
-                    <h2 style="color: white;">Loading Party Tracker...</h2>
-                </div>
-            `;
-            document.body.appendChild(loadingDiv);
-        }
-        
-        function hideLoadingState() {
-            const loadingDiv = document.getElementById('appLoading');
-            if (loadingDiv) {
-                loadingDiv.style.opacity = '0';
-                setTimeout(() => loadingDiv.remove(), 300);
-            }
-        }
-        
-        function showError(message) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error';
-            errorDiv.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                max-width: 90%;
-                z-index: 9999;
-            `;
-            errorDiv.innerHTML = `
-                <h3>⚠️ Error</h3>
-                <p>${message}</p>
-                <button class="btn" onclick="location.reload()">Reload App</button>
-            `;
-            document.body.appendChild(errorDiv);
-        }
-        
-        function initializeUIComponents() {
-            // Fix drink type selector
-            const drinkTypeSelect = document.getElementById('drinkType');
-            if (drinkTypeSelect) {
-                drinkTypeSelect.addEventListener('change', function() {
-                    const preset = drinkPresets[this.value];
-                    if (preset) {
-                        document.getElementById('drinkAmount').value = preset.amount;
-                        document.getElementById('alcoholPercent').value = preset.alcohol;
-                    }
-                });
-            }
-            
-            // Initialize charts
-            updateDrinkChart();
-            
-            // Fix mobile viewport height
-            const setVH = () => {
-                const vh = window.innerHeight * 0.01;
-                document.documentElement.style.setProperty('--vh', `${vh}px`);
-            };
-            setVH();
-            window.addEventListener('resize', setVH);
-            
-            // Prevent pull-to-refresh on mobile
-            let lastTouchY = 0;
-            document.addEventListener('touchstart', e => {
-                lastTouchY = e.touches[0].clientY;
-            }, { passive: true });
-            
-            document.addEventListener('touchmove', e => {
-                const touchY = e.touches[0].clientY;
-                const touchDiff = touchY - lastTouchY;
-                
-                if (window.scrollY === 0 && touchDiff > 0) {
-                    e.preventDefault();
-                }
-                lastTouchY = touchY;
-            }, { passive: false });
-        }
-        
-        function loadSavedData() {
-            try {
-                const savedName = localStorage.getItem('userName');
-                if (savedName) {
-                    const userNameInput = document.getElementById('userName');
-                    if (userNameInput) userNameInput.value = savedName;
-                    currentUser = savedName;
-                }
-                
-                const homeAddress = localStorage.getItem('homeAddress');
-                if (homeAddress) {
-                    const addressInput = document.getElementById('homeAddress');
-                    if (addressInput) addressInput.value = homeAddress;
-                }
-                
-                const emergencyContact = localStorage.getItem('emergencyContact');
-                if (emergencyContact) {
-                    const emergencyInput = document.getElementById('emergencyContact');
-                    if (emergencyInput) emergencyInput.value = emergencyContact;
-                }
-                
-                const medicalInfo = localStorage.getItem('medicalInfo');
-                if (medicalInfo) {
-                    const medicalInput = document.getElementById('medicalInfo');
-                    if (medicalInput) medicalInput.value = medicalInfo;
-                }
-                
-                const safetyNotes = localStorage.getItem('safetyNotes');
-                if (safetyNotes) {
-                    const safetyInput = document.getElementById('safetyNotes');
-                    if (safetyInput) safetyInput.value = safetyNotes;
-                }
-                
-                // Load drink history with error handling
-                loadDrinkHistory();
-                
-                // Load achievements
-                Object.keys(achievements).forEach(key => {
-                    if (localStorage.getItem(`achievement_${key}`)) {
-                        achievements[key] = true;
-                    }
-                });
-                
-                // Update displays
-                updateDrinkStats();
-                updateDrinkHistory();
-                updateEmergencySummary();
-                
-            } catch (error) {
-                console.error('Error loading saved data:', error);
-            }
-        }
-        
-        function saveLocalData() {
-            localStorage.setItem('partyData', JSON.stringify(partyData));
-            localStorage.setItem('locationHistory', JSON.stringify(locationHistory));
-            localStorage.setItem('achievements', JSON.stringify(achievements));
-        }
+        });
         
         // Window events
         window.onclick = (event) => {
@@ -4207,13 +5350,16 @@ MEDICAL NOTES
         };
         
         window.addEventListener('beforeunload', () => {
-            saveLocalData();
+            saveDrinkHistory();
         });
         
         // Error recovery
         window.addEventListener('unhandledrejection', event => {
             console.error('Unhandled promise rejection:', event.reason);
-            showNotification('⚠️ Something went wrong. Try refreshing.');
+            // Only show notification for serious errors
+            if (event.reason && event.reason.code && event.reason.code.includes('auth')) {
+                showNotification('⚠️ Authentication issue. Try refreshing.', 'error');
+            }
         });
         
         // Initialize when DOM is ready
@@ -4229,12 +5375,28 @@ MEDICAL NOTES
                     });
                 }
                 
-                // Start initialization
-                advancedInit();
+                // Initialize particles
+                createParticles();
+                
+                // Initialize Firebase
+                initializeFirebase();
+                
+                // Update intervals
+                setInterval(updateVisualizer, 500);
+                
+                // Hydration reminders
+                setInterval(() => {
+                    const minutes = new Date().getMinutes();
+                    if (minutes % 15 === 0) {
+                        showHydrationReminder();
+                    }
+                }, 60000);
             });
         } else {
             // DOM already loaded
-            advancedInit();
+            createParticles();
+            initializeFirebase();
+            setInterval(updateVisualizer, 500);
         }
     </script>
 </body>
