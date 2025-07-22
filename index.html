@@ -105,6 +105,7 @@
             right: 0;
             background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--glass-border);
             z-index: 1000;
             padding: 15px 0;
@@ -125,6 +126,7 @@
             background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -143,6 +145,10 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 1em;
         }
         
         .nav-item::before {
@@ -177,6 +183,8 @@
             font-size: 1.5em;
             cursor: pointer;
             color: white;
+            background: none;
+            border: none;
         }
         
         /* Connection Status */
@@ -189,6 +197,7 @@
             border-radius: 20px;
             padding: 10px 20px;
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
             gap: 10px;
@@ -213,6 +222,7 @@
             border-radius: 20px;
             padding: 15px;
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             font-size: 0.9em;
             z-index: 100;
             min-width: 200px;
@@ -271,6 +281,7 @@
             background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
             animation: glow 2s ease-in-out infinite alternate;
             margin-bottom: 10px;
         }
@@ -357,6 +368,7 @@
             border-radius: 20px;
             padding: 25px;
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -503,6 +515,7 @@
             background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .stat-label {
@@ -713,6 +726,7 @@
             background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .leaderboard-item {
@@ -752,6 +766,7 @@
             bottom: 0;
             background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             z-index: 2000;
             align-items: center;
             justify-content: center;
@@ -836,6 +851,7 @@
             max-width: 400px;
             width: 90%;
             backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             animation: modalIn 0.5s ease;
         }
         
@@ -845,6 +861,7 @@
             background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .form-group {
@@ -857,7 +874,8 @@
             opacity: 0.8;
         }
         
-        .form-group input {
+        .form-group input,
+        .form-group select {
             width: 100%;
             padding: 12px 20px;
             border: 1px solid var(--glass-border);
@@ -867,7 +885,8 @@
             font-size: 1em;
         }
         
-        .form-group input:focus {
+        .form-group input:focus,
+        .form-group select:focus {
             outline: none;
             border-color: #00ff88;
             box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.2);
@@ -912,29 +931,29 @@
             text-decoration: underline;
         }
         
-        .auth-tabs {
-            display: flex;
-            margin-bottom: 30px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 5px;
+        /* Loading state */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #00ff88;
+            animation: spin 1s ease-in-out infinite;
         }
         
-        .auth-tab {
-            flex: 1;
-            padding: 12px;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .auth-loading {
+            display: none;
             text-align: center;
-            cursor: pointer;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            opacity: 0.7;
+            padding: 20px;
         }
         
-        .auth-tab.active {
-            background: var(--accent-gradient);
-            color: #000;
-            font-weight: bold;
-            opacity: 1;
+        .auth-loading.show {
+            display: block;
         }
         
         /* Device Management */
@@ -1633,6 +1652,7 @@
             background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .close-game {
@@ -1657,6 +1677,7 @@
             background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         /* Score Display */
@@ -1686,6 +1707,7 @@
             background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         /* Question Card */
@@ -1862,6 +1884,7 @@
             background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .phone-input-group {
@@ -1883,6 +1906,25 @@
         .phone-number {
             flex: 1;
         }
+        
+        /* Verification code input */
+        .verification-input {
+            text-align: center;
+            font-size: 1.5em;
+            letter-spacing: 0.5em;
+            font-family: monospace;
+        }
+        
+        /* Phone verification info */
+        .verification-info {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 0.9em;
+        }
     </style>
 </head>
 <body>
@@ -1894,55 +1936,29 @@
         <div class="auth-box">
             <h2 id="authTitle">Welcome to HSG Party Tracker</h2>
             
-            <div class="auth-tabs">
-                <div class="auth-tab active" onclick="switchAuthMethod('email')">Email</div>
-                <div class="auth-tab" onclick="switchAuthMethod('phone')">Phone</div>
-            </div>
-            
             <div class="auth-error" id="authError"></div>
             
-            <form id="authForm">
-                <!-- Email Auth -->
-                <div id="emailAuth">
-                    <div class="form-group">
-                        <label for="authEmail">Email</label>
-                        <input type="email" id="authEmail" required autocomplete="email">
-                    </div>
-                    <div class="form-group">
-                        <label for="authPassword">Password</label>
-                        <input type="password" id="authPassword" required autocomplete="current-password">
-                    </div>
-                    <div class="form-group" id="usernameGroup" style="display: none;">
-                        <label for="authUsername">Username</label>
-                        <input type="text" id="authUsername" autocomplete="username">
-                    </div>
+            <div class="auth-loading" id="authLoading">
+                <div class="loading-spinner"></div>
+                <p>Please wait...</p>
+            </div>
+            
+            <form id="authForm" autocomplete="on">
+                <div class="form-group">
+                    <label for="authEmail">Email</label>
+                    <input type="email" id="authEmail" required autocomplete="email" placeholder="your.email@hsg.ch">
+                </div>
+                <div class="form-group">
+                    <label for="authPassword">Password</label>
+                    <input type="password" id="authPassword" required autocomplete="current-password" placeholder="••••••••">
+                </div>
+                <div class="form-group" id="usernameGroup" style="display: none;">
+                    <label for="authUsername">Username</label>
+                    <input type="text" id="authUsername" autocomplete="username" placeholder="Choose a unique username">
                 </div>
                 
-                <!-- Phone Auth -->
-                <div id="phoneAuth" style="display: none;">
-                    <div class="form-group">
-                        <label for="authPhone">Phone Number</label>
-                        <div class="phone-input-group">
-                            <select class="country-code" id="countryCode">
-                                <option value="+41">🇨🇭 +41</option>
-                                <option value="+1">🇺🇸 +1</option>
-                                <option value="+44">🇬🇧 +44</option>
-                                <option value="+49">🇩🇪 +49</option>
-                                <option value="+33">🇫🇷 +33</option>
-                                <option value="+86">🇨🇳 +86</option>
-                                <option value="+91">🇮🇳 +91</option>
-                            </select>
-                            <input type="tel" id="authPhone" class="phone-number" placeholder="79 123 45 67" required>
-                        </div>
-                    </div>
-                    <div class="form-group" id="verificationGroup" style="display: none;">
-                        <label for="verificationCode">Verification Code</label>
-                        <input type="text" id="verificationCode" placeholder="123456" maxlength="6">
-                    </div>
-                </div>
-                
-                <button type="submit" class="btn btn-primary" style="width: 100%;">
-                    <span id="authButton">Continue</span>
+                <button type="submit" class="btn btn-primary" style="width: 100%;" id="authSubmitBtn">
+                    <span id="authButton">Login</span>
                 </button>
             </form>
             <div class="auth-toggle">
@@ -1965,34 +1981,34 @@
                 HSG Party Tracker
             </div>
             <ul class="nav-menu" id="navMenu">
-                <li class="nav-item active" onclick="switchSection('dashboard')">
+                <li><button class="nav-item active" onclick="switchSection('dashboard')" type="button">
                     <i class="fas fa-home"></i> Dashboard
-                </li>
-                <li class="nav-item" onclick="switchSection('devices')">
+                </button></li>
+                <li><button class="nav-item" onclick="switchSection('devices')" type="button">
                     <i class="fas fa-microchip"></i> Devices
-                </li>
-                <li class="nav-item" onclick="switchSection('friends')">
+                </button></li>
+                <li><button class="nav-item" onclick="switchSection('friends')" type="button">
                     <i class="fas fa-users"></i> Friends
-                </li>
-                <li class="nav-item" onclick="switchSection('games')">
+                </button></li>
+                <li><button class="nav-item" onclick="switchSection('games')" type="button">
                     <i class="fas fa-gamepad"></i> Games
-                </li>
-                <li class="nav-item" onclick="switchSection('achievements')">
+                </button></li>
+                <li><button class="nav-item" onclick="switchSection('achievements')" type="button">
                     <i class="fas fa-trophy"></i> Achievements
-                </li>
-                <li class="nav-item" onclick="switchSection('drinks')">
+                </button></li>
+                <li><button class="nav-item" onclick="switchSection('drinks')" type="button">
                     <i class="fas fa-beer"></i> Drinks
-                </li>
-                <li class="nav-item" onclick="switchSection('emergency')">
+                </button></li>
+                <li><button class="nav-item" onclick="switchSection('emergency')" type="button">
                     <i class="fas fa-ambulance"></i> Emergency
-                </li>
-                <li class="nav-item" onclick="switchSection('settings')">
+                </button></li>
+                <li><button class="nav-item" onclick="switchSection('settings')" type="button">
                     <i class="fas fa-cog"></i> Settings
-                </li>
+                </button></li>
             </ul>
-            <div class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" type="button">
                 <i class="fas fa-bars"></i>
-            </div>
+            </button>
         </div>
     </nav>
     
@@ -2412,18 +2428,6 @@
                             </div>
                             <span style="color: #00ff88;">✓ Linked</span>
                         </div>
-                        <div class="account-item" id="phoneAccountItem">
-                            <div class="account-info">
-                                <div class="account-icon phone-icon">
-                                    <i class="fas fa-phone"></i>
-                                </div>
-                                <div>
-                                    <strong>Phone</strong>
-                                    <p id="linkedPhone" style="margin: 0; opacity: 0.7;">Not linked</p>
-                                </div>
-                            </div>
-                            <button class="btn" onclick="linkPhoneNumber()">Link Phone</button>
-                        </div>
                     </div>
                     <button class="btn" onclick="changePassword()" style="margin-top: 20px; width: 100%;">
                         <i class="fas fa-key"></i> Change Password
@@ -2556,9 +2560,8 @@
         let drinkHistory = [];
         let drinkChart = null;
         let chartVisible = true;
-        let authMethod = 'email';
         let isSignUp = false;
-        let phoneVerificationId = null;
+        let isInitialized = false;
         
         // Drink presets
         const drinkPresets = {
@@ -2576,24 +2579,18 @@
         // FIREBASE INITIALIZATION
         // ========================================
         function initializeFirebase() {
+            if (isInitialized) return;
+            
             try {
                 // Initialize Firebase
-                firebase.initializeApp(firebaseConfig);
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                
                 database = firebase.database();
                 auth = firebase.auth();
                 
-                // Configure phone auth
-                auth.useDeviceLanguage();
-                
-                // Setup reCAPTCHA for phone auth
-                window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('authForm', {
-                    'size': 'invisible',
-                    'callback': (response) => {
-                        // reCAPTCHA solved
-                    }
-                });
-                
-                // Set up auth listener
+                // Setup auth state listener
                 auth.onAuthStateChanged((user) => {
                     if (user) {
                         currentUser = user;
@@ -2604,11 +2601,13 @@
                     }
                 });
                 
+                isInitialized = true;
                 console.log('Firebase initialized successfully');
                 updateConnectionStatus(true);
+                
             } catch (error) {
                 console.error('Firebase initialization error:', error);
-                showNotification('❌ Firebase connection failed.', 'error');
+                showNotification('❌ Firebase connection failed. Please refresh the page.', 'error');
                 updateConnectionStatus(false);
             }
         }
@@ -2633,24 +2632,22 @@
             errorDiv.textContent = message;
             errorDiv.classList.add('show');
             
+            // Hide loading
+            hideAuthLoading();
+            
             setTimeout(() => {
                 errorDiv.classList.remove('show');
             }, 5000);
         }
         
-        function switchAuthMethod(method) {
-            authMethod = method;
-            const tabs = document.querySelectorAll('.auth-tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            if (method === 'email') {
-                document.getElementById('emailAuth').style.display = 'block';
-                document.getElementById('phoneAuth').style.display = 'none';
-            } else {
-                document.getElementById('emailAuth').style.display = 'none';
-                document.getElementById('phoneAuth').style.display = 'block';
-            }
+        function showAuthLoading() {
+            document.getElementById('authLoading').classList.add('show');
+            document.getElementById('authSubmitBtn').disabled = true;
+        }
+        
+        function hideAuthLoading() {
+            document.getElementById('authLoading').classList.remove('show');
+            document.getElementById('authSubmitBtn').disabled = false;
         }
         
         function toggleAuthMode() {
@@ -2677,17 +2674,22 @@
         document.getElementById('authForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            if (authMethod === 'email') {
-                await handleEmailAuth();
-            } else {
-                await handlePhoneAuth();
-            }
-        });
-        
-        async function handleEmailAuth() {
-            const email = document.getElementById('authEmail').value;
+            const email = document.getElementById('authEmail').value.trim();
             const password = document.getElementById('authPassword').value;
-            const username = document.getElementById('authUsername').value;
+            const username = document.getElementById('authUsername').value.trim();
+            
+            // Validation
+            if (!email || !password) {
+                showAuthError('Please fill in all fields');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showAuthError('Password must be at least 6 characters');
+                return;
+            }
+            
+            showAuthLoading();
             
             try {
                 if (!isSignUp) {
@@ -2696,8 +2698,9 @@
                     showNotification('✅ Welcome back!', 'success');
                 } else {
                     // Signup
-                    if (!username || username.trim().length < 3) {
+                    if (!username || username.length < 3) {
                         showAuthError('Username must be at least 3 characters');
+                        hideAuthLoading();
                         return;
                     }
                     
@@ -2705,6 +2708,7 @@
                     const usernameCheck = await database.ref('usernames/' + username.toLowerCase()).once('value');
                     if (usernameCheck.exists()) {
                         showAuthError('Username already taken');
+                        hideAuthLoading();
                         return;
                     }
                     
@@ -2732,8 +2736,13 @@
                     
                     showNotification('✅ Account created successfully!', 'success');
                 }
+                
+                hideAuthLoading();
+                
             } catch (error) {
                 console.error('Auth error:', error);
+                hideAuthLoading();
+                
                 let errorMessage = 'Authentication failed';
                 
                 switch(error.code) {
@@ -2752,62 +2761,19 @@
                     case 'auth/invalid-email':
                         errorMessage = 'Invalid email address';
                         break;
+                    case 'auth/network-request-failed':
+                        errorMessage = 'Network error. Please check your connection';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorMessage = 'Too many attempts. Please try again later';
+                        break;
                     default:
                         errorMessage = error.message;
                 }
                 
                 showAuthError(errorMessage);
             }
-        }
-        
-        async function handlePhoneAuth() {
-            const countryCode = document.getElementById('countryCode').value;
-            const phoneNumber = document.getElementById('authPhone').value.replace(/\s/g, '');
-            const fullPhoneNumber = countryCode + phoneNumber;
-            const verificationCode = document.getElementById('verificationCode').value;
-            
-            try {
-                if (!verificationCode) {
-                    // Send verification code
-                    const appVerifier = window.recaptchaVerifier;
-                    phoneVerificationId = await auth.signInWithPhoneNumber(fullPhoneNumber, appVerifier);
-                    
-                    document.getElementById('verificationGroup').style.display = 'block';
-                    document.getElementById('authButton').textContent = 'Verify Code';
-                    showNotification('📱 Verification code sent!', 'success');
-                } else {
-                    // Verify code
-                    const credential = firebase.auth.PhoneAuthProvider.credential(
-                        phoneVerificationId.verificationId,
-                        verificationCode
-                    );
-                    
-                    const result = await auth.signInWithCredential(credential);
-                    
-                    // Check if new user
-                    if (result.additionalUserInfo.isNewUser) {
-                        // New phone user - create profile
-                        await database.ref('users/' + result.user.uid).set({
-                            phone: fullPhoneNumber,
-                            createdAt: firebase.database.ServerValue.TIMESTAMP,
-                            devices: {},
-                            friends: {},
-                            achievements: {},
-                            settings: {
-                                notifications: true,
-                                shareLocation: false,
-                                publicProfile: true
-                            }
-                        });
-                    }
-                    
-                    showNotification('✅ Phone verified successfully!', 'success');
-                }
-            } catch (error) {
-                console.error('Phone auth error:', error);
-                showAuthError(error.message);
-            }
-        }
+        });
         
         async function signOut() {
             try {
@@ -2827,38 +2793,42 @@
             hideAuthScreen();
             
             // Load user data
-            const userRef = database.ref('users/' + currentUser.uid);
-            const snapshot = await userRef.once('value');
-            userData = snapshot.val() || {};
-            
-            // Update profile displays
-            const displayName = userData.username || userData.phone || currentUser.email;
-            document.getElementById('profileName').textContent = displayName;
-            document.getElementById('profileEmail').textContent = currentUser.email || 'Phone user';
-            
-            // Update settings page
-            document.getElementById('settingsUsername').textContent = displayName;
-            document.getElementById('settingsEmail').textContent = currentUser.email || 'Not set';
-            document.getElementById('settingsPhone').textContent = userData.phone || 'Not linked';
-            document.getElementById('username').value = userData.username || '';
-            document.getElementById('emailDisplay').value = currentUser.email || '';
-            document.getElementById('linkedEmail').textContent = currentUser.email || 'Not set';
-            document.getElementById('linkedPhone').textContent = userData.phone || 'Not linked';
-            
-            // Update profile initial
-            const initial = displayName.charAt(0).toUpperCase();
-            document.getElementById('profileInitial').textContent = initial;
-            
-            // Setup listeners
-            setupFirebaseListeners();
-            
-            // Load saved settings
-            loadUserSettings();
-            
-            // Initialize UI
-            updateUI();
-            
-            showNotification(`🎉 Welcome, ${displayName}!`, 'success');
+            try {
+                const userRef = database.ref('users/' + currentUser.uid);
+                const snapshot = await userRef.once('value');
+                userData = snapshot.val() || {};
+                
+                // Update profile displays
+                const displayName = userData.username || currentUser.email.split('@')[0];
+                document.getElementById('profileName').textContent = displayName;
+                document.getElementById('profileEmail').textContent = currentUser.email;
+                
+                // Update settings page
+                document.getElementById('settingsUsername').textContent = displayName;
+                document.getElementById('settingsEmail').textContent = currentUser.email;
+                document.getElementById('username').value = userData.username || '';
+                document.getElementById('emailDisplay').value = currentUser.email;
+                document.getElementById('linkedEmail').textContent = currentUser.email;
+                
+                // Update profile initial
+                const initial = displayName.charAt(0).toUpperCase();
+                document.getElementById('profileInitial').textContent = initial;
+                
+                // Setup listeners
+                setupFirebaseListeners();
+                
+                // Load saved settings
+                loadUserSettings();
+                
+                // Initialize UI
+                updateUI();
+                
+                showNotification(`🎉 Welcome, ${displayName}!`, 'success');
+                
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                showNotification('⚠️ Error loading profile. Some features may not work.', 'error');
+            }
         }
         
         // Setup Firebase listeners for authenticated user
@@ -2870,11 +2840,11 @@
                 deviceData = snapshot.val() || {};
                 updateDeviceList();
                 document.getElementById('deviceCount').textContent = Object.keys(deviceData).length;
-            });
-            
-            // Listen for readings from user's devices
-            Object.keys(deviceData).forEach(deviceId => {
-                listenToDevice(deviceId);
+                
+                // Start listening to each device
+                Object.keys(deviceData).forEach(deviceId => {
+                    listenToDevice(deviceId);
+                });
             });
             
             // Listen for friends
@@ -3268,6 +3238,9 @@
                             permission: permission
                         };
                     }
+                    
+                    // Listen to their device readings
+                    listenToDevice(deviceId);
                 });
             }
         }
@@ -3382,11 +3355,6 @@
             }
         }
         
-        async function linkPhoneNumber() {
-            // TODO: Implement phone number linking
-            showNotification('📱 Phone linking coming soon!');
-        }
-        
         async function changePassword() {
             const newPassword = prompt('Enter new password (min 6 characters):');
             if (newPassword && newPassword.length >= 6) {
@@ -3419,7 +3387,7 @@
                     updatedAt: firebase.database.ServerValue.TIMESTAMP
                 });
                 
-                // Also save locally
+                // Also save locally for offline access
                 localStorage.setItem('homeAddress', homeAddress);
                 localStorage.setItem('emergencyContact', emergencyContact);
                 localStorage.setItem('medicalInfo', medicalInfo);
@@ -3770,6 +3738,8 @@
         function createParticles() {
             try {
                 const particlesContainer = document.getElementById('particles');
+                if (!particlesContainer) return;
+                
                 for (let i = 0; i < 50; i++) {
                     const particle = document.createElement('div');
                     particle.className = 'particle';
@@ -3803,7 +3773,10 @@
                 });
                 
                 // Close mobile menu
-                document.getElementById('navMenu').classList.remove('show');
+                const navMenu = document.getElementById('navMenu');
+                if (navMenu) {
+                    navMenu.classList.remove('show');
+                }
                 
                 // Section-specific initializations
                 if (sectionId === 'achievements') {
@@ -3824,7 +3797,10 @@
         }
         
         function toggleMobileMenu() {
-            document.getElementById('navMenu').classList.toggle('show');
+            const navMenu = document.getElementById('navMenu');
+            if (navMenu) {
+                navMenu.classList.toggle('show');
+            }
         }
         
         // Chat functionality
@@ -3887,6 +3863,8 @@
             showModal('friend-details');
             setTimeout(() => {
                 const content = document.getElementById('friendDetailsContent');
+                if (!content) return;
+                
                 const status = getBACStatus(friend.bac);
                 
                 content.innerHTML = `
@@ -4615,6 +4593,7 @@
         
         function selectRandomPlayer() {
             const players = Object.values(partyData).map(p => p.name);
+            if (players.length === 0) players.push('You');
             const random = Math.floor(Math.random() * players.length);
             const player = players[random];
             document.getElementById('playerName').textContent = `${player}'s turn!`;
@@ -5252,8 +5231,7 @@ MEDICAL NOTES
             const data = {
                 user: {
                     email: currentUser?.email,
-                    username: userData.username,
-                    phone: userData.phone
+                    username: userData.username
                 },
                 settings: userData.settings,
                 emergency: userData.emergency,
