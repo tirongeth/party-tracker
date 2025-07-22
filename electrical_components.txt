@@ -1,0 +1,16 @@
+electrical components:
+
+- ESP32-S3-WROOM-1-N16R8
+- MQ-3 Gas Sensor
+ - 4x1 Female pin slot for mq-3
+- 0.96 inch oled i2c 
+ - 4x1 Female pin slot for oled i2c
+- jst connector for battery
+- 3.7 V lithium battery
+- boost converter
+- tp4056 lithium charging module
+- anschalt button
+- connection button
+- esp32 cam module
+- buzzer
+- led 
