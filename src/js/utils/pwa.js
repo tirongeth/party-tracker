@@ -188,8 +188,12 @@ export async function saveOfflineData(storeName, data) {
             addRequest.onsuccess = () => {
                 resolve();
                 // Register for background sync
-                if ('sync' in self.registration) {
-                    self.registration.sync.register(`sync-${storeName}`);
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.ready.then(registration => {
+                        if ('sync' in registration) {
+                            registration.sync.register(`sync-${storeName}`);
+                        }
+                    });
                 }
             };
             
@@ -232,8 +236,12 @@ export function isOnline() {
 window.addEventListener('online', () => {
     showNotification('Back online! Syncing data...', 'success');
     // Trigger sync
-    if ('sync' in self.registration) {
-        self.registration.sync.register('sync-all');
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.ready.then(registration => {
+            if ('sync' in registration) {
+                registration.sync.register('sync-all');
+            }
+        });
     }
 });
 

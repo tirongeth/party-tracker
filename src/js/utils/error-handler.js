@@ -50,7 +50,7 @@ export function handleError(error, context = '') {
     const message = getUserFriendlyMessage(errorCode, error);
     
     // Log to console for debugging
-    if (process.env.NODE_ENV === 'development') {
+    if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
         console.group(`🚨 Error: ${context}`);
         console.error('Type:', errorType);
         console.error('Code:', errorCode);

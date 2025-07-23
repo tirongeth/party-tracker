@@ -15,7 +15,7 @@ import {
     getCurrentUser,
     clearAppState
 } from './config/app-state.js';
-import { registerServiceWorker, initializePWA, initializeOfflineStorage } from './utils/pwa.js';
+// import { registerServiceWorker, initializePWA, initializeOfflineStorage } from './utils/pwa.js';
 
 // Import all functions from feature modules
 import * as AllFunctions from './features/all-functions.js';
@@ -106,10 +106,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Expose all functions globally first
     exposeGlobalFunctions();
     
-    // Initialize PWA features
-    registerServiceWorker();
-    initializePWA();
-    initializeOfflineStorage();
+    // Initialize PWA features - TEMPORARILY DISABLED FOR DEBUGGING
+    // try {
+    //     if (registerServiceWorker) {
+    //         registerServiceWorker().catch(err => {
+    //             console.warn('Service worker registration failed:', err);
+    //         });
+    //     }
+    //     if (initializePWA) {
+    //         initializePWA();
+    //     }
+    //     if (initializeOfflineStorage) {
+    //         initializeOfflineStorage();
+    //     }
+    // } catch (pwaError) {
+    //     console.warn('PWA initialization error (non-critical):', pwaError);
+    // }
     
     // Initialize Firebase
     const firebaseReady = initializeFirebase();
