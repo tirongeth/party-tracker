@@ -1,91 +1,116 @@
 // ========================================
-// MAIN ENTRY POINT - With ALL Original Functions
+// MAIN ENTRY POINT - Complete Application
 // ========================================
 
 import { initializeFirebase, getDatabase } from './config/firebase.js';
 import { setupAuthListener, handleAuthSubmit, toggleAuthMode, signOut, loadUserData, hideAuthScreen } from './auth/auth.js';
 import { initializeDevices } from './features/devices.js';
 import { updateUI } from './ui/dashboard.js';
+import { showNotification } from './ui/notifications.js';
 import { DRINK_PRESETS } from './config/constants.js';
 import { 
     getAppState, 
     setStateValue, 
-    addDrinkToHistory,
-    getCurrentUser 
+    getCurrentUser,
+    clearAppState
 } from './config/app-state.js';
 
-// ========================================
-// GLOBAL VARIABLES (from your original app)
-// ========================================
-let drinkChart = null;
-let chartVisible = true;
-let currentGame = null;
-let gameScores = { team1: 0, team2: 0 };
+// Import all functions from feature modules
+import * as AllFunctions from './features/all-functions.js';
+import * as Drinks from './features/drinks.js';
+import * as Games from './features/games.js';
 
 // ========================================
-// INITIALIZE APP
+// EXPOSE ALL FUNCTIONS GLOBALLY
 // ========================================
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('Starting app initialization...');
-    
-    // Initialize Firebase first
-    const firebaseReady = initializeFirebase();
-    if (!firebaseReady) {
-        console.error('Firebase failed to initialize!');
-        return;
-    }
-    
-    // Make ALL functions available globally for HTML onclick
+// This is necessary for HTML onclick handlers to work
+function exposeGlobalFunctions() {
+    // Auth functions
     window.toggleAuthMode = toggleAuthMode;
     window.signOut = signOut;
+    
+    // UI functions
     window.updateUI = updateUI;
     window.switchSection = switchSection;
     window.toggleMobileMenu = toggleMobileMenu;
     window.showNotification = showNotification;
     window.showModal = showModal;
     window.closeModal = closeModal;
-    window.callUber = callUber;
-    window.checkInLocation = checkInLocation;
-    window.startGame = startGame;
-    window.callEmergency = callEmergency;
-    window.logDrink = logDrink;
-    window.sendMessage = sendMessage;
-    window.handleChatEnter = handleChatEnter;
-    window.showHydrationReminder = showHydrationReminder;
-    window.searchFriends = searchFriends;
-    window.updateProfile = updateProfile;
-    window.changePassword = changePassword;
-    window.saveEmergencyInfo = saveEmergencyInfo;
-    window.savePrivacySettings = savePrivacySettings;
-    window.exportData = exportData;
-    window.clearDrinkHistory = clearDrinkHistory;
-    window.deleteAccount = deleteAccount;
-    window.toggleChart = toggleChart;
-    window.removeDrink = removeDrink;
-    window.sendFriendRequest = sendFriendRequest;
-    window.acceptFriendRequest = acceptFriendRequest;
-    window.declineFriendRequest = declineFriendRequest;
-    window.updateFriendPermission = updateFriendPermission;
-    window.removeFriend = removeFriend;
-    window.showEmergencyReport = showEmergencyReport;
-    window.copyEmergencyReport = copyEmergencyReport;
-    window.downloadEmergencyReport = downloadEmergencyReport;
-    window.shareEmergencyReport = shareEmergencyReport;
-    window.closeGame = closeGame;
-    window.nextNeverHaveIEver = nextNeverHaveIEver;
-    window.showTruth = showTruth;
-    window.showDare = showDare;
-    window.drawCard = drawCard;
-    window.addScore = addScore;
-    window.resetBeerPong = resetBeerPong;
-    window.toggleFlipTimer = toggleFlipTimer;
-    window.resetFlipTimer = resetFlipTimer;
-    window.nextTrivia = nextTrivia;
-    window.answerTrivia = answerTrivia;
-    window.pairDeviceFromModal = pairDeviceFromModal;
-    window.selectBuddy = selectBuddy;
-    window.showFirstAid = showFirstAid;
-    window.resolvePermission = resolvePermission;
+    
+    // All functions from all-functions.js
+    window.searchFriends = AllFunctions.searchFriends;
+    window.sendFriendRequest = AllFunctions.sendFriendRequest;
+    window.acceptFriendRequest = AllFunctions.acceptFriendRequest;
+    window.declineFriendRequest = AllFunctions.declineFriendRequest;
+    window.updateFriendPermission = AllFunctions.updateFriendPermission;
+    window.removeFriend = AllFunctions.removeFriend;
+    window.sendMessage = AllFunctions.sendMessage;
+    window.handleChatEnter = AllFunctions.handleChatEnter;
+    window.showHydrationReminder = AllFunctions.showHydrationReminder;
+    window.checkInLocation = AllFunctions.checkInLocation;
+    window.callUber = AllFunctions.callUber;
+    window.callEmergency = AllFunctions.callEmergency;
+    window.selectBuddy = AllFunctions.selectBuddy;
+    window.showFirstAid = AllFunctions.showFirstAid;
+    window.updateProfile = AllFunctions.updateProfile;
+    window.changePassword = AllFunctions.changePassword;
+    window.saveEmergencyInfo = AllFunctions.saveEmergencyInfo;
+    window.savePrivacySettings = AllFunctions.savePrivacySettings;
+    window.exportData = AllFunctions.exportData;
+    window.pairDeviceFromModal = AllFunctions.pairDeviceFromModal;
+    window.resolvePermission = AllFunctions.resolvePermission;
+    
+    // Drink functions
+    window.logDrink = Drinks.logDrink;
+    window.toggleChart = Drinks.toggleChart;
+    window.removeDrink = Drinks.removeDrink;
+    window.showEmergencyReport = Drinks.showEmergencyReport;
+    window.copyEmergencyReport = Drinks.copyEmergencyReport;
+    window.downloadEmergencyReport = Drinks.downloadEmergencyReport;
+    window.shareEmergencyReport = Drinks.shareEmergencyReport;
+    window.clearDrinkHistory = Drinks.clearDrinkHistory;
+    window.deleteAccount = AllFunctions.deleteAccount;
+    
+    // Game functions
+    window.startGame = Games.startGame;
+    window.closeGame = Games.closeGame;
+    window.nextNeverHaveIEver = Games.nextNeverHaveIEver;
+    window.showTruth = Games.showTruth;
+    window.showDare = Games.showDare;
+    window.drawCard = Games.drawCard;
+    window.addScore = Games.addScore;
+    window.resetBeerPong = Games.resetBeerPong;
+    window.toggleFlipTimer = Games.toggleFlipTimer;
+    window.resetFlipTimer = Games.resetFlipTimer;
+    window.nextTrivia = Games.nextTrivia;
+    window.answerTrivia = Games.answerTrivia;
+    
+    // Also expose some internal functions that are used
+    window.getActiveLocations = AllFunctions.getActiveLocations;
+    window.createLocationMap = AllFunctions.createLocationMap;
+    window.initializeLocationMap = AllFunctions.initializeLocationMap;
+    window.updateFriendRequests = AllFunctions.updateFriendRequests;
+    window.updateFriendsList = AllFunctions.updateFriendsList;
+    window.updateAchievements = AllFunctions.updateAchievements;
+    window.escapeHtml = AllFunctions.escapeHtml;
+}
+
+// ========================================
+// INITIALIZE APP
+// ========================================
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 Starting BoozeLens app initialization...');
+    
+    // Expose all functions globally first
+    exposeGlobalFunctions();
+    
+    // Initialize Firebase
+    const firebaseReady = initializeFirebase();
+    if (!firebaseReady) {
+        console.error('Firebase failed to initialize!');
+        showNotification('❌ Failed to connect to Firebase', 'error');
+        return;
+    }
     
     // Setup auth form
     const authForm = document.getElementById('authForm');
@@ -105,9 +130,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 500);
     
     // Load drink history from localStorage
-    loadDrinkHistory();
+    Drinks.loadDrinkHistory();
     
-    // Update drink type selection to auto-fill amounts
+    // Setup drink type selection
     const drinkTypeSelect = document.getElementById('drinkType');
     if (drinkTypeSelect) {
         drinkTypeSelect.addEventListener('change', function() {
@@ -117,13 +142,50 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // Setup toggle switches
+    document.querySelectorAll('.toggle-switch input').forEach(input => {
+        input.addEventListener('change', function() {
+            const toggle = this.closest('.toggle-switch');
+            if (this.checked) {
+                toggle.classList.add('active');
+            } else {
+                toggle.classList.remove('active');
+            }
+        });
+    });
+    
     // Hydration reminders
     setInterval(() => {
         const minutes = new Date().getMinutes();
         if (minutes % 15 === 0) {
-            showHydrationReminder();
+            AllFunctions.showHydrationReminder();
         }
     }, 60000);
+    
+    // Window click handlers
+    window.onclick = (event) => {
+        if (event.target.className === 'modal show') {
+            closeModal();
+        }
+        if (event.target.className === 'game-overlay show') {
+            Games.closeGame();
+        }
+    };
+    
+    // Save data before unload
+    window.addEventListener('beforeunload', () => {
+        Drinks.saveDrinkHistory();
+    });
+    
+    // Error recovery
+    window.addEventListener('unhandledrejection', event => {
+        console.error('Unhandled promise rejection:', event.reason);
+        if (event.reason && event.reason.code && event.reason.code.includes('auth')) {
+            showNotification('⚠️ Authentication issue. Try refreshing.', 'error');
+        }
+    });
+    
+    console.log('✅ App initialization complete!');
 });
 
 // ========================================
@@ -145,6 +207,9 @@ async function onUserAuthenticated(user) {
         // Setup Firebase listeners
         setupFirebaseListeners();
         
+        // Load user settings
+        loadUserSettings();
+        
         // Initialize UI
         updateUI();
         
@@ -159,7 +224,7 @@ async function onUserAuthenticated(user) {
 }
 
 // ========================================
-// FIREBASE LISTENERS (from your original)
+// FIREBASE LISTENERS
 // ========================================
 function setupFirebaseListeners() {
     const database = getDatabase();
@@ -170,7 +235,7 @@ function setupFirebaseListeners() {
     database.ref('users/' + currentUser.uid + '/friends').on('value', (snapshot) => {
         const friendsData = snapshot.val() || {};
         setStateValue('friendsData', friendsData);
-        updateFriendsList();
+        AllFunctions.updateFriendsList();
         document.getElementById('friendCount').textContent = Object.keys(friendsData).length;
         
         // Listen to friends' data
@@ -187,7 +252,7 @@ function setupFirebaseListeners() {
             ...data
         }));
         setStateValue('friendRequests', friendRequests);
-        updateFriendRequests();
+        AllFunctions.updateFriendRequests();
     });
     
     // Connection status
@@ -196,10 +261,6 @@ function setupFirebaseListeners() {
         updateConnectionStatus(connected);
     });
 }
-
-// ========================================
-// ALL YOUR ORIGINAL FUNCTIONS
-// ========================================
 
 // Listen to friend's data
 function listenToFriend(friendId) {
@@ -330,16 +391,18 @@ function switchSection(sectionId) {
         
         // Section-specific initializations
         if (sectionId === 'achievements') {
-            updateAchievements();
+            AllFunctions.updateAchievements();
         } else if (sectionId === 'drinks') {
-            updateDrinkStats();
-            updateDrinkChart();
+            Drinks.updateDrinkStats();
+            Drinks.updateDrinkChart();
+            Drinks.updateDrinkHistory();
+            Drinks.updateEmergencySummary();
         } else if (sectionId === 'devices') {
             // Already handled by device module
         } else if (sectionId === 'friends') {
-            updateFriendsList();
+            AllFunctions.updateFriendsList();
         } else if (sectionId === 'settings') {
-            updateToggleSwitches();
+            AllFunctions.updateToggleSwitches();
         }
     } catch (error) {
         console.error('Section switch failed:', error);
@@ -351,20 +414,6 @@ function toggleMobileMenu() {
     if (navMenu) {
         navMenu.classList.toggle('show');
     }
-}
-
-function showNotification(message, type = 'success') {
-    const notif = document.createElement('div');
-    notif.className = `notification ${type}`;
-    notif.textContent = message;
-    notif.onclick = () => notif.remove();
-    document.body.appendChild(notif);
-    
-    setTimeout(() => {
-        if (notif.parentNode) {
-            notif.remove();
-        }
-    }, 4000);
 }
 
 function createParticles() {
@@ -419,7 +468,7 @@ function updateConnectionStatus(connected) {
 }
 
 // ========================================
-// MODAL FUNCTIONS (Complete from original)
+// MODAL FUNCTIONS
 // ========================================
 function showModal(type, data = null) {
     const modal = document.getElementById('modal');
@@ -515,14 +564,6 @@ function showModal(type, data = null) {
             `;
             break;
             
-        case 'friend-details':
-            content = `
-                <h2>Friend Details</h2>
-                <div id="friendDetailsContent"></div>
-                <button class="btn" onclick="closeModal()">Close</button>
-            `;
-            break;
-            
         case 'buddy-system':
             const partyData = getAppState().partyData;
             content = `
@@ -561,10 +602,10 @@ function showModal(type, data = null) {
             content = `
                 <h2>📍 Active Party Locations</h2>
                 <div class="location-map" style="height: 400px;">
-                    ${createLocationMap()}
+                    ${AllFunctions.createLocationMap()}
                 </div>
                 <div style="margin: 20px 0;">
-                    ${getActiveLocations().map(loc => `
+                    ${AllFunctions.getActiveLocations().map(loc => `
                         <div class="buddy-card" style="margin: 10px 0;">
                             <div><strong>${loc.name}</strong></div>
                             <div>${loc.count} people</div>
@@ -582,10 +623,65 @@ function showModal(type, data = null) {
     
     // Initialize location map if needed
     if (type === 'checkin' || type === 'locations') {
-        setTimeout(initializeLocationMap, 100);
+        setTimeout(AllFunctions.initializeLocationMap, 100);
     }
 }
 
 function closeModal() {
     document.getElementById('modal').classList.remove('show');
+}
+
+// ========================================
+// LOAD USER SETTINGS
+// ========================================
+function loadUserSettings() {
+    const userData = getAppState().userData;
+    
+    // Load from Firebase
+    if (userData.settings) {
+        const settings = userData.settings;
+        
+        if (settings.shareLocation !== undefined) {
+            document.getElementById('shareLocation').checked = settings.shareLocation;
+        }
+        if (settings.notifications !== undefined) {
+            document.getElementById('notifications').checked = settings.notifications;
+        }
+        if (settings.publicProfile !== undefined) {
+            document.getElementById('publicProfile').checked = settings.publicProfile;
+        }
+    }
+    
+    // Load emergency info
+    if (userData.emergency) {
+        const emergency = userData.emergency;
+        
+        if (emergency.homeAddress) {
+            document.getElementById('homeAddress').value = emergency.homeAddress;
+            localStorage.setItem('homeAddress', emergency.homeAddress);
+        }
+        if (emergency.emergencyContact) {
+            document.getElementById('emergencyContact').value = emergency.emergencyContact;
+            localStorage.setItem('emergencyContact', emergency.emergencyContact);
+        }
+        if (emergency.medicalInfo) {
+            document.getElementById('medicalInfo').value = emergency.medicalInfo;
+            localStorage.setItem('medicalInfo', emergency.medicalInfo);
+        }
+        if (emergency.safetyNotes) {
+            document.getElementById('safetyNotes').value = emergency.safetyNotes;
+            localStorage.setItem('safetyNotes', emergency.safetyNotes);
+        }
+    }
+    
+    // Update toggle switches visual state
+    AllFunctions.updateToggleSwitches();
+    
+    // Load achievements
+    const achievements = getAppState().achievements;
+    Object.keys(achievements).forEach(key => {
+        if (localStorage.getItem(`achievement_${key}`)) {
+            achievements[key] = true;
+        }
+    });
 }
