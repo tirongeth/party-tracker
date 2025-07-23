@@ -1,4 +1,0 @@
-Timon TO-DO Liste:
-- pcb design
-- elektronik plan 
-- 3d casing
