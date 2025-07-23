@@ -15,6 +15,7 @@ import {
     getCurrentUser,
     clearAppState
 } from './config/app-state.js';
+import { registerServiceWorker, initializePWA, initializeOfflineStorage } from './utils/pwa.js';
 
 // Import all functions from feature modules
 import * as AllFunctions from './features/all-functions.js';
@@ -104,6 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Expose all functions globally first
     exposeGlobalFunctions();
+    
+    // Initialize PWA features
+    registerServiceWorker();
+    initializePWA();
+    initializeOfflineStorage();
     
     // Initialize Firebase
     const firebaseReady = initializeFirebase();

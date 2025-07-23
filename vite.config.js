@@ -1,6 +1,9 @@
 import { defineConfig, loadEnv } from 'vite'
 import { copyFileSync } from 'fs'
 import { resolve } from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
 export default defineConfig(({ mode }) => {
   // Load env file based on `mode` in the current working directory.
@@ -29,6 +32,7 @@ export default defineConfig(({ mode }) => {
   
   // Handle static assets
   publicDir: 'public',    // Directory for static files
+  
   
   // Plugins
   plugins: []

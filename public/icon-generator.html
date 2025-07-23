@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BoozeLens Icon Generator</title>
+    <style>
+        body {
+            background: #0a0a0a;
+            font-family: Arial, sans-serif;
+            color: white;
+            padding: 20px;
+        }
+        .icon-container {
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #333;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #00ff88;
+            border: none;
+            color: black;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>BoozeLens Icon Generator</h1>
+    <p>Click each button to download the icon</p>
+    
+    <div id="icons"></div>
+    
+    <script>
+        const sizes = [16, 32, 72, 96, 128, 144, 152, 192, 384, 512];
+        const container = document.getElementById('icons');
+        
+        sizes.forEach(size => {
+            const div = document.createElement('div');
+            div.className = 'icon-container';
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#00ff88');
+            gradient.addColorStop(1, '#0066ff');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Circle background
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.8)';
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2 * 0.8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Beer emoji
+            ctx.font = `${size * 0.5}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🍺', size/2, size/2);
+            
+            // Add to page
+            div.appendChild(canvas);
+            
+            const button = document.createElement('button');
+            button.textContent = `Download ${size}x${size}`;
+            button.onclick = () => {
+                canvas.toBlob(blob => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `icon-${size}x${size}.png`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                });
+            };
+            
+            div.appendChild(button);
+            container.appendChild(div);
+        });
+    </script>
+</body>
+</html>
