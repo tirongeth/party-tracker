@@ -3,10 +3,11 @@
   "short_name": "BoozeLens",
   "description": "Real-time BAC monitoring and party safety app for HSG students",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#00ff88",
-  "orientation": "portrait",
+  "orientation": "any",
   "icons": [
     {
       "src": "icons/icon-72x72.png",

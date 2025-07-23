@@ -1,0 +1,373 @@
+/* ========================================
+   MOBILE RESPONSIVE STYLES
+   ======================================== */
+
+/* Mobile breakpoints */
+@media screen and (max-width: 768px) {
+    /* Fix body and container spacing */
+    body {
+        padding: 0;
+        margin: 0;
+        overflow-x: hidden;
+    }
+    
+    .container {
+        padding: 10px;
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    /* Header adjustments */
+    header {
+        padding: 20px 10px;
+        text-align: center;
+    }
+    
+    header h1 {
+        font-size: 1.8em;
+        margin-bottom: 10px;
+    }
+    
+    .subtitle {
+        font-size: 0.9em;
+    }
+    
+    /* Navigation - Mobile Menu */
+    nav {
+        position: fixed;
+        bottom: 0;
+        top: auto;
+        width: 100%;
+        z-index: 1000;
+        background: rgba(10, 10, 10, 0.95);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .nav-container {
+        padding: 0;
+    }
+    
+    .logo {
+        display: none;
+    }
+    
+    .nav-menu {
+        display: flex;
+        justify-content: space-around;
+        padding: 5px 0;
+        margin: 0;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .nav-menu li {
+        flex: 0 0 auto;
+    }
+    
+    .nav-item {
+        flex-direction: column;
+        padding: 8px 10px;
+        font-size: 0.7em;
+        gap: 2px;
+        min-width: 60px;
+    }
+    
+    .nav-item i {
+        font-size: 1.5em;
+    }
+    
+    .mobile-menu-toggle {
+        display: none;
+    }
+    
+    /* Auth container mobile */
+    .auth-container {
+        padding: 20px;
+    }
+    
+    .auth-box {
+        width: 100%;
+        max-width: 100%;
+        padding: 30px 20px;
+        margin: 0;
+    }
+    
+    /* Cards and sections */
+    .card {
+        padding: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .section {
+        padding: 20px 10px 80px 10px; /* Extra bottom padding for nav */
+    }
+    
+    /* Action buttons */
+    .action-buttons {
+        flex-direction: column;
+        gap: 10px;
+        margin: 20px 0;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+        padding: 15px;
+        font-size: 0.9em;
+    }
+    
+    /* Stats grid */
+    .party-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin: 20px 0;
+    }
+    
+    .stat-card {
+        padding: 15px;
+        min-height: auto;
+    }
+    
+    .stat-icon {
+        font-size: 1.5em;
+        margin-bottom: 5px;
+    }
+    
+    .stat-value {
+        font-size: 1.2em;
+    }
+    
+    .stat-label {
+        font-size: 0.7em;
+    }
+    
+    /* Dashboard friend cards */
+    .dashboard {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        margin-bottom: 80px;
+    }
+    
+    .friend-card {
+        padding: 20px;
+    }
+    
+    .bac-value {
+        font-size: 2em;
+    }
+    
+    /* Forms */
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    input, select, textarea {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 12px;
+    }
+    
+    /* Modal adjustments */
+    .modal-content {
+        width: 95%;
+        max-width: 95%;
+        margin: 20px auto;
+        max-height: 90vh;
+        padding: 20px;
+    }
+    
+    /* Games grid */
+    .games-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .game-card {
+        padding: 20px 10px;
+    }
+    
+    .game-icon {
+        font-size: 2em;
+    }
+    
+    .game-title {
+        font-size: 0.9em;
+    }
+    
+    /* Emergency grid */
+    .emergency-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .emergency-card {
+        padding: 20px 10px;
+    }
+    
+    /* Settings */
+    .settings-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    /* Chat */
+    .chat-container {
+        height: 300px;
+        margin-bottom: 80px;
+    }
+    
+    /* Leaderboard */
+    .leaderboard {
+        margin-bottom: 80px;
+    }
+    
+    /* Device list */
+    .device-list {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Achievements grid */
+    .achievements-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    
+    .achievement {
+        padding: 15px 5px;
+    }
+    
+    .achievement-icon {
+        font-size: 1.5em;
+    }
+    
+    .achievement-name {
+        font-size: 0.7em;
+    }
+    
+    /* Hide decorative elements on mobile */
+    .visualizer {
+        display: none;
+    }
+    
+    .particles {
+        display: none;
+    }
+    
+    /* User profile widget */
+    #userProfile {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        padding: 10px;
+        font-size: 0.8em;
+        max-width: 150px;
+    }
+    
+    /* Connection status */
+    .connection-status {
+        top: 10px;
+        left: 10px;
+        font-size: 0.7em;
+        padding: 5px 10px;
+    }
+    
+    /* Alert banner */
+    .alert-banner {
+        top: 60px;
+        font-size: 0.9em;
+        padding: 10px;
+    }
+    
+    /* Install button */
+    .install-button {
+        padding: 10px 20px;
+        font-size: 0.9em;
+    }
+}
+
+/* Smaller phones */
+@media screen and (max-width: 380px) {
+    header h1 {
+        font-size: 1.5em;
+    }
+    
+    .party-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .games-grid,
+    .emergency-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .nav-item {
+        font-size: 0.6em;
+        padding: 8px 8px;
+        min-width: 50px;
+    }
+    
+    .achievements-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Landscape orientation fixes */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+    nav {
+        position: relative;
+    }
+    
+    .section {
+        padding-bottom: 20px;
+    }
+    
+    .auth-box {
+        padding: 20px;
+    }
+    
+    header {
+        padding: 10px;
+    }
+    
+    header h1 {
+        font-size: 1.5em;
+        margin-bottom: 5px;
+    }
+}
+
+/* iOS specific fixes */
+@supports (-webkit-touch-callout: none) {
+    /* Fix for iOS bottom bar */
+    nav {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .section {
+        padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    }
+    
+    /* Fix input zoom on iOS */
+    input, select, textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* PWA standalone mode adjustments */
+@media all and (display-mode: standalone) {
+    /* Add padding for status bar on iOS */
+    body {
+        padding-top: env(safe-area-inset-top);
+    }
+    
+    /* Adjust navigation for standalone mode */
+    nav {
+        padding-bottom: calc(10px + env(safe-area-inset-bottom));
+    }
+}
