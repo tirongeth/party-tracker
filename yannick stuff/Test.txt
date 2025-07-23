@@ -1,1 +1,44 @@
 
+TO-DO für alle: (einzelne tasks mit kürzel versetzen wenn man diese aufgabe übernimmt und progress für jede task hier notieren)
+
+1. PCB design (TR):
+  -components definition
+2. 3D design (TR):
+  - warten auf alles andere
+3. Deadlines:
+4. components bestelle (TR):
+  - fertig teste
+
+  5. Website (Firebase)
+-Cloud Function 
+-App Check 
+-A/B Testing 
+-Cloud Firestore 
+-Functions
+-Crashlytics 
+-Messaging 
+-Dynamic Links 
+-Test Lab 
+
+6. App 
+-Möglich?
+-Welche Tools 
+-Aufwand? 
+-Durchführung planen 
+
+7. Werbung In-App
+-AdMob Account erstellen 
+-Google Konto dafür nötig 
+-Wohin mit Einnahmen?
+-Google Analytics 
+-AdMob mit Firebase verbinden 
+
+7. Cybersecurity (Nico)
+
+8. Marketing  
+-Konzept erstellen
+-Soziale Medien Kontoeröffnung 
+-Gratismodelle vergeben an wen?
+-Kollaborationen mit Uni-Seiten? 
+-TikTok Videos machen 
+
