@@ -7,6 +7,7 @@ import { getFirebaseDatabase } from '../config/firebase.js';
 import { getCurrentUser, getStateValue, setStateValue } from '../config/app-state.js';
 import { ref, set, get, remove, onValue, off, serverTimestamp } from 'firebase/database';
 import { showNotification } from '../ui/notifications.js';
+import { handleError, validateInput, safeAsync } from '../utils/error-handler.js';
 
 // Store device listeners
 const deviceListeners = {};
@@ -40,8 +41,10 @@ export function initializeDevices() {
 export async function pairDeviceById() {
     const deviceId = document.getElementById('deviceIdInput').value.trim().toUpperCase();
     
-    if (!deviceId) {
-        showNotification('❌ Please enter a Device ID', 'error');
+    // Validate device ID format
+    const deviceIdErrors = validateInput(deviceId, 'deviceId', 'Device ID');
+    if (deviceIdErrors.length > 0) {
+        showNotification(deviceIdErrors[0], 'error');
         return;
     }
     
@@ -76,8 +79,8 @@ export async function pairDeviceById() {
         showNotification('✅ Device paired successfully!', 'success');
         
     } catch (error) {
-        console.error('Pairing error:', error);
-        showNotification('❌ Pairing failed', 'error');
+        const errorInfo = handleError(error, 'Device Pairing');
+        showNotification(errorInfo.message, 'error');
     }
 }
 

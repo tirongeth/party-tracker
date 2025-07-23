@@ -7,6 +7,7 @@ import { getFirebaseAuth, getFirebaseDatabase } from '../config/firebase.js';
 import { setCurrentUser, setStateValue } from '../config/app-state.js';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import { ref, set, get } from 'firebase/database';
+import { handleError, validateInput, safeAsync } from '../utils/error-handler.js';
 
 // Track if we're in signup mode
 let isSignUp = false;
@@ -146,39 +147,9 @@ export async function handleAuthSubmit(event) {
         hideAuthLoading();
         
     } catch (error) {
-        console.error('Auth error:', error);
         hideAuthLoading();
-        
-        // User-friendly error messages
-        let errorMessage = 'Authentication failed';
-        
-        switch(error.code) {
-            case 'auth/user-not-found':
-                errorMessage = 'No account found with this email';
-                break;
-            case 'auth/wrong-password':
-                errorMessage = 'Incorrect password';
-                break;
-            case 'auth/email-already-in-use':
-                errorMessage = 'Email already registered';
-                break;
-            case 'auth/weak-password':
-                errorMessage = 'Password should be at least 6 characters';
-                break;
-            case 'auth/invalid-email':
-                errorMessage = 'Invalid email address';
-                break;
-            case 'auth/network-request-failed':
-                errorMessage = 'Network error. Please check your connection';
-                break;
-            case 'auth/too-many-requests':
-                errorMessage = 'Too many attempts. Please try again later';
-                break;
-            default:
-                errorMessage = error.message;
-        }
-        
-        showAuthError(errorMessage);
+        const errorInfo = handleError(error, 'Authentication');
+        showAuthError(errorInfo.message);
     }
 }
 
@@ -192,8 +163,8 @@ export async function signOut() {
         showNotification('👋 Signed out successfully');
         location.reload();
     } catch (error) {
-        console.error('Sign out error:', error);
-        showNotification('❌ Error signing out', 'error');
+        const errorInfo = handleError(error, 'Sign Out');
+        showNotification(errorInfo.message, 'error');
     }
 }
 
