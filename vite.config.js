@@ -3,6 +3,9 @@ import { copyFileSync } from 'fs'
 import { resolve } from 'path'
 
 export default defineConfig({
+  // Base path for deployment
+  base: './',             // Use relative paths for GitHub Pages
+  
   // Development server configuration
   server: {
     port: 8000,           // Same port as your Python server
@@ -23,21 +26,6 @@ export default defineConfig({
   // Handle static assets
   publicDir: 'public',    // Directory for static files
   
-  // Plugin to copy CNAME file
-  plugins: [
-    {
-      name: 'copy-cname',
-      closeBundle() {
-        try {
-          copyFileSync(
-            resolve(__dirname, 'CNAME'),
-            resolve(__dirname, 'dist/CNAME')
-          );
-          console.log('CNAME file copied to dist');
-        } catch (err) {
-          console.error('Failed to copy CNAME:', err);
-        }
-      }
-    }
-  ]
+  // Plugins
+  plugins: []
 })

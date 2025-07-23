@@ -21,6 +21,28 @@ const firebaseConfig = {
     measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
+// Validate Firebase configuration
+const requiredFields = ['apiKey', 'authDomain', 'databaseURL', 'projectId'];
+const missingFields = requiredFields.filter(field => !firebaseConfig[field]);
+
+if (missingFields.length > 0) {
+    console.error('❌ Missing Firebase configuration:', missingFields);
+    console.error('Make sure all environment variables are set in .env file or GitHub Secrets');
+}
+
+// Validate Firebase configuration
+function validateFirebaseConfig() {
+    const requiredFields = ['apiKey', 'authDomain', 'databaseURL', 'projectId'];
+    const missingFields = requiredFields.filter(field => !firebaseConfig[field]);
+    
+    if (missingFields.length > 0) {
+        console.error('Missing required Firebase configuration:', missingFields);
+        console.error('Please ensure all environment variables are set in GitHub Secrets or .env file');
+        return false;
+    }
+    return true;
+}
+
 // Initialize Firebase app
 let app = null;
 let auth = null;
@@ -33,6 +55,16 @@ export function initializeFirebase() {
     if (isInitialized) {
         console.log('Firebase already initialized');
         return true;
+    }
+    
+    // Validate configuration before initializing
+    if (!validateFirebaseConfig()) {
+        console.error('❌ Firebase configuration validation failed');
+        // Show user-friendly error message
+        if (typeof window !== 'undefined' && window.showNotification) {
+            window.showNotification('Firebase configuration error. Please check the deployment.', 'error');
+        }
+        return false;
     }
     
     try {
@@ -49,6 +81,10 @@ export function initializeFirebase() {
         
     } catch (error) {
         console.error('❌ Firebase initialization error:', error);
+        // Show user-friendly error message
+        if (typeof window !== 'undefined' && window.showNotification) {
+            window.showNotification('Failed to connect to Firebase. Please try again later.', 'error');
+        }
         return false;
     }
 }

@@ -21,7 +21,7 @@ let drinkChart = null;
 // ========================================
 // LOG DRINK
 // ========================================
-export function logDrink() {
+export async function logDrink() {
     try {
         const type = document.getElementById('drinkType').value;
         const amount = parseInt(document.getElementById('drinkAmount').value) || 0;
@@ -60,10 +60,15 @@ export function logDrink() {
         const database = getFirebaseDatabase();
         const currentUser = getCurrentUser();
         if (database && currentUser) {
-            set(ref(database, 'users/' + currentUser.uid + '/drinks/' + drink.id), {
-                ...drink,
-                time: drink.time.toISOString()
-            });
+            try {
+                await set(ref(database, 'users/' + currentUser.uid + '/drinks/' + drink.id), {
+                    ...drink,
+                    time: drink.time.toISOString()
+                });
+            } catch (firebaseError) {
+                console.warn('Firebase save failed (non-critical):', firebaseError);
+                // Continue - localStorage save was successful
+            }
         }
         
         // Confetti for water!
