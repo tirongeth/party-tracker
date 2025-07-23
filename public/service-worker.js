@@ -41,25 +41,16 @@ self.addEventListener('activate', event => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', event => {
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') return;
-
-  // Skip Firebase requests - always use network
+  // Skip Firebase requests entirely - let them go through normally
   if (event.request.url.includes('firebase') || 
       event.request.url.includes('firebaseio.com') ||
+      event.request.url.includes('firebaseapp.com') ||
       event.request.url.includes('googleapis.com')) {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        // Return offline message for Firebase requests
-        return new Response(JSON.stringify({
-          error: 'You are offline. Firebase operations require internet connection.'
-        }), {
-          headers: { 'Content-Type': 'application/json' }
-        });
-      })
-    );
     return;
   }
+
+  // Skip non-GET requests
+  if (event.request.method !== 'GET') return;
 
   event.respondWith(
     caches.match(event.request)
