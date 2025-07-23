@@ -1,4 +1,6 @@
 import { defineConfig } from 'vite'
+import { copyFileSync } from 'fs'
+import { resolve } from 'path'
 
 export default defineConfig({
   // Development server configuration
@@ -20,4 +22,22 @@ export default defineConfig({
   
   // Handle static assets
   publicDir: 'public',    // Directory for static files
+  
+  // Plugin to copy CNAME file
+  plugins: [
+    {
+      name: 'copy-cname',
+      closeBundle() {
+        try {
+          copyFileSync(
+            resolve(__dirname, 'CNAME'),
+            resolve(__dirname, 'dist/CNAME')
+          );
+          console.log('CNAME file copied to dist');
+        } catch (err) {
+          console.error('Failed to copy CNAME:', err);
+        }
+      }
+    }
+  ]
 })

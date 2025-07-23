@@ -13,7 +13,9 @@
       "Bash(mkdir:*)",
       "Bash(npm test)",
       "Bash(git add:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(ls:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
