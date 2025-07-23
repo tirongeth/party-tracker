@@ -3,11 +3,17 @@
 // ========================================
 // All drink-related functions from your original app
 
-import { getDatabase } from '../config/firebase.js';
+import { getFirebaseDatabase } from '../config/firebase.js';
 import { getAppState, setStateValue, getCurrentUser } from '../config/app-state.js';
 import { DRINK_PRESETS } from '../config/constants.js';
 import { showNotification } from '../ui/notifications.js';
 import { escapeHtml } from './all-functions.js';
+import { ref, set, remove } from 'firebase/database';
+import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from 'chart.js';
+import confetti from 'canvas-confetti';
+
+// Register Chart.js components
+Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
 
 // Chart instance
 let drinkChart = null;
@@ -51,10 +57,10 @@ export function logDrink() {
         updateEmergencySummary();
         
         // Send to Firebase if connected
-        const database = getDatabase();
+        const database = getFirebaseDatabase();
         const currentUser = getCurrentUser();
         if (database && currentUser) {
-            database.ref('users/' + currentUser.uid + '/drinks/' + drink.id).set({
+            set(ref(database, 'users/' + currentUser.uid + '/drinks/' + drink.id), {
                 ...drink,
                 time: drink.time.toISOString()
             });
@@ -468,10 +474,10 @@ export function clearDrinkHistory() {
         updateEmergencySummary();
         
         // Clear from Firebase
-        const database = getDatabase();
+        const database = getFirebaseDatabase();
         const currentUser = getCurrentUser();
         if (database && currentUser) {
-            database.ref('users/' + currentUser.uid + '/drinks').remove();
+            remove(ref(database, 'users/' + currentUser.uid + '/drinks'));
         }
         
         showNotification('🗑️ Drink history cleared');

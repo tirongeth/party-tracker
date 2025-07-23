@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la \"C:\\Users\\timon\\OneDrive\\Dokumente\\BoozeLens Project\\boozelens\")",
+      "Bash(cat \"C:\\Users\\timon\\OneDrive\\Dokumente\\BoozeLens Project\\boozelens\\.gitignore\")",
+      "Bash(cd \"C:\\Users\\timon\\OneDrive\\Dokumente\\BoozeLens Project\\boozelens\")",
+      "Bash(npm run dev)",
+      "Bash(pkill -f vite)",
+      "Bash(timeout 5 npm run dev)",
+      "Bash(npm run build)",
+      "Bash(grep:*)",
+      "Bash(npm install:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm test)",
+      "Bash(git add:*)",
+      "Bash(git reset:*)"
+    ],
+    "deny": []
+  }
+}

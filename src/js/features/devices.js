@@ -3,8 +3,10 @@
 // ========================================
 // Handles breathalyzer pairing and BAC readings
 
-import { getDatabase } from '../config/firebase.js';
+import { getFirebaseDatabase } from '../config/firebase.js';
 import { getCurrentUser, getStateValue, setStateValue } from '../config/app-state.js';
+import { ref, set, get, remove, onValue, off, serverTimestamp } from 'firebase/database';
+import { showNotification } from '../ui/notifications.js';
 
 // Store device listeners
 const deviceListeners = {};
@@ -16,10 +18,10 @@ export function initializeDevices() {
     const user = getCurrentUser();
     if (!user) return;
     
-    const database = getDatabase();
+    const database = getFirebaseDatabase();
     
     // Listen for user's devices
-    database.ref('users/' + user.uid + '/devices').on('value', (snapshot) => {
+    onValue(ref(database, 'users/' + user.uid + '/devices'), (snapshot) => {
         const devices = snapshot.val() || {};
         setStateValue('deviceData', devices);
         updateDeviceList();
@@ -39,43 +41,43 @@ export async function pairDeviceById() {
     const deviceId = document.getElementById('deviceIdInput').value.trim().toUpperCase();
     
     if (!deviceId) {
-        window.showNotification('❌ Please enter a Device ID', 'error');
+        showNotification('❌ Please enter a Device ID', 'error');
         return;
     }
     
     try {
-        const database = getDatabase();
+        const database = getFirebaseDatabase();
         const user = getCurrentUser();
         
         // Check if device exists in readings
-        const deviceSnapshot = await database.ref('readings/' + deviceId).once('value');
+        const deviceSnapshot = await get(ref(database, 'readings/' + deviceId));
         
         if (!deviceSnapshot.exists()) {
-            window.showNotification('❌ Device not found. Make sure it\'s connected.', 'error');
+            showNotification('❌ Device not found. Make sure it\'s connected.', 'error');
             return;
         }
         
         // Check if already paired
         const deviceData = getStateValue('deviceData');
         if (deviceData[deviceId]) {
-            window.showNotification('ℹ️ Device already paired');
+            showNotification('ℹ️ Device already paired');
             return;
         }
         
         // Add device to user
-        await database.ref('users/' + user.uid + '/devices/' + deviceId).set({
-            pairedAt: firebase.database.ServerValue.TIMESTAMP,
+        await set(ref(database, 'users/' + user.uid + '/devices/' + deviceId), {
+            pairedAt: serverTimestamp(),
             name: 'My Breathalyzer'
         });
         
         // Clear input
         document.getElementById('deviceIdInput').value = '';
         
-        window.showNotification('✅ Device paired successfully!', 'success');
+        showNotification('✅ Device paired successfully!', 'success');
         
     } catch (error) {
         console.error('Pairing error:', error);
-        window.showNotification('❌ Pairing failed', 'error');
+        showNotification('❌ Pairing failed', 'error');
     }
 }
 
@@ -86,8 +88,8 @@ function listenToDevice(deviceId) {
     // Don't create duplicate listeners
     if (deviceListeners[deviceId]) return;
     
-    const database = getDatabase();
-    const listener = database.ref('readings/' + deviceId).on('value', (snapshot) => {
+    const database = getFirebaseDatabase();
+    const listener = onValue(ref(database, 'readings/' + deviceId), (snapshot) => {
         const reading = snapshot.val();
         if (reading) {
             processDeviceReading(deviceId, reading);
@@ -140,7 +142,7 @@ function processDeviceReading(deviceId, reading) {
     
     // Check for alerts
     if (reading.bac >= 0.08) {
-        window.showNotification(`⚠️ Your BAC is too high: ${reading.bac.toFixed(3)}‰`, 'error');
+        showNotification(`⚠️ Your BAC is too high: ${reading.bac.toFixed(3)}‰`, 'error');
     }
 }
 
@@ -189,18 +191,18 @@ function updateDeviceList() {
 // ========================================
 export async function unpairDevice(deviceId) {
     if (confirm('Unpair this device?')) {
-        const database = getDatabase();
+        const database = getFirebaseDatabase();
         const user = getCurrentUser();
-        await database.ref('users/' + user.uid + '/devices/' + deviceId).remove();
+        await remove(ref(database, 'users/' + user.uid + '/devices/' + deviceId));
         
         // Stop listening to this device
         if (deviceListeners[deviceId]) {
-            const database = getDatabase();
-            database.ref('readings/' + deviceId).off('value', deviceListeners[deviceId]);
+            const database = getFirebaseDatabase();
+            off(ref(database, 'readings/' + deviceId), 'value', deviceListeners[deviceId]);
             delete deviceListeners[deviceId];
         }
         
-        window.showNotification('🔓 Device unpaired');
+        showNotification('🔓 Device unpaired');
     }
 }
 
@@ -209,10 +211,10 @@ export async function renameDevice(deviceId) {
     const newName = prompt('Enter new name for device:', deviceData[deviceId]?.name || 'My Breathalyzer');
     
     if (newName) {
-        const database = getDatabase();
+        const database = getFirebaseDatabase();
         const user = getCurrentUser();
-        await database.ref('users/' + user.uid + '/devices/' + deviceId + '/name').set(newName);
-        window.showNotification('✏️ Device renamed');
+        await set(ref(database, 'users/' + user.uid + '/devices/' + deviceId + '/name'), newName);
+        showNotification('✏️ Device renamed');
     }
 }
 

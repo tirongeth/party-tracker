@@ -3,8 +3,10 @@
 // ========================================
 // Handles all login, signup, and user authentication
 
-import { getAuth, getDatabase } from '../config/firebase.js';
+import { getFirebaseAuth, getFirebaseDatabase } from '../config/firebase.js';
 import { setCurrentUser, setStateValue } from '../config/app-state.js';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
+import { ref, set, get } from 'firebase/database';
 
 // Track if we're in signup mode
 let isSignUp = false;
@@ -92,12 +94,12 @@ export async function handleAuthSubmit(event) {
     showAuthLoading();
     
     try {
-        const auth = getAuth();
-        const database = getDatabase();
+        const auth = getFirebaseAuth();
+        const database = getFirebaseDatabase();
         
         if (!isSignUp) {
             // LOGIN
-            await auth.signInWithEmailAndPassword(email, password);
+            await signInWithEmailAndPassword(auth, email, password);
             showNotification('✅ Welcome back!', 'success');
             
         } else {
@@ -109,7 +111,7 @@ export async function handleAuthSubmit(event) {
             }
             
             // Check if username is taken
-            const usernameCheck = await database.ref('usernames/' + username.toLowerCase()).once('value');
+            const usernameCheck = await get(ref(database, 'usernames/' + username.toLowerCase()));
             if (usernameCheck.exists()) {
                 showAuthError('Username already taken');
                 hideAuthLoading();
@@ -117,14 +119,14 @@ export async function handleAuthSubmit(event) {
             }
             
             // Create account
-            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
             
             // Save user data
-            await database.ref('users/' + user.uid).set({
+            await set(ref(database, 'users/' + user.uid), {
                 username: username,
                 email: email,
-                createdAt: firebase.database.ServerValue.TIMESTAMP,
+                createdAt: new Date().toISOString(),
                 devices: {},
                 friends: {},
                 achievements: {},
@@ -136,7 +138,7 @@ export async function handleAuthSubmit(event) {
             });
             
             // Reserve username
-            await database.ref('usernames/' + username.toLowerCase()).set(user.uid);
+            await set(ref(database, 'usernames/' + username.toLowerCase()), user.uid);
             
             showNotification('✅ Account created successfully!', 'success');
         }
@@ -185,8 +187,8 @@ export async function handleAuthSubmit(event) {
 // ========================================
 export async function signOut() {
     try {
-        const auth = getAuth();
-        await auth.signOut();
+        const auth = getFirebaseAuth();
+        await firebaseSignOut(auth);
         showNotification('👋 Signed out successfully');
         location.reload();
     } catch (error) {
@@ -199,9 +201,9 @@ export async function signOut() {
 // SETUP AUTH LISTENER
 // ========================================
 export function setupAuthListener(onAuthenticated) {
-    const auth = getAuth();
+    const auth = getFirebaseAuth();
     
-    auth.onAuthStateChanged((user) => {
+    onAuthStateChanged(auth, (user) => {
         if (user) {
             setCurrentUser(user);
             onAuthenticated(user);
@@ -217,9 +219,8 @@ export function setupAuthListener(onAuthenticated) {
 // ========================================
 export async function loadUserData(user) {
     try {
-        const database = getDatabase();
-        const userRef = database.ref('users/' + user.uid);
-        const snapshot = await userRef.once('value');
+        const database = getFirebaseDatabase();
+        const snapshot = await get(ref(database, 'users/' + user.uid));
         const userData = snapshot.val() || {};
         
         // Update profile displays

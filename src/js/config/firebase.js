@@ -4,20 +4,25 @@
 // This module handles Firebase initialization
 // It reads the secret values from environment variables
 
-// For now, we'll use the values directly
-// (We'll change this to use .env later when we add Vite)
+// Import Firebase modules
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getDatabase } from 'firebase/database';
+
+// Reading values from environment variables (.env file)
 const firebaseConfig = {
-    apiKey: "AIzaSyCuOjiHa8C0jgAte40E774CRJROTWTUdmg",
-    authDomain: "hsg-party-tracker.firebaseapp.com",
-    databaseURL: "https://hsg-party-tracker-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "hsg-party-tracker",
-    storageBucket: "hsg-party-tracker.firebasestorage.app",
-    messagingSenderId: "1047483086606",
-    appId: "1:1047483086606:web:a02d77baacd21166fb095f",
-    measurementId: "G-VFS4W30Z7P"
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// These will hold our Firebase services
+// Initialize Firebase app
+let app = null;
 let auth = null;
 let database = null;
 let isInitialized = false;
@@ -31,14 +36,12 @@ export function initializeFirebase() {
     }
     
     try {
-        // Initialize Firebase app
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        // Initialize Firebase app with modern syntax
+        app = initializeApp(firebaseConfig);
         
-        // Get Firebase services
-        database = firebase.database();
-        auth = firebase.auth();
+        // Get Firebase services using modern imports
+        auth = getAuth(app);
+        database = getDatabase(app);
         
         isInitialized = true;
         console.log('✅ Firebase initialized successfully');
@@ -51,7 +54,7 @@ export function initializeFirebase() {
 }
 
 // Get the auth service
-export function getAuth() {
+export function getFirebaseAuth() {
     if (!auth) {
         throw new Error('Firebase Auth not initialized. Call initializeFirebase() first.');
     }
@@ -59,7 +62,7 @@ export function getAuth() {
 }
 
 // Get the database service
-export function getDatabase() {
+export function getFirebaseDatabase() {
     if (!database) {
         throw new Error('Firebase Database not initialized. Call initializeFirebase() first.');
     }

@@ -2,12 +2,13 @@
 // MAIN ENTRY POINT - Complete Application
 // ========================================
 
-import { initializeFirebase, getDatabase } from './config/firebase.js';
+import { initializeFirebase, getFirebaseDatabase } from './config/firebase.js';
 import { setupAuthListener, handleAuthSubmit, toggleAuthMode, signOut, loadUserData, hideAuthScreen } from './auth/auth.js';
 import { initializeDevices } from './features/devices.js';
 import { updateUI } from './ui/dashboard.js';
 import { showNotification } from './ui/notifications.js';
 import { DRINK_PRESETS } from './config/constants.js';
+import { ref, onValue } from 'firebase/database';
 import { 
     getAppState, 
     setStateValue, 
@@ -227,12 +228,12 @@ async function onUserAuthenticated(user) {
 // FIREBASE LISTENERS
 // ========================================
 function setupFirebaseListeners() {
-    const database = getDatabase();
+    const database = getFirebaseDatabase();
     const currentUser = getCurrentUser();
     if (!database || !currentUser) return;
     
     // Listen for friends
-    database.ref('users/' + currentUser.uid + '/friends').on('value', (snapshot) => {
+    onValue(ref(database, 'users/' + currentUser.uid + '/friends'), (snapshot) => {
         const friendsData = snapshot.val() || {};
         setStateValue('friendsData', friendsData);
         AllFunctions.updateFriendsList();
@@ -245,7 +246,7 @@ function setupFirebaseListeners() {
     });
     
     // Listen for friend requests
-    database.ref('friendRequests/' + currentUser.uid).on('value', (snapshot) => {
+    onValue(ref(database, 'friendRequests/' + currentUser.uid), (snapshot) => {
         const requests = snapshot.val() || {};
         const friendRequests = Object.entries(requests).map(([id, data]) => ({
             id,
@@ -256,7 +257,7 @@ function setupFirebaseListeners() {
     });
     
     // Connection status
-    database.ref('.info/connected').on('value', (snapshot) => {
+    onValue(ref(database, '.info/connected'), (snapshot) => {
         const connected = snapshot.val();
         updateConnectionStatus(connected);
     });
@@ -264,12 +265,12 @@ function setupFirebaseListeners() {
 
 // Listen to friend's data
 function listenToFriend(friendId) {
-    const database = getDatabase();
+    const database = getFirebaseDatabase();
     const friendsData = getAppState().friendsData;
     const permission = friendsData[friendId]?.permission || 'observer';
     
     if (permission !== 'none') {
-        database.ref('users/' + friendId).on('value', (snapshot) => {
+        onValue(ref(database, 'users/' + friendId), (snapshot) => {
             const friendData = snapshot.val();
             if (friendData) {
                 processFriendData(friendId, friendData);
@@ -311,8 +312,8 @@ function processFriendData(friendId, friendData) {
 
 // Listen to device
 function listenToDevice(deviceId) {
-    const database = getDatabase();
-    database.ref('readings/' + deviceId).on('value', (snapshot) => {
+    const database = getFirebaseDatabase();
+    onValue(ref(database, 'readings/' + deviceId), (snapshot) => {
         const reading = snapshot.val();
         if (reading) {
             processDeviceReading(deviceId, reading);

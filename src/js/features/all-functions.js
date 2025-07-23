@@ -4,10 +4,11 @@
 // This file contains ALL the functions from your original app
 // They're organized by category but maintain their original functionality
 
-import { getDatabase, getAuth } from '../config/firebase.js';
+import { getFirebaseDatabase, getFirebaseAuth } from '../config/firebase.js';
 import { getAppState, setStateValue, getCurrentUser } from '../config/app-state.js';
 import { DRINK_PRESETS, getBACStatus } from '../config/constants.js';
 import { showNotification } from '../ui/notifications.js';
+import { ref, set, get, push, remove, onValue, off, serverTimestamp } from 'firebase/database';
 
 // ========================================
 // FRIENDS SYSTEM FUNCTIONS
@@ -24,9 +25,9 @@ export async function searchFriends() {
     resultsDiv.innerHTML = '<p>Searching...</p>';
     
     try {
-        const database = getDatabase();
+        const database = getFirebaseDatabase();
         const currentUser = getCurrentUser();
-        const usersSnapshot = await database.ref('users').once('value');
+        const usersSnapshot = await get(ref(database, 'users'));
         const users = usersSnapshot.val() || {};
         
         const results = [];
@@ -73,7 +74,7 @@ export async function searchFriends() {
 
 export async function sendFriendRequest(friendId) {
     try {
-        const database = getDatabase();
+        const database = getFirebaseDatabase();
         const currentUser = getCurrentUser();
         const userData = getAppState().userData;
         const friendsData = getAppState().friendsData;
@@ -83,9 +84,9 @@ export async function sendFriendRequest(friendId) {
             return;
         }
         
-        await database.ref('friendRequests/' + friendId + '/' + currentUser.uid).set({
+        await set(ref(database, 'friendRequests/' + friendId + '/' + currentUser.uid), {
             from: userData.username || currentUser.email,
-            timestamp: firebase.database.ServerValue.TIMESTAMP
+            timestamp: serverTimestamp()
         });
         
         showNotification('📤 Friend request sent!', 'success');
@@ -131,20 +132,20 @@ export async function acceptFriendRequest(friendId) {
         const permission = await selectFriendPermission();
         if (!permission) return;
         
-        const database = getDatabase();
+        const database = getFirebaseDatabase();
         const currentUser = getCurrentUser();
         
-        await database.ref('users/' + currentUser.uid + '/friends/' + friendId).set({
+        await set(ref(database, 'users/' + currentUser.uid + '/friends/' + friendId), {
             permission: permission,
-            addedAt: firebase.database.ServerValue.TIMESTAMP
+            addedAt: serverTimestamp()
         });
         
-        await database.ref('users/' + friendId + '/friends/' + currentUser.uid).set({
+        await set(ref(database, 'users/' + friendId + '/friends/' + currentUser.uid), {
             permission: permission,
-            addedAt: firebase.database.ServerValue.TIMESTAMP
+            addedAt: serverTimestamp()
         });
         
-        await database.ref('friendRequests/' + currentUser.uid + '/' + friendId).remove();
+        await remove(ref(database, 'friendRequests/' + currentUser.uid + '/' + friendId));
         
         showNotification('✅ Friend added!', 'success');
         
@@ -193,9 +194,9 @@ export async function selectFriendPermission() {
 }
 
 export async function declineFriendRequest(friendId) {
-    const database = getDatabase();
+    const database = getFirebaseDatabase();
     const currentUser = getCurrentUser();
-    await database.ref('friendRequests/' + currentUser.uid + '/' + friendId).remove();
+    await remove(ref(database, 'friendRequests/' + currentUser.uid + '/' + friendId));
     showNotification('❌ Request declined');
 }
 
@@ -212,8 +213,8 @@ export function updateFriendsList() {
     }
     
     Object.entries(friendsData).forEach(async ([friendId, friend]) => {
-        const database = getDatabase();
-        const friendSnapshot = await database.ref('users/' + friendId).once('value');
+        const database = getFirebaseDatabase();
+        const friendSnapshot = await get(ref(database, 'users/' + friendId));
         const friendInfo = friendSnapshot.val();
         
         if (friendInfo) {
@@ -247,10 +248,10 @@ export function updateFriendsList() {
 
 export async function updateFriendPermission(friendId, newPermission) {
     try {
-        const database = getDatabase();
+        const database = getFirebaseDatabase();
         const currentUser = getCurrentUser();
-        await database.ref('users/' + currentUser.uid + '/friends/' + friendId + '/permission').set(newPermission);
-        await database.ref('users/' + friendId + '/friends/' + currentUser.uid + '/permission').set(newPermission);
+        await set(ref(database, 'users/' + currentUser.uid + '/friends/' + friendId + '/permission'), newPermission);
+        await set(ref(database, 'users/' + friendId + '/friends/' + currentUser.uid + '/permission'), newPermission);
         showNotification('✅ Permission updated', 'success');
     } catch (error) {
         console.error('Update permission error:', error);
@@ -260,10 +261,10 @@ export async function updateFriendPermission(friendId, newPermission) {
 
 export async function removeFriend(friendId) {
     if (confirm('Remove this friend?')) {
-        const database = getDatabase();
+        const database = getFirebaseDatabase();
         const currentUser = getCurrentUser();
-        await database.ref('users/' + currentUser.uid + '/friends/' + friendId).remove();
-        await database.ref('users/' + friendId + '/friends/' + currentUser.uid).remove();
+        await remove(ref(database, 'users/' + currentUser.uid + '/friends/' + friendId));
+        await remove(ref(database, 'users/' + friendId + '/friends/' + currentUser.uid));
         showNotification('👋 Friend removed');
     }
 }
@@ -289,14 +290,14 @@ export function sendMessage() {
         input.value = '';
         
         // Save to Firebase
-        const database = getDatabase();
+        const database = getFirebaseDatabase();
         const currentUser = getCurrentUser();
         if (database && currentUser) {
-            database.ref('chat').push({
+            push(ref(database, 'chat'), {
                 uid: currentUser.uid,
                 username: userData.username,
                 message: message,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
+                timestamp: serverTimestamp()
             });
         }
     }
@@ -542,25 +543,25 @@ export async function updateProfile() {
     }
     
     try {
-        const database = getDatabase();
+        const database = getFirebaseDatabase();
         const currentUser = getCurrentUser();
         const userData = getAppState().userData;
         
         if (username.toLowerCase() !== userData.username?.toLowerCase()) {
-            const usernameCheck = await database.ref('usernames/' + username.toLowerCase()).once('value');
+            const usernameCheck = await get(ref(database, 'usernames/' + username.toLowerCase()));
             if (usernameCheck.exists() && usernameCheck.val() !== currentUser.uid) {
                 showNotification('❌ Username already taken', 'error');
                 return;
             }
             
             if (userData.username) {
-                await database.ref('usernames/' + userData.username.toLowerCase()).remove();
+                await remove(ref(database, 'usernames/' + userData.username.toLowerCase()));
             }
             
-            await database.ref('usernames/' + username.toLowerCase()).set(currentUser.uid);
+            await set(ref(database, 'usernames/' + username.toLowerCase()), currentUser.uid);
         }
         
-        await database.ref('users/' + currentUser.uid + '/username').set(username);
+        await set(ref(database, 'users/' + currentUser.uid + '/username'), username);
         
         showNotification('✅ Profile updated!', 'success');
         
@@ -600,15 +601,15 @@ export async function saveEmergencyInfo() {
     const safetyNotes = document.getElementById('safetyNotes').value;
     
     try {
-        const database = getDatabase();
+        const database = getFirebaseDatabase();
         const currentUser = getCurrentUser();
         
-        await database.ref('users/' + currentUser.uid + '/emergency').set({
+        await set(ref(database, 'users/' + currentUser.uid + '/emergency'), {
             homeAddress,
             emergencyContact,
             medicalInfo,
             safetyNotes,
-            updatedAt: firebase.database.ServerValue.TIMESTAMP
+            updatedAt: serverTimestamp()
         });
         
         localStorage.setItem('homeAddress', homeAddress);
@@ -630,10 +631,10 @@ export async function savePrivacySettings() {
     const publicProfile = document.getElementById('publicProfile').checked;
     
     try {
-        const database = getDatabase();
+        const database = getFirebaseDatabase();
         const currentUser = getCurrentUser();
         
-        await database.ref('users/' + currentUser.uid + '/settings').update({
+        await set(ref(database, 'users/' + currentUser.uid + '/settings'), {
             shareLocation,
             notifications,
             publicProfile
@@ -675,20 +676,20 @@ export async function deleteAccount() {
     if (!confirm('Are you absolutely sure? All your data will be permanently deleted.')) return;
     
     try {
-        const database = getDatabase();
+        const database = getFirebaseDatabase();
         const currentUser = getCurrentUser();
         const userData = getAppState().userData;
         const friendsData = getAppState().friendsData;
         
-        await database.ref('users/' + currentUser.uid).remove();
+        await remove(ref(database, 'users/' + currentUser.uid));
         
         if (userData.username) {
-            await database.ref('usernames/' + userData.username.toLowerCase()).remove();
+            await remove(ref(database, 'usernames/' + userData.username.toLowerCase()));
         }
         
         if (friendsData) {
             for (const friendId in friendsData) {
-                await database.ref('users/' + friendId + '/friends/' + currentUser.uid).remove();
+                await remove(ref(database, 'users/' + friendId + '/friends/' + currentUser.uid));
             }
         }
         
@@ -752,11 +753,11 @@ export async function pairDeviceFromModal() {
     }
     
     try {
-        const database = getDatabase();
+        const database = getFirebaseDatabase();
         const currentUser = getCurrentUser();
         const deviceData = getAppState().deviceData;
         
-        const deviceSnapshot = await database.ref('readings/' + deviceId).once('value');
+        const deviceSnapshot = await get(ref(database, 'readings/' + deviceId));
         
         if (!deviceSnapshot.exists()) {
             showNotification('❌ Device not found. Make sure it\'s connected.', 'error');
@@ -769,8 +770,8 @@ export async function pairDeviceFromModal() {
             return;
         }
         
-        await database.ref('users/' + currentUser.uid + '/devices/' + deviceId).set({
-            pairedAt: firebase.database.ServerValue.TIMESTAMP,
+        await set(ref(database, 'users/' + currentUser.uid + '/devices/' + deviceId), {
+            pairedAt: serverTimestamp(),
             name: 'My Breathalyzer'
         });
         

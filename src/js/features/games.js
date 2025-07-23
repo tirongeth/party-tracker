@@ -5,6 +5,7 @@
 
 import { getAppState, setStateValue } from '../config/app-state.js';
 import { showNotification } from '../ui/notifications.js';
+import confetti from 'canvas-confetti';
 
 // Game data
 const gameData = {
@@ -120,7 +121,7 @@ export function startGame(gameType) {
     // Initialize game
     initializeGame(gameType);
     
-    if (window.confetti) {
+    if (confetti) {
         confetti({
             particleCount: 100,
             spread: 70,
@@ -336,7 +337,7 @@ export function addScore(team) {
     
     if (gameScores[team] >= 10) {
         document.getElementById('gameStatus').textContent = `${team === 'team1' ? 'Team 1' : 'Team 2'} Wins! 🏆`;
-        if (window.confetti) {
+        if (confetti) {
             confetti({
                 particleCount: 200,
                 spread: 70,
@@ -370,7 +371,7 @@ export function toggleFlipTimer() {
         if (!gameState.bestFlipTime || gameState.flipTime < gameState.bestFlipTime) {
             gameState.bestFlipTime = gameState.flipTime;
             document.getElementById('bestTime').textContent = `Best Time: ${formatTime(gameState.bestFlipTime)}`;
-            if (window.confetti) {
+            if (confetti) {
                 confetti({
                     particleCount: 100,
                     spread: 70,
