@@ -1,8 +1,12 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import { copyFileSync } from 'fs'
 import { resolve } from 'path'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  // Load env file based on `mode` in the current working directory.
+  const env = loadEnv(mode, process.cwd(), '')
+  
+  return {
   // Base path for deployment
   base: './',             // Use relative paths for GitHub Pages
   
@@ -28,4 +32,5 @@ export default defineConfig({
   
   // Plugins
   plugins: []
+  }
 })

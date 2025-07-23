@@ -18,7 +18,10 @@
       "Bash(git commit:*)",
       "Bash(git checkout:*)",
       "Bash(npm run deploy:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(git push:*)",
+      "Bash(findstr:*)",
+      "Bash(npx gh-pages:*)"
     ],
     "deny": []
   }
