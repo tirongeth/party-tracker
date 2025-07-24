@@ -68,11 +68,28 @@ export function getFirebaseDatabase() {
 }
 
 // Export Firebase references for compatibility
-export const ref = (db, path) => database.ref(path);
+export const ref = (db, path) => {
+    if (typeof path === 'string') {
+        return database.ref(path);
+    }
+    // If called with just path (legacy style)
+    return database.ref(db);
+};
+
 export const set = (ref, value) => ref.set(value);
-export const get = (ref) => ref.get();
+export const get = (ref) => ref.once('value');
 export const push = (ref, value) => ref.push(value);
 export const remove = (ref) => ref.remove();
-export const onValue = (ref, callback) => ref.on('value', callback);
+export const onValue = (ref, callback) => {
+    ref.on('value', (snapshot) => {
+        callback(snapshot);
+    });
+};
 export const off = (ref, callback) => ref.off('value', callback);
 export const serverTimestamp = () => firebase.database.ServerValue.TIMESTAMP;
+
+// Auth functions
+export const signInWithEmailAndPassword = (auth, email, password) => auth.signInWithEmailAndPassword(email, password);
+export const createUserWithEmailAndPassword = (auth, email, password) => auth.createUserWithEmailAndPassword(email, password);
+export const onAuthStateChanged = (auth, callback) => auth.onAuthStateChanged(callback);
+export const signOut = (auth) => auth.signOut();
