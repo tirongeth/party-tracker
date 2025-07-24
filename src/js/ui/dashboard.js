@@ -105,22 +105,35 @@ function updateLeaderboard() {
     const partyData = getStateValue('partyData') || {};
     leaderboard.innerHTML = '';
     
+    // Sort by highest BAC first (descending order)
     const sorted = Object.values(partyData)
-        .sort((a, b) => a.bac - b.bac)
+        .sort((a, b) => b.bac - a.bac)
         .slice(0, 5);
+    
+    // Position-specific messages
+    const positionMessages = [
+        (name) => `🏆 ${name} is absolutely dominating the party! Living their best life!`,
+        (name) => `🥈 ${name} is so close! One more and they could take the crown!`,
+        (name) => `🥉 ${name} is holding strong! The podium suits them well!`,
+        (name) => `${name} is warming up! The night is still young!`,
+        (name) => `${name} is taking it easy... or are they just getting started? 🤔`
+    ];
     
     sorted.forEach((friend, index) => {
         const item = document.createElement('div');
         item.className = 'leaderboard-item';
         item.onclick = () => {
-            if (window.confetti) {
+            // Only confetti for first place
+            if (index === 0 && window.confetti) {
                 confetti({
                     particleCount: 100,
                     spread: 70,
                     origin: { y: 0.6 }
                 });
             }
-            window.showNotification(`${friend.name} is winning! 🏆`);
+            // Show position-specific message
+            const message = positionMessages[index] ? positionMessages[index](friend.name) : `${friend.name} is participating!`;
+            window.showNotification(message);
         };
         
         item.innerHTML = `
