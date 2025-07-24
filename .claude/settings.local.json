@@ -22,7 +22,11 @@
       "Bash(git push:*)",
       "Bash(findstr:*)",
       "Bash(npx gh-pages:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(find:*)",
+      "Bash(tree:*)",
+      "Bash(python:*)",
+      "Bash(npm run preview:*)"
     ],
     "deny": []
   }
