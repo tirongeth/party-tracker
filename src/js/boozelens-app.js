@@ -27,16 +27,119 @@
         let currentGame = null;
         let gameScores = { team1: 0, team2: 0 };
         let partyStartTime = Date.now();
-        let achievements = {
-            firstTimer: true,
-            responsible: false,
-            gameMaster: false,
-            partyAnimal: false,
-            guardianAngel: false,
-            hydroHomie: false,
-            danceMachine: false,
-            sunriseWarrior: false
+        // Achievement definitions with progress tracking
+        const achievementDefinitions = {
+            firstTimer: {
+                name: "First Timer",
+                icon: "🎉",
+                description: "Joined your first party!",
+                requirement: 1,
+                progress: 0,
+                unlocked: false,
+                category: "beginner"
+            },
+            responsible: {
+                name: "Responsible",
+                icon: "😇",
+                description: "Stayed under 0.05 BAC all night",
+                requirement: 1,
+                progress: 0,
+                unlocked: false,
+                category: "safety"
+            },
+            gameMaster: {
+                name: "Game Master",
+                icon: "🏆",
+                description: "Win 5 party games",
+                requirement: 5,
+                progress: 0,
+                unlocked: false,
+                category: "games"
+            },
+            partyAnimal: {
+                name: "Party Animal",
+                icon: "📍",
+                description: "Check in at 10 parties",
+                requirement: 10,
+                progress: 0,
+                unlocked: false,
+                category: "social"
+            },
+            guardianAngel: {
+                name: "Guardian Angel",
+                icon: "🦸",
+                description: "Help 3 friends get home safe",
+                requirement: 3,
+                progress: 0,
+                unlocked: false,
+                category: "safety"
+            },
+            hydroHomie: {
+                name: "Hydro Homie",
+                icon: "💧",
+                description: "Stay hydrated for 3 hours",
+                requirement: 12,
+                progress: 0,
+                unlocked: false,
+                category: "health"
+            },
+            danceMachine: {
+                name: "Dance Machine",
+                icon: "🕺",
+                description: "Log 50 songs danced to",
+                requirement: 50,
+                progress: 0,
+                unlocked: false,
+                category: "fun"
+            },
+            sunriseWarrior: {
+                name: "Sunrise Warrior",
+                icon: "🌅",
+                description: "Party until sunrise (6+ hours)",
+                requirement: 1,
+                progress: 0,
+                unlocked: false,
+                category: "endurance"
+            },
+            socialButterfly: {
+                name: "Social Butterfly",
+                icon: "🦋",
+                description: "Add 20 friends",
+                requirement: 20,
+                progress: 0,
+                unlocked: false,
+                category: "social"
+            },
+            safetyFirst: {
+                name: "Safety First",
+                icon: "🛡️",
+                description: "Use emergency services 0 times in 10 parties",
+                requirement: 10,
+                progress: 0,
+                unlocked: false,
+                category: "safety"
+            },
+            mixologist: {
+                name: "Mixologist",
+                icon: "🍸",
+                description: "Try 15 different drink types",
+                requirement: 15,
+                progress: 0,
+                unlocked: false,
+                category: "drinks"
+            },
+            designated: {
+                name: "Designated Hero",
+                icon: "🚗",
+                description: "Be the designated driver 5 times",
+                requirement: 5,
+                progress: 0,
+                unlocked: false,
+                category: "safety"
+            }
         };
+        
+        let userAchievements = {};
         let locationHistory = [];
         let drinkHistory = [];
         let drinkChart = null;
@@ -993,12 +1096,8 @@
             // Load local data as fallback
             loadDrinkHistory();
             
-            // Load achievements
-            Object.keys(achievements).forEach(key => {
-                if (localStorage.getItem(`achievement_${key}`)) {
-                    achievements[key] = true;
-                }
-            });
+            // Load achievements from Firebase
+            loadAchievements();
         }
         
         function updateToggleSwitches() {
@@ -1272,7 +1371,7 @@
                 
                 // Section-specific initializations
                 if (sectionId === 'achievements') {
-                    updateAchievements();
+                    updateAchievementsUI();
                 } else if (sectionId === 'drinks') {
                     updateDrinkStats();
                     updateDrinkChart();
@@ -1282,6 +1381,11 @@
                     updateFriendsList();
                 } else if (sectionId === 'settings') {
                     updateToggleSwitches();
+                }
+                
+                // Track first timer achievement on first login
+                if (userAchievements && userAchievements.firstTimer && !userAchievements.firstTimer.unlocked) {
+                    updateAchievementProgress('firstTimer');
                 }
             } catch (error) {
                 console.error('Section switch failed:', error);
@@ -1340,14 +1444,8 @@
                 origin: { y: 0.6 }
             });
             
-            // Achievement check
-            const hydrationCount = parseInt(localStorage.getItem('hydrationCount') || '0') + 1;
-            localStorage.setItem('hydrationCount', hydrationCount);
-            
-            if (hydrationCount >= 12) { // 3 hours worth
-                achievements.hydroHomie = true;
-                showAchievementUnlocked('Hydro Homie');
-            }
+            // Achievement check - hydration tracking
+            updateAchievementProgress('hydroHomie');
         }
         
         // Show friend details
@@ -1634,10 +1732,7 @@
             showNotification(`📍 Checked in at ${location}!`);
             
             // Update achievement
-            if (locationHistory.length >= 10) {
-                achievements.partyAnimal = true;
-                showAchievementUnlocked('Party Animal');
-            }
+            updateAchievementProgress('partyAnimal');
             
             closeModal();
         }
@@ -1695,8 +1790,7 @@
             showNotification(`👥 ${buddyName} is now your buddy!`);
             
             // Achievement check
-            achievements.guardianAngel = true;
-            showAchievementUnlocked('Guardian Angel');
+            updateAchievementProgress('guardianAngel');
             
             closeModal();
         }
@@ -2234,46 +2328,185 @@
             return titles[gameType] || 'Party Game';
         }
         
-        // Achievements
-        function updateAchievements() {
-            const achievementElements = document.querySelectorAll('.achievement');
+        // Achievement System Functions
+        function loadAchievements() {
+            if (!currentUser) return;
             
-            Object.entries(achievements).forEach(([key, unlocked]) => {
-                if (unlocked) {
-                    const element = document.querySelector(`.achievement[data-achievement="${key}"]`);
-                    if (element && !element.classList.contains('unlocked')) {
-                        element.classList.add('unlocked');
-                    }
-                }
+            const achievementsRef = firebase.database().ref(`users/${currentUser.uid}/achievements`);
+            achievementsRef.on('value', (snapshot) => {
+                const data = snapshot.val() || {};
+                
+                // Initialize achievements with saved data
+                Object.keys(achievementDefinitions).forEach(key => {
+                    userAchievements[key] = {
+                        ...achievementDefinitions[key],
+                        ...data[key]
+                    };
+                });
+                
+                // Update UI
+                updateAchievementsUI();
+            });
+        }
+        
+        function saveAchievement(achievementKey) {
+            if (!currentUser) return;
+            
+            const achievement = userAchievements[achievementKey];
+            if (!achievement) return;
+            
+            firebase.database().ref(`users/${currentUser.uid}/achievements/${achievementKey}`).set({
+                progress: achievement.progress,
+                unlocked: achievement.unlocked,
+                unlockedAt: achievement.unlockedAt || null
+            });
+        }
+        
+        function updateAchievementProgress(achievementKey, increment = 1) {
+            if (!userAchievements[achievementKey]) return;
+            
+            const achievement = userAchievements[achievementKey];
+            
+            // Don't update if already unlocked
+            if (achievement.unlocked) return;
+            
+            // Update progress
+            achievement.progress = Math.min(achievement.progress + increment, achievement.requirement);
+            
+            // Check if achievement is now unlocked
+            if (achievement.progress >= achievement.requirement) {
+                achievement.unlocked = true;
+                achievement.unlockedAt = Date.now();
+                
+                // Show unlock notification
+                showAchievementUnlocked(achievement);
+                
+                // Update stats
+                updateAchievementStats();
+            }
+            
+            // Save to Firebase
+            saveAchievement(achievementKey);
+            
+            // Update UI
+            updateAchievementsUI();
+        }
+        
+        function updateAchievementsUI() {
+            const container = document.querySelector('.achievements-grid');
+            if (!container) return;
+            
+            // Clear existing achievements
+            container.innerHTML = '';
+            
+            // Sort achievements by category and unlocked status
+            const sortedAchievements = Object.entries(userAchievements)
+                .sort(([, a], [, b]) => {
+                    if (a.unlocked && !b.unlocked) return -1;
+                    if (!a.unlocked && b.unlocked) return 1;
+                    return a.category.localeCompare(b.category);
+                });
+            
+            // Create achievement elements
+            sortedAchievements.forEach(([key, achievement]) => {
+                const achievementEl = document.createElement('div');
+                achievementEl.className = `achievement ${achievement.unlocked ? 'unlocked' : ''}`;
+                achievementEl.setAttribute('data-achievement', key);
+                
+                // Calculate progress percentage
+                const progressPercent = (achievement.progress / achievement.requirement) * 100;
+                
+                achievementEl.innerHTML = `
+                    <div class="achievement-icon">${achievement.icon}</div>
+                    <div class="achievement-name">${achievement.name}</div>
+                    <div class="achievement-description">${achievement.description}</div>
+                    ${!achievement.unlocked ? `
+                        <div class="achievement-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progressPercent}%"></div>
+                            </div>
+                            <div class="progress-text">${achievement.progress}/${achievement.requirement}</div>
+                        </div>
+                    ` : `
+                        <div class="achievement-unlocked-date">
+                            Unlocked ${new Date(achievement.unlockedAt).toLocaleDateString()}
+                        </div>
+                    `}
+                `;
+                
+                container.appendChild(achievementEl);
+            });
+            
+            // Update achievement stats
+            updateAchievementStats();
+        }
+        
+        function updateAchievementStats() {
+            const totalAchievements = Object.keys(userAchievements).length;
+            const unlockedAchievements = Object.values(userAchievements).filter(a => a.unlocked).length;
+            
+            // Update any stats displays
+            const statsElements = document.querySelectorAll('[data-achievement-stats]');
+            statsElements.forEach(el => {
+                el.textContent = `${unlockedAchievements}/${totalAchievements}`;
             });
         }
         
         function checkAchievements(friends) {
             // Responsible - stayed safe all night
             if (friends.every(f => f.bac < 0.05) && Date.now() - partyStartTime > 3600000) {
-                achievements.responsible = true;
-                showAchievementUnlocked('Responsible');
+                updateAchievementProgress('responsible');
             }
             
             // Sunrise Warrior - party for 6+ hours
             if (Date.now() - partyStartTime > 21600000) {
-                achievements.sunriseWarrior = true;
-                showAchievementUnlocked('Sunrise Warrior');
+                updateAchievementProgress('sunriseWarrior');
+            }
+            
+            // Social Butterfly - check friend count
+            if (Object.keys(friendsData).length >= 20) {
+                updateAchievementProgress('socialButterfly', Object.keys(friendsData).length);
             }
         }
         
-        function showAchievementUnlocked(name) {
-            if (!localStorage.getItem(`achievement_${name}`)) {
-                localStorage.setItem(`achievement_${name}`, 'true');
-                
+        function showAchievementUnlocked(achievement) {
+            // Play confetti animation
+            if (typeof confetti === 'function') {
                 confetti({
                     particleCount: 100,
                     spread: 70,
                     origin: { y: 0.6 }
                 });
-                
-                showNotification(`🏆 Achievement Unlocked: ${name}!`);
             }
+            
+            // Show notification with custom styling
+            const notification = document.createElement('div');
+            notification.className = 'achievement-notification';
+            notification.innerHTML = `
+                <div class="achievement-popup">
+                    <div class="achievement-popup-icon">${achievement.icon}</div>
+                    <div class="achievement-popup-content">
+                        <div class="achievement-popup-title">Achievement Unlocked!</div>
+                        <div class="achievement-popup-name">${achievement.name}</div>
+                        <div class="achievement-popup-description">${achievement.description}</div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 500);
+            }, 5000);
         }
         
         // Toggle chart visibility
@@ -2330,6 +2563,21 @@
                         ...drink,
                         time: drink.time.toISOString()
                     });
+                }
+                
+                // Track achievements
+                if (userAchievements) {
+                    // Track unique drink types for Mixologist achievement
+                    const uniqueDrinkTypes = new Set(drinkHistory.map(d => d.type));
+                    const currentProgress = userAchievements.mixologist?.progress || 0;
+                    if (uniqueDrinkTypes.size > currentProgress) {
+                        updateAchievementProgress('mixologist', uniqueDrinkTypes.size - currentProgress);
+                    }
+                    
+                    // Track hydration for Hydro Homie
+                    if (type === 'water') {
+                        updateAchievementProgress('hydroHomie');
+                    }
                 }
                 
                 // Confetti for water!
