@@ -158,6 +158,14 @@ const partyFunctions = {
         if (result.success) {
             input.value = '';
         }
+    },
+    
+    refreshPublicParties: async function() {
+        console.log('refreshPublicParties called from partyFunctions');
+        // This will be overridden by the actual implementation
+        if (typeof window.refreshPublicParties === 'function') {
+            return window.refreshPublicParties();
+        }
     }
 };
 
@@ -250,7 +258,9 @@ function exposeGlobalFunctions() {
     console.log('Party functions exposed:', {
         createNewParty: typeof window.createNewParty,
         joinPartyByCode: typeof window.joinPartyByCode,
-        leaveCurrentParty: typeof window.leaveCurrentParty
+        leaveCurrentParty: typeof window.leaveCurrentParty,
+        refreshPublicParties: typeof window.refreshPublicParties,
+        sendPartyChat: typeof window.sendPartyChat
     });
 }
 
@@ -391,6 +401,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (onclick.includes('sendPartyChat()') && partyFunctions.sendPartyChat) {
                 event.preventDefault();
                 partyFunctions.sendPartyChat();
+            } else if (onclick.includes('refreshPublicParties()')) {
+                event.preventDefault();
+                window.refreshPublicParties();
             }
         }
     });
@@ -418,7 +431,11 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('Final check - Party functions:', {
             createNewParty: window.createNewParty,
             joinPartyByCode: window.joinPartyByCode,
-            leaveCurrentParty: window.leaveCurrentParty
+            leaveCurrentParty: window.leaveCurrentParty,
+            refreshPublicParties: window.refreshPublicParties,
+            sendPartyChat: window.sendPartyChat,
+            updatePartyDisplay: window.updatePartyDisplay,
+            joinPublicParty: window.joinPublicParty
         });
     }, 100);
 });
@@ -1151,7 +1168,7 @@ async function handlePartyRequest(userId, approve) {
     }
 }
 
-// Expose globally
+// Expose globally - Party functions
 window.updatePartyDisplay = updatePartyDisplay;
 window.updatePartyChat = updatePartyChat;
 window.sendPartyChat = sendPartyChat;
@@ -1159,3 +1176,12 @@ window.refreshPublicParties = refreshPublicParties;
 window.joinPublicParty = joinPublicParty;
 window.updatePartyLeaderboard = updatePartyLeaderboard;
 window.handlePartyRequest = handlePartyRequest;
+
+// Also expose on globalThis for build optimization
+globalThis.updatePartyDisplay = updatePartyDisplay;
+globalThis.updatePartyChat = updatePartyChat;
+globalThis.sendPartyChat = sendPartyChat;
+globalThis.refreshPublicParties = refreshPublicParties;
+globalThis.joinPublicParty = joinPublicParty;
+globalThis.updatePartyLeaderboard = updatePartyLeaderboard;
+globalThis.handlePartyRequest = handlePartyRequest;

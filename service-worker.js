@@ -1,7 +1,7 @@
 // Service Worker for BoozeLens PWA
 // Version: 1.0.0
 
-const CACHE_NAME = 'boozelens-v1';
+const CACHE_NAME = 'boozelens-v3';
 const urlsToCache = [
   './',
   './index.html',

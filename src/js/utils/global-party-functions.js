@@ -5,7 +5,8 @@ export const partyFunctions = {
     createNewParty: null,
     joinPartyByCode: null,
     leaveCurrentParty: null,
-    sendPartyChat: null
+    sendPartyChat: null,
+    refreshPublicParties: null
 };
 
 // Initialize with placeholder functions
@@ -19,6 +20,9 @@ partyFunctions.leaveCurrentParty = function() {
     console.log('Party system initializing...'); 
 };
 partyFunctions.sendPartyChat = function() { 
+    console.log('Party system initializing...'); 
+};
+partyFunctions.refreshPublicParties = function() { 
     console.log('Party system initializing...'); 
 };
 
@@ -49,11 +53,18 @@ export function exposePartyFunctions() {
         configurable: true
     });
     
+    Object.defineProperty(window, 'refreshPublicParties', {
+        value: partyFunctions.refreshPublicParties,
+        writable: true,
+        configurable: true
+    });
+    
     // Also set on globalThis
     globalThis.createNewParty = partyFunctions.createNewParty;
     globalThis.joinPartyByCode = partyFunctions.joinPartyByCode;
     globalThis.leaveCurrentParty = partyFunctions.leaveCurrentParty;
     globalThis.sendPartyChat = partyFunctions.sendPartyChat;
+    globalThis.refreshPublicParties = partyFunctions.refreshPublicParties;
 }
 
 // Update party functions
@@ -62,6 +73,7 @@ export function updatePartyFunctions(functions) {
     partyFunctions.joinPartyByCode = functions.joinPartyByCode;
     partyFunctions.leaveCurrentParty = functions.leaveCurrentParty;
     partyFunctions.sendPartyChat = functions.sendPartyChat || partyFunctions.sendPartyChat;
+    partyFunctions.refreshPublicParties = functions.refreshPublicParties || partyFunctions.refreshPublicParties;
     
     // Re-expose after update
     exposePartyFunctions();

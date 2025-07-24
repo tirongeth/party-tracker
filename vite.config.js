@@ -39,6 +39,28 @@ export default defineConfig(({ mode }) => {
           if (typeof globalThis.leaveCurrentParty === 'function') {
             window.leaveCurrentParty = globalThis.leaveCurrentParty;
           }
+          if (typeof globalThis.refreshPublicParties === 'function') {
+            window.refreshPublicParties = globalThis.refreshPublicParties;
+          }
+          if (typeof globalThis.sendPartyChat === 'function') {
+            window.sendPartyChat = globalThis.sendPartyChat;
+          }
+          // Additional party-related functions
+          if (typeof globalThis.updatePartyDisplay === 'function') {
+            window.updatePartyDisplay = globalThis.updatePartyDisplay;
+          }
+          if (typeof globalThis.updatePartyChat === 'function') {
+            window.updatePartyChat = globalThis.updatePartyChat;
+          }
+          if (typeof globalThis.joinPublicParty === 'function') {
+            window.joinPublicParty = globalThis.joinPublicParty;
+          }
+          if (typeof globalThis.updatePartyLeaderboard === 'function') {
+            window.updatePartyLeaderboard = globalThis.updatePartyLeaderboard;
+          }
+          if (typeof globalThis.handlePartyRequest === 'function') {
+            window.handlePartyRequest = globalThis.handlePartyRequest;
+          }
         `
       }
     }
