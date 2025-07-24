@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
   
   return {
   // Base path for deployment
-  base: process.env.NODE_ENV === 'production' ? '/boozelens/' : '/',
+  base: '/boozelens/',
   
   // Development server configuration
   server: {
