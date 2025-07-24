@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Party Functions</title>
+    <style>
+        body { 
+            background: #000; 
+            color: #fff; 
+            font-family: Arial; 
+            padding: 20px; 
+        }
+        .function-test {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #333;
+        }
+        .available { background: #0f0; color: #000; }
+        .missing { background: #f00; color: #fff; }
+    </style>
+</head>
+<body>
+    <h1>Party Functions Verification</h1>
+    <div id="results"></div>
+    
+    <script>
+        const functionsToCheck = [
+            'createNewParty',
+            'joinPartyByCode', 
+            'leaveCurrentParty',
+            'sendPartyChat',
+            'refreshPublicParties',
+            'updatePartyDisplay',
+            'updatePartyChat',
+            'joinPublicParty',
+            'updatePartyLeaderboard',
+            'handlePartyRequest'
+        ];
+        
+        function checkFunctions() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h2>Window Functions:</h2>';
+            
+            let allAvailable = true;
+            
+            functionsToCheck.forEach(func => {
+                const exists = typeof window[func] === 'function';
+                const className = exists ? 'available' : 'missing';
+                results.innerHTML += `<div class="function-test ${className}">
+                    window.${func}: ${exists ? '✅ AVAILABLE' : '❌ MISSING'}
+                </div>`;
+                if (!exists) allAvailable = false;
+            });
+            
+            results.innerHTML += '<h2>GlobalThis Functions:</h2>';
+            functionsToCheck.forEach(func => {
+                const exists = typeof globalThis[func] === 'function';
+                const className = exists ? 'available' : 'missing';
+                results.innerHTML += `<div class="function-test ${className}">
+                    globalThis.${func}: ${exists ? '✅ AVAILABLE' : '❌ MISSING'}
+                </div>`;
+            });
+            
+            results.innerHTML += allAvailable ? 
+                '<h2 style="color: #0f0;">✅ ALL FUNCTIONS AVAILABLE!</h2>' : 
+                '<h2 style="color: #f00;">❌ SOME FUNCTIONS MISSING!</h2>';
+        }
+        
+        // Check on load and every second
+        window.onload = checkFunctions;
+        setInterval(checkFunctions, 1000);
+    </script>
+</body>
+</html>
