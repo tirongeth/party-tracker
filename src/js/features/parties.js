@@ -311,11 +311,28 @@ export async function getPartyLeaderboard(partyId) {
             const userSnapshot = await firebaseGet(firebaseRef(database, `users/${memberId}`));
             if (userSnapshot.exists()) {
                 const userData = userSnapshot.val();
+                // Also check for real-time BAC from devices
+                let currentBAC = userData.currentBAC || 0;
+                
+                // Check if user has active devices
+                if (userData.devices) {
+                    for (const deviceId of Object.keys(userData.devices)) {
+                        const readingSnapshot = await firebaseGet(firebaseRef(database, `readings/${deviceId}`));
+                        if (readingSnapshot.exists()) {
+                            const reading = readingSnapshot.val();
+                            if (reading.bac > currentBAC) {
+                                currentBAC = reading.bac;
+                            }
+                        }
+                    }
+                }
+                
                 leaderboard.push({
                     id: memberId,
                     name: party.members[memberId].name,
-                    bac: userData.currentBAC || 0,
-                    avatar: userData.profilePicture || null
+                    bac: currentBAC,
+                    avatar: userData.profilePicture || null,
+                    drinkCount: userData.todayDrinks || 0
                 });
             }
         }
@@ -325,6 +342,49 @@ export async function getPartyLeaderboard(partyId) {
     } catch (error) {
         console.error('Error getting party leaderboard:', error);
         return [];
+    }
+}
+
+// Get party statistics
+export async function getPartyStats(partyId) {
+    try {
+        const partySnapshot = await firebaseGet(firebaseRef(database, `parties/${partyId}`));
+        if (!partySnapshot.exists()) return null;
+        
+        const party = partySnapshot.val();
+        const leaderboard = await getPartyLeaderboard(partyId);
+        
+        // Calculate statistics
+        const stats = {
+            memberCount: Object.keys(party.members || {}).length,
+            averageBAC: 0,
+            highestBAC: 0,
+            safeToDrive: 0,
+            totalDrinks: 0,
+            duration: Date.now() - party.createdAt,
+            mostActive: null
+        };
+        
+        if (leaderboard.length > 0) {
+            // Calculate averages and counts
+            let totalBAC = 0;
+            leaderboard.forEach(member => {
+                totalBAC += member.bac;
+                if (member.bac < 0.05) stats.safeToDrive++;
+                if (member.bac > stats.highestBAC) {
+                    stats.highestBAC = member.bac;
+                    stats.mostActive = member.name;
+                }
+                stats.totalDrinks += member.drinkCount || 0;
+            });
+            
+            stats.averageBAC = totalBAC / leaderboard.length;
+        }
+        
+        return stats;
+    } catch (error) {
+        console.error('Error getting party stats:', error);
+        return null;
     }
 }
 
@@ -451,5 +511,75 @@ export async function endParty(partyId) {
     } catch (error) {
         console.error('Error ending party:', error);
         showNotification('Failed to end party', 'error');
+    }
+}
+
+// Party safety check
+export async function performPartySafetyCheck(partyId) {
+    try {
+        const stats = await getPartyStats(partyId);
+        if (!stats) return null;
+        
+        const alerts = [];
+        
+        // Check for high average BAC
+        if (stats.averageBAC > 0.08) {
+            alerts.push({
+                type: 'warning',
+                message: 'Party average BAC is very high! Consider taking a break.',
+                icon: '⚠️'
+            });
+        }
+        
+        // Check for extreme individual BAC
+        if (stats.highestBAC > 0.15) {
+            alerts.push({
+                type: 'danger',
+                message: `${stats.mostActive} has dangerously high BAC! Check on them immediately.`,
+                icon: '🚑'
+            });
+        }
+        
+        // Check party duration
+        if (stats.duration > 4 * 60 * 60 * 1000) { // 4 hours
+            alerts.push({
+                type: 'info',
+                message: 'Party has been going for over 4 hours. Time for water breaks!',
+                icon: '💧'
+            });
+        }
+        
+        // Check if no one can drive
+        if (stats.safeToDrive === 0 && stats.memberCount > 2) {
+            alerts.push({
+                type: 'warning',
+                message: 'No one is safe to drive! Arrange safe transportation.',
+                icon: '🚕'
+            });
+        }
+        
+        return alerts;
+    } catch (error) {
+        console.error('Error performing safety check:', error);
+        return [];
+    }
+}
+
+// Send safety alert to party
+export async function sendPartySafetyAlert(partyId, alert) {
+    try {
+        const user = auth.currentUser;
+        if (!user) return;
+        
+        const chatRef = firebaseRef(database, `parties/${partyId}/chat`);
+        await firebasePush(chatRef, {
+            userId: 'system',
+            userName: 'Safety Bot',
+            message: `${alert.icon} ${alert.message}`,
+            timestamp: firebaseServerTimestamp(),
+            type: 'safety-alert'
+        });
+    } catch (error) {
+        console.error('Error sending safety alert:', error);
     }
 }

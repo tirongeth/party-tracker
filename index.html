@@ -520,6 +520,11 @@
                     <div class="party-code-display" id="currentPartyCode">ABC123</div>
                 </div>
                 
+                <!-- Party Stats -->
+                <div class="party-stats" id="partyStatsDisplay" style="margin: 20px 0;">
+                    <!-- Party statistics will be shown here -->
+                </div>
+                
                 <div class="party-leaderboard">
                     <h4>🏆 Party Leaderboard</h4>
                     <div id="partyLeaderboard">
@@ -534,7 +539,31 @@
                     </div>
                 </div>
                 
-                <button class="btn btn-danger" onclick="leaveCurrentParty()">
+                <!-- Party Chat -->
+                <div class="party-chat" style="margin-top: 20px;">
+                    <h4>💬 Party Chat</h4>
+                    <div class="chat-messages party-chat-messages" id="partyChatMessages">
+                        <!-- Party chat messages will appear here -->
+                    </div>
+                    <div class="chat-reactions">
+                        <button class="reaction-btn" onclick="sendPartyReaction('🎉')">🎉</button>
+                        <button class="reaction-btn" onclick="sendPartyReaction('🍻')">🍻</button>
+                        <button class="reaction-btn" onclick="sendPartyReaction('🔥')">🔥</button>
+                        <button class="reaction-btn" onclick="sendPartyReaction('😂')">😂</button>
+                        <button class="reaction-btn" onclick="sendPartyReaction('👯')">👯</button>
+                        <button class="reaction-btn" onclick="sendPartyReaction('🚀')">🚀</button>
+                        <button class="reaction-btn" onclick="sendPartyReaction('❤️')">❤️</button>
+                        <button class="reaction-btn" onclick="sendPartyReaction('🤔')">🤔</button>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="partyChatInput" placeholder="Type a message..." onkeypress="handlePartyChatEnter(event)">
+                        <button class="btn" onclick="sendPartyMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <button class="btn btn-danger" style="margin-top: 20px;" onclick="leaveCurrentParty()">
                     <i class="fas fa-sign-out-alt"></i> Leave Party
                 </button>
             </div>
