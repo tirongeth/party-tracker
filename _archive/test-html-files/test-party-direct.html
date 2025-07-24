@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Party Button Test - Direct</title>
+    <script type="module">
+        import { initializePartyButtons } from './src/js/main.js';
+        import * as Parties from './src/js/features/parties.js';
+        
+        window.Parties = Parties;
+        
+        // Wait for DOM
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Test page loaded');
+            
+            // Add test buttons
+            document.getElementById('testCreate').addEventListener('click', async () => {
+                console.log('Test create clicked');
+                const result = await Parties.createParty('Test Party', {
+                    privacy: 'private',
+                    duration: 'ongoing'
+                });
+                console.log('Create result:', result);
+                document.getElementById('result').textContent = JSON.stringify(result, null, 2);
+            });
+            
+            document.getElementById('testJoin').addEventListener('click', async () => {
+                const code = prompt('Enter party code:');
+                if (code) {
+                    const party = await Parties.getPartyByCode(code);
+                    console.log('Party found:', party);
+                    document.getElementById('result').textContent = JSON.stringify(party, null, 2);
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Party Function Direct Test</h1>
+    <button id="testCreate">Test Create Party</button>
+    <button id="testJoin">Test Join Party</button>
+    <pre id="result"></pre>
+</body>
+</html>

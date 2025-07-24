@@ -31,7 +31,11 @@
       "Bash(cp:*)",
       "Bash(mv:*)",
       "Bash(gh run list:*)",
-      "Bash(gh workflow view:*)"
+      "Bash(gh workflow view:*)",
+      "Bash(start index.html)",
+      "Bash(sed:*)",
+      "Bash(fc:*)",
+      "Bash(start cmd /c \"npm run dev\")"
     ],
     "deny": []
   }

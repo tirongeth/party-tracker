@@ -16,6 +16,7 @@ import {
     clearAppState
 } from './config/app-state.js';
 import { registerServiceWorker, initializePWA, initializeOfflineStorage } from './utils/pwa.js';
+import { initializePartyButtons, setUpdateFunctions } from './party-buttons.js';
 
 // Import all functions from feature modules
 import * as AllFunctions from './features/all-functions.js';
@@ -24,12 +25,140 @@ import * as Games from './features/games.js';
 import * as Achievements from './features/achievements.js';
 import * as Devices from './features/devices.js';
 import * as PartiesModule from './features/parties.js';
-import * as PartiesUI from './features/parties-ui.js';
 
 // ========================================
 // PARTY MODULE REFERENCE
 // ========================================
 let Parties = null;
+        console.log('createNewParty called');
+        if (!Parties) {
+            console.error('Parties module not loaded');
+            showNotification('System not ready, please try again', 'error');
+            return;
+        }
+        
+        const nameInput = document.getElementById('partyName');
+        const privacySelect = document.getElementById('partyPrivacy');
+        const durationSelect = document.getElementById('partyDuration');
+        const addressInput = document.getElementById('partyAddress');
+        
+        if (!nameInput || !nameInput.value.trim()) {
+            showNotification('Enter a party name', 'error');
+            return;
+        }
+        
+        const options = {
+            privacy: privacySelect ? privacySelect.value : 'private',
+            duration: durationSelect ? durationSelect.value : 'ongoing',
+            address: addressInput ? addressInput.value : ''
+        };
+        
+        const result = await Parties.createParty(nameInput.value.trim(), options);
+        if (result.success) {
+            showNotification(`Party created! Code: ${result.code}`, 'success');
+            nameInput.value = '';
+            if (addressInput) addressInput.value = '';
+            updatePartyDisplay();
+        } else {
+            showNotification(result.error || 'Failed to create party', 'error');
+        }
+    },
+    
+    joinPartyByCode: async function() {
+        console.log('joinPartyByCode called');
+        if (!Parties) {
+            console.error('Parties module not loaded');
+            showNotification('System not ready, please try again', 'error');
+            return;
+        }
+        
+        const codeInput = document.getElementById('joinPartyCode');
+        if (!codeInput || !codeInput.value.trim()) {
+            showNotification('Enter a party code', 'error');
+            return;
+        }
+        
+        const code = codeInput.value.trim();
+        
+        // First, get party info to preview
+        showNotification('Checking party...', 'info');
+        const party = await Parties.getPartyByCode(code);
+        
+        if (!party) {
+            showNotification('Invalid party code', 'error');
+            return;
+        }
+        
+        // Show party preview
+        const memberCount = Object.keys(party.members || {}).length;
+        const confirmMsg = `Join "${party.name}"?\n` +
+            `👥 ${memberCount} members\n` +
+            `🔒 Privacy: ${party.privacy}\n` +
+            `📍 ${party.address || 'No location set'}\n` +
+            `⏱️ ${party.duration === '24h' ? '24 hour party' : 'Ongoing party'}`;
+        
+        if (!confirm(confirmMsg)) {
+            return;
+        }
+        
+        const result = await Parties.joinParty(code);
+        if (result.success) {
+            if (result.pending) {
+                showNotification('Join request sent! Waiting for approval.', 'info');
+            } else if (result.alreadyMember) {
+                showNotification('Rejoined party!', 'success');
+            } else {
+                showNotification('Joined party!', 'success');
+            }
+            codeInput.value = '';
+            updatePartyDisplay();
+        } else {
+            showNotification(result.error || 'Failed to join party', 'error');
+        }
+    },
+    
+    leaveCurrentParty: async function() {
+        console.log('leaveCurrentParty called');
+        if (!Parties) {
+            console.error('Parties module not loaded');
+            showNotification('System not ready, please try again', 'error');
+            return;
+        }
+        
+        if (confirm('Leave this party?')) {
+            const result = await Parties.leaveParty();
+            if (result.success) {
+                showNotification('Left party', 'info');
+                updatePartyDisplay();
+            }
+        }
+    },
+    
+    sendPartyChat: async function() {
+        console.log('sendPartyChat called');
+        if (!Parties) {
+            console.error('Parties module not loaded');
+            showNotification('System not ready, please try again', 'error');
+            return;
+        }
+        
+        const input = document.getElementById('partyChatInput');
+        if (!input || !input.value.trim()) return;
+        
+        const result = await Parties.sendPartyMessage(input.value);
+        if (result.success) {
+            input.value = '';
+        }
+    },
+    
+    refreshPublicParties: async function() {
+        console.log('refreshPublicParties called from partyFunctions');
+        // This will be overridden by the actual implementation
+        if (typeof window.refreshPublicParties === 'function') {
+            return window.refreshPublicParties();
+        }
+    }
+};
 
 // ========================================
 // EXPOSE ALL FUNCTIONS GLOBALLY
@@ -82,21 +211,6 @@ function exposeGlobalFunctions() {
     window.clearDrinkHistory = Drinks.clearDrinkHistory;
     window.deleteAccount = AllFunctions.deleteAccount;
     
-    // Party functions
-    window.createParty = Parties.createParty;
-    window.joinParty = Parties.joinParty;
-    window.leaveParty = Parties.leaveParty;
-    window.sendPartyMessage = Parties.sendPartyMessage;
-    window.getPartyByCode = Parties.getPartyByCode;
-    window.getNearbyParties = Parties.getNearbyParties;
-    window.updatePartyDisplay = Parties.updatePartyUI;
-    window.createNewParty = PartiesUI.createNewParty;
-    window.joinPartyByCode = PartiesUI.joinPartyByCode;
-    window.leaveCurrentParty = PartiesUI.leaveCurrentParty;
-    window.sendPartyChat = PartiesUI.sendPartyChat;
-    window.refreshPublicParties = PartiesUI.refreshPublicParties;
-    window.joinPublicParty = PartiesUI.joinPublicParty;
-    
     // Game functions
     window.startGame = Games.startGame;
     window.closeGame = Games.closeGame;
@@ -129,222 +243,16 @@ function exposeGlobalFunctions() {
     window.unpairDevice = Devices.unpairDevice;
     window.renameDevice = Devices.renameDevice;
     
-    console.log('✅ All functions exposed globally including party functions');
-}
-
-
-// ========================================
-// PARTY BUTTON HANDLERS (BACKUP)
-// ========================================
-function initializePartyButtons() {
-    console.log('Initializing party buttons...');
+    // Party functions are handled by global-party-functions.js module
     
-    // Create party button
-    document.addEventListener('click', async (e) => {
-        if (e.target.closest('button[onclick*="createNewParty"]')) {
-            e.preventDefault();
-            console.log('Create party clicked');
-            
-            const nameInput = document.getElementById('partyName');
-            const privacySelect = document.getElementById('partyPrivacy');
-            const durationSelect = document.getElementById('partyDuration');
-            const addressInput = document.getElementById('partyAddress');
-            
-            if (!nameInput || !nameInput.value.trim()) {
-                showNotification('Enter a party name', 'error');
-                return;
-            }
-            
-            const options = {
-                privacy: privacySelect ? privacySelect.value : 'private',
-                duration: durationSelect ? durationSelect.value : 'ongoing',
-                address: addressInput ? addressInput.value : ''
-            };
-            
-            try {
-                const result = await Parties.createParty(nameInput.value.trim(), options);
-                if (result.success) {
-                    showNotification(`Party created! Code: ${result.code}`, 'success');
-                    nameInput.value = '';
-                    if (addressInput) addressInput.value = '';
-                    updatePartyDisplay();
-                } else {
-                    showNotification(result.error || 'Failed to create party', 'error');
-                }
-            } catch (error) {
-                showNotification('Failed to create party', 'error');
-            }
-        }
-        
-        // Join party button
-        else if (e.target.closest('button[onclick*="joinPartyByCode"]')) {
-            e.preventDefault();
-            console.log('Join party clicked');
-            
-            const codeInput = document.getElementById('joinPartyCode');
-            if (!codeInput || !codeInput.value.trim()) {
-                showNotification('Enter a party code', 'error');
-                return;
-            }
-            
-            const code = codeInput.value.trim();
-            
-            try {
-                // First, get party info to preview
-                showNotification('Checking party...', 'info');
-                const party = await Parties.getPartyByCode(code);
-                
-                if (!party) {
-                    showNotification('Invalid party code', 'error');
-                    return;
-                }
-                
-                // Show party preview
-                const memberCount = Object.keys(party.members || {}).length;
-                const confirmMsg = `Join "${party.name}"?\n` +
-                    `👥 ${memberCount} members\n` +
-                    `🔒 Privacy: ${party.privacy || 'Unknown'}\n` +
-                    `📍 ${party.address || 'No location set'}\n` +
-                    `⏱️ ${party.duration === '24h' ? '24 hour party' : 'Ongoing party'}`;
-                
-                if (!confirm(confirmMsg)) {
-                    return;
-                }
-                
-                const result = await Parties.joinParty(code);
-                if (result.success) {
-                    if (result.pending) {
-                        showNotification('Join request sent! Waiting for approval.', 'info');
-                    } else if (result.alreadyMember) {
-                        showNotification('Rejoined party!', 'success');
-                    } else {
-                        showNotification('Joined party!', 'success');
-                    }
-                    codeInput.value = '';
-                    updatePartyDisplay();
-                } else {
-                    showNotification(result.error || 'Failed to join party', 'error');
-                }
-            } catch (error) {
-                showNotification('Failed to join party', 'error');
-            }
-        }
-        
-        // Leave party button
-        else if (e.target.closest('button[onclick*="leaveCurrentParty"]')) {
-            e.preventDefault();
-            console.log('Leave party clicked');
-            
-            if (confirm('Leave this party?')) {
-                try {
-                    const result = await Parties.leaveParty();
-                    if (result.success) {
-                        showNotification('Left party', 'info');
-                        updatePartyDisplay();
-                    }
-                } catch (error) {
-                    showNotification('Failed to leave party', 'error');
-                }
-            }
-        }
-        
-        // Send chat button
-        else if (e.target.closest('button[onclick*="sendPartyChat"]')) {
-            e.preventDefault();
-            console.log('Send chat clicked');
-            
-            const input = document.getElementById('partyChatInput');
-            if (!input || !input.value.trim()) return;
-            
-            try {
-                const result = await Parties.sendPartyMessage(input.value);
-                if (result.success) {
-                    input.value = '';
-                }
-            } catch (error) {
-                showNotification('Failed to send message', 'error');
-            }
-        }
-        
-        // Refresh parties button
-        else if (e.target.closest('button[onclick*="refreshPublicParties"]')) {
-            e.preventDefault();
-            console.log('Refresh parties clicked');
-            
-            const listEl = document.getElementById('publicPartiesList');
-            if (!listEl) return;
-            
-            listEl.innerHTML = '<p style="opacity: 0.7;">Loading parties...</p>';
-            
-            try {
-                const publicParties = await Parties.getNearbyParties();
-                
-                if (publicParties.length === 0) {
-                    listEl.innerHTML = '<p style="opacity: 0.7;">No public parties found. Create one!</p>';
-                    return;
-                }
-                
-                listEl.innerHTML = publicParties.map(party => `
-                    <div class="friend-item" style="margin-bottom: 15px;">
-                        <div class="friend-info">
-                            <div class="friend-avatar-small">🎉</div>
-                            <div class="friend-details">
-                                <h4>${party.name}</h4>
-                                <p style="opacity: 0.7;">
-                                    👥 ${party.memberCount} members
-                                    ${party.address ? `• 📍 ${party.address}` : ''}
-                                    ${party.duration === '24h' ? '• ⏰ 24h party' : ''}
-                                </p>
-                            </div>
-                        </div>
-                        <button class="btn btn-primary" data-party-code="${party.code}">
-                            Join
-                        </button>
-                    </div>
-                `).join('');
-                
-                // Add click handlers to join buttons
-                listEl.querySelectorAll('button[data-party-code]').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const code = e.target.dataset.partyCode;
-                        try {
-                            const result = await Parties.joinParty(code, true);
-                            if (result.success) {
-                                showNotification('Joined public party!', 'success');
-                                updatePartyDisplay();
-                            } else {
-                                showNotification(result.error || 'Failed to join party', 'error');
-                            }
-                        } catch (error) {
-                            showNotification('Failed to join party', 'error');
-                        }
-                    });
-                });
-            } catch (error) {
-                listEl.innerHTML = '<p style="opacity: 0.7;">Failed to load parties</p>';
-            }
-        }
+    // Double check they're attached
+    console.log('Party functions exposed:', {
+        createNewParty: typeof window.createNewParty,
+        joinPartyByCode: typeof window.joinPartyByCode,
+        leaveCurrentParty: typeof window.leaveCurrentParty,
+        refreshPublicParties: typeof window.refreshPublicParties,
+        sendPartyChat: typeof window.sendPartyChat
     });
-    
-    // Handle enter key for chat
-    const chatInput = document.getElementById('partyChatInput');
-    if (chatInput) {
-        chatInput.addEventListener('keypress', async (e) => {
-            if (e.key === 'Enter') {
-                const input = e.target;
-                if (!input.value.trim()) return;
-                
-                try {
-                    const result = await Parties.sendPartyMessage(input.value);
-                    if (result.success) {
-                        input.value = '';
-                    }
-                } catch (error) {
-                    showNotification('Failed to send message', 'error');
-                }
-            }
-        });
-    }
 }
 
 // ========================================
@@ -353,15 +261,14 @@ function initializePartyButtons() {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Starting BoozeLens app initialization...');
     
-    // Set Parties module reference BEFORE exposing functions
+    // Set Parties module reference
     Parties = PartiesModule;
-    window.Parties = PartiesModule; // Also expose globally for debugging
     
-    // Expose all non-party functions globally first
+    // Update global party functions with actual implementations
+    updatePartyFunctions(partyFunctions);
+    
+    // Expose all functions globally first
     exposeGlobalFunctions();
-    
-    // Initialize party buttons with event listeners
-    initializePartyButtons();
     
     // First, unregister any existing service workers that might be blocking auth
     if ('serviceWorker' in navigator) {
@@ -465,6 +372,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
+    // Add event delegation for party buttons as backup
+    document.addEventListener('click', (event) => {
+        const target = event.target;
+        
+        // Check if it's a party button by its onclick attribute
+        if (target.getAttribute('onclick')) {
+            const onclick = target.getAttribute('onclick');
+            
+            if (onclick.includes('createNewParty()') && partyFunctions.createNewParty) {
+                event.preventDefault();
+                partyFunctions.createNewParty();
+            } else if (onclick.includes('joinPartyByCode()') && partyFunctions.joinPartyByCode) {
+                event.preventDefault();
+                partyFunctions.joinPartyByCode();
+            } else if (onclick.includes('leaveCurrentParty()') && partyFunctions.leaveCurrentParty) {
+                event.preventDefault();
+                partyFunctions.leaveCurrentParty();
+            } else if (onclick.includes('sendPartyChat()') && partyFunctions.sendPartyChat) {
+                event.preventDefault();
+                partyFunctions.sendPartyChat();
+            } else if (onclick.includes('refreshPublicParties()')) {
+                event.preventDefault();
+                window.refreshPublicParties();
+            }
+        }
+    });
+    
     // Save data before unload
     window.addEventListener('beforeunload', () => {
         Drinks.saveDrinkHistory();
@@ -479,6 +413,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     console.log('✅ App initialization complete!');
+    
+    // Re-update party functions to ensure they're available
+    updatePartyFunctions(partyFunctions);
+    
+    // Verify they exist
+    setTimeout(() => {
+        console.log('Final check - Party functions:', {
+            createNewParty: window.createNewParty,
+            joinPartyByCode: window.joinPartyByCode,
+            leaveCurrentParty: window.leaveCurrentParty,
+            refreshPublicParties: window.refreshPublicParties,
+            sendPartyChat: window.sendPartyChat,
+            updatePartyDisplay: window.updatePartyDisplay,
+            joinPublicParty: window.joinPublicParty
+        });
+    }, 100);
 });
 
 // ========================================
@@ -515,11 +465,6 @@ async function onUserAuthenticated(user) {
         // Load and display party
         await Parties.loadCurrentParty();
         updatePartyDisplay();
-        
-        // Re-initialize party buttons after auth
-        setTimeout(() => {
-            initializePartyButtons();
-        }, 100);
         
         const userData = getAppState().userData;
         const displayName = userData.username || user.email.split('@')[0];
@@ -713,8 +658,7 @@ function switchSection(sectionId) {
             AllFunctions.updateToggleSwitches();
         } else if (sectionId === 'parties') {
             updatePartyDisplay();
-            // Refresh public parties
-            document.querySelector('button[onclick*="refreshPublicParties"]')?.click();
+            refreshPublicParties();
         }
     } catch (error) {
         console.error('Section switch failed:', error);
@@ -1118,6 +1062,56 @@ function updatePartyChat(messages) {
     chatEl.scrollTop = chatEl.scrollHeight;
 }
 
+// Send party chat message - delegate to partyFunctions
+async function sendPartyChat() {
+    return partyFunctions.sendPartyChat();
+}
+
+// Refresh public parties list
+async function refreshPublicParties() {
+    const listEl = document.getElementById('publicPartiesList');
+    if (!listEl || !Parties) return;
+    
+    listEl.innerHTML = '<p style="opacity: 0.7;">Loading parties...</p>';
+    
+    const publicParties = await Parties.getNearbyParties();
+    
+    if (publicParties.length === 0) {
+        listEl.innerHTML = '<p style="opacity: 0.7;">No public parties found. Create one!</p>';
+        return;
+    }
+    
+    listEl.innerHTML = publicParties.map(party => `
+        <div class="friend-item" style="margin-bottom: 15px; cursor: pointer;" onclick="joinPublicParty('${party.code}')">
+            <div class="friend-info">
+                <div class="friend-avatar-small">🎉</div>
+                <div class="friend-details">
+                    <h4>${party.name}</h4>
+                    <p style="opacity: 0.7;">
+                        👥 ${party.memberCount} members
+                        ${party.address ? `• 📍 ${party.address}` : ''}
+                        ${party.duration === '24h' ? '• ⏰ 24h party' : ''}
+                    </p>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="event.stopPropagation(); joinPublicParty('${party.code}')">
+                Join
+            </button>
+        </div>
+    `).join('');
+}
+
+// Join public party
+async function joinPublicParty(code) {
+    const result = await Parties.joinParty(code, true);
+    if (result.success) {
+        showNotification('Joined public party!', 'success');
+        updatePartyDisplay();
+    } else {
+        showNotification(result.error || 'Failed to join party', 'error');
+    }
+}
+
 // Update party leaderboard
 async function updatePartyLeaderboard() {
     const leaderboardEl = document.getElementById('partyLeaderboard');
@@ -1165,8 +1159,20 @@ async function handlePartyRequest(userId, approve) {
     }
 }
 
-// Expose globally
+// Expose globally - Party functions
 window.updatePartyDisplay = updatePartyDisplay;
 window.updatePartyChat = updatePartyChat;
+window.sendPartyChat = sendPartyChat;
+window.refreshPublicParties = refreshPublicParties;
+window.joinPublicParty = joinPublicParty;
 window.updatePartyLeaderboard = updatePartyLeaderboard;
 window.handlePartyRequest = handlePartyRequest;
+
+// Also expose on globalThis for build optimization
+globalThis.updatePartyDisplay = updatePartyDisplay;
+globalThis.updatePartyChat = updatePartyChat;
+globalThis.sendPartyChat = sendPartyChat;
+globalThis.refreshPublicParties = refreshPublicParties;
+globalThis.joinPublicParty = joinPublicParty;
+globalThis.updatePartyLeaderboard = updatePartyLeaderboard;
+globalThis.handlePartyRequest = handlePartyRequest;

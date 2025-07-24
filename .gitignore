@@ -6,3 +6,7 @@ dist/
 .vite/
 coverage/
 *.local
+assets/
+*.bak
+.claude/
+.github/

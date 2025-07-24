@@ -21,6 +21,7 @@
     <link rel="apple-touch-icon" href="./icons/icon-152x152.png">
     <link rel="icon" type="image/png" sizes="32x32" href="./icons/icon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="./icons/icon-16x16.png">
+    <link rel="shortcut icon" href="./icons/icon-32x32.png">
     
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -33,28 +34,119 @@
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
-    <!-- Ensure party functions are available -->
-    <script>
-        // Fallback for party functions if not yet loaded
-        window.createNewParty = window.createNewParty || function() { 
-            console.log('Waiting for app to load...'); 
-            setTimeout(() => { if(window.createNewParty !== arguments.callee) window.createNewParty(); }, 100);
-        };
-        window.joinPartyByCode = window.joinPartyByCode || function() { 
-            console.log('Waiting for app to load...'); 
-            setTimeout(() => { if(window.joinPartyByCode !== arguments.callee) window.joinPartyByCode(); }, 100);
-        };
-        window.leaveCurrentParty = window.leaveCurrentParty || function() { 
-            console.log('Waiting for app to load...'); 
-            setTimeout(() => { if(window.leaveCurrentParty !== arguments.callee) window.leaveCurrentParty(); }, 100);
-        };
-        window.refreshPublicParties = window.refreshPublicParties || function() { 
-            console.log('Waiting for app to load...'); 
-            setTimeout(() => { if(window.refreshPublicParties !== arguments.callee) window.refreshPublicParties(); }, 100);
-        };
-    </script>
-  <script type="module" crossorigin src="./assets/index-DEHNkM1m.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-D8DKlKvX.css">
+
+  <script type="module" crossorigin src="./src/js/main.js"></script>
+  <link rel="stylesheet" href="./src/css/boozelens.css">
+  <link rel="stylesheet" href="./src/css/mobile.css">
+  
+  <!-- Party Button Handler Script -->
+  <script>
+    // Global function to handle party buttons after modules load
+    window.initPartyHandlers = function() {
+        console.log('Initializing party handlers...');
+        
+        // Create party
+        const createBtn = document.getElementById('createPartyBtn');
+        if (createBtn) {
+            createBtn.onclick = async function() {
+                if (!window.Parties) {
+                    alert('App still loading, please try again');
+                    return;
+                }
+                
+                const name = document.getElementById('partyName').value;
+                if (!name) {
+                    alert('Please enter a party name');
+                    return;
+                }
+                
+                try {
+                    const result = await window.Parties.createParty(name, {
+                        privacy: document.getElementById('partyPrivacy').value,
+                        duration: document.getElementById('partyDuration').value,
+                        address: document.getElementById('partyAddress').value
+                    });
+                    
+                    if (result.success) {
+                        alert('Party created! Code: ' + result.code);
+                        document.getElementById('partyName').value = '';
+                        document.getElementById('partyAddress').value = '';
+                        if (window.Parties.updatePartyUI) window.Parties.updatePartyUI();
+                    }
+                } catch (error) {
+                    alert('Failed to create party');
+                    console.error(error);
+                }
+            };
+        }
+        
+        // Join party
+        const joinBtn = document.getElementById('joinPartyBtn');
+        if (joinBtn) {
+            joinBtn.onclick = async function() {
+                if (!window.Parties) {
+                    alert('App still loading, please try again');
+                    return;
+                }
+                
+                const code = document.getElementById('joinPartyCode').value;
+                if (!code) {
+                    alert('Please enter a party code');
+                    return;
+                }
+                
+                try {
+                    const result = await window.Parties.joinParty(code);
+                    if (result.success) {
+                        alert('Joined party!');
+                        document.getElementById('joinPartyCode').value = '';
+                        if (window.Parties.updatePartyUI) window.Parties.updatePartyUI();
+                    }
+                } catch (error) {
+                    alert('Failed to join party');
+                    console.error(error);
+                }
+            };
+        }
+        
+        // Leave party
+        const leaveBtn = document.getElementById('leavePartyBtn');
+        if (leaveBtn) {
+            leaveBtn.onclick = async function() {
+                if (window.Parties && confirm('Leave this party?')) {
+                    await window.Parties.leaveParty();
+                    if (window.Parties.updatePartyUI) window.Parties.updatePartyUI();
+                }
+            };
+        }
+        
+        // Refresh parties
+        const refreshBtn = document.getElementById('refreshPartiesBtn');
+        if (refreshBtn) {
+            refreshBtn.onclick = async function() {
+                const list = document.getElementById('publicPartiesList');
+                if (window.Parties && list) {
+                    list.innerHTML = 'Loading...';
+                    const parties = await window.Parties.getNearbyParties();
+                    if (parties.length === 0) {
+                        list.innerHTML = 'No public parties found';
+                    } else {
+                        list.innerHTML = parties.map(p => 
+                            '<div>' + p.name + ' - ' + p.memberCount + ' members</div>'
+                        ).join('');
+                    }
+                }
+            };
+        }
+        
+        console.log('Party handlers initialized');
+    };
+    
+    // Try to init after DOM loads and periodically
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(window.initPartyHandlers, 1000);
+    });
+  </script>
 </head>
 <body>
     <div class="background"></div>
@@ -106,7 +198,7 @@
     <nav>
         <div class="nav-container">
             <div class="logo">
-                <i class="fas fa-beer"></i>
+                <img src="./logo/boozelens_icon.png" alt="BoozeLens" style="height: 32px; width: 32px; margin-right: 8px; vertical-align: middle;">
                 BoozeLens
             </div>
             <ul class="nav-menu" id="navMenu">
@@ -578,14 +670,14 @@
                         <!-- Chat messages show here -->
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <input type="text" id="partyChatInput" placeholder="Type a message..." style="flex: 1; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; color: white;" onkeypress="if(event.key==='Enter')sendPartyChat()">
-                        <button class="btn" onclick="sendPartyChat()">
+                        <input type="text" id="partyChatInput" placeholder="Type a message..." style="flex: 1; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; color: white;">
+                        <button class="btn" id="sendPartyChatBtn">
                             <i class="fas fa-paper-plane"></i> Send
                         </button>
                     </div>
                 </div>
                 
-                <button class="btn btn-danger" onclick="leaveCurrentParty()" style="width: 100%;">
+                <button class="btn btn-danger" id="leavePartyBtn" style="width: 100%;">
                     <i class="fas fa-door-open"></i> Leave Party
                 </button>
             </div>
@@ -612,7 +704,7 @@
                         
                         <input type="text" id="partyAddress" placeholder="📍 Party Location (optional)" style="padding: 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white;">
                         
-                        <button class="btn btn-primary" onclick="createNewParty()" style="padding: 15px 30px;">
+                        <button class="btn btn-primary" id="createPartyBtn" style="padding: 15px 30px;">
                             <i class="fas fa-plus"></i> Create Party
                         </button>
                     </div>
@@ -624,7 +716,7 @@
                     <h4>Join Existing Party</h4>
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
                         <input type="text" id="joinPartyCode" placeholder="ENTER CODE" maxlength="6" style="flex: 1; padding: 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; font-size: 1.3em; text-align: center; text-transform: uppercase; letter-spacing: 0.1em;">
-                        <button class="btn btn-primary" onclick="joinPartyByCode()" style="padding: 15px 30px;">
+                        <button class="btn btn-primary" id="joinPartyBtn" style="padding: 15px 30px;">
                             <i class="fas fa-sign-in-alt"></i> Join
                         </button>
                     </div>
@@ -637,7 +729,7 @@
                 <div id="publicPartiesList" style="margin-top: 15px;">
                     <!-- Public parties will show here -->
                 </div>
-                <button class="btn" onclick="refreshPublicParties()" style="margin-top: 15px;">
+                <button class="btn" id="refreshPartiesBtn" style="margin-top: 15px;">
                     <i class="fas fa-sync"></i> Refresh
                 </button>
             </div>

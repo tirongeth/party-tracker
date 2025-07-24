@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Party Test</title>
+</head>
+<body>
+    <h1>Party Function Test</h1>
+    
+    <div>
+        <h2>Create Party</h2>
+        <input type="text" id="partyName" placeholder="Party Name">
+        <button id="createBtn">Create Party</button>
+    </div>
+    
+    <div>
+        <h2>Join Party</h2>
+        <input type="text" id="partyCode" placeholder="Party Code">
+        <button id="joinBtn">Join Party</button>
+    </div>
+    
+    <div id="output"></div>
+    
+    <script type="module">
+        import * as Parties from './src/js/features/parties.js';
+        import { initializeFirebase } from './src/js/config/firebase.js';
+        import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+        
+        const output = document.getElementById('output');
+        
+        async function init() {
+            output.innerHTML = 'Initializing Firebase...<br>';
+            initializeFirebase();
+            
+            // Sign in
+            const auth = getAuth();
+            try {
+                await signInWithEmailAndPassword(auth, 'rongtimon@gmail.com', 'YOUR_PASSWORD');
+                output.innerHTML += 'Signed in!<br>';
+            } catch (e) {
+                output.innerHTML += 'Sign in failed: ' + e.message + '<br>';
+                output.innerHTML += 'Please sign in first in the main app<br>';
+            }
+            
+            document.getElementById('createBtn').onclick = async () => {
+                const name = document.getElementById('partyName').value;
+                if (!name) {
+                    alert('Enter a party name');
+                    return;
+                }
+                
+                output.innerHTML += 'Creating party...<br>';
+                try {
+                    const result = await Parties.createParty(name);
+                    output.innerHTML += 'Result: ' + JSON.stringify(result) + '<br>';
+                    if (result.success) {
+                        alert('Party created! Code: ' + result.code);
+                    }
+                } catch (e) {
+                    output.innerHTML += 'Error: ' + e.message + '<br>';
+                }
+            };
+            
+            document.getElementById('joinBtn').onclick = async () => {
+                const code = document.getElementById('partyCode').value;
+                if (!code) {
+                    alert('Enter a party code');
+                    return;
+                }
+                
+                output.innerHTML += 'Joining party...<br>';
+                try {
+                    const result = await Parties.joinParty(code);
+                    output.innerHTML += 'Result: ' + JSON.stringify(result) + '<br>';
+                    if (result.success) {
+                        alert('Joined party!');
+                    }
+                } catch (e) {
+                    output.innerHTML += 'Error: ' + e.message + '<br>';
+                }
+            };
+        }
+        
+        init();
+    </script>
+</body>
+</html>

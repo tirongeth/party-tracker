@@ -1,6 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
-import { copyFileSync } from 'fs'
-import { resolve } from 'path'
+import { copyFileSync, existsSync, mkdirSync, readdirSync } from 'fs'
+import { resolve, join } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
   
   return {
   // Base path for deployment
-  base: './',    // Use relative paths for deployment
+  base: process.env.NODE_ENV === 'production' ? '/boozelens/' : '/',
   
   // Development server configuration
   server: {
@@ -25,45 +25,6 @@ export default defineConfig(({ mode }) => {
     outDir: 'dist',       // Output directory for production build
     assetsDir: 'assets',  // Directory for static assets
     sourcemap: true,      // Generate source maps for debugging
-    rollupOptions: {
-      output: {
-        // Ensure global functions are preserved
-        footer: `
-          // Ensure party functions are available globally
-          if (typeof globalThis.createNewParty === 'function') {
-            window.createNewParty = globalThis.createNewParty;
-          }
-          if (typeof globalThis.joinPartyByCode === 'function') {
-            window.joinPartyByCode = globalThis.joinPartyByCode;
-          }
-          if (typeof globalThis.leaveCurrentParty === 'function') {
-            window.leaveCurrentParty = globalThis.leaveCurrentParty;
-          }
-          if (typeof globalThis.refreshPublicParties === 'function') {
-            window.refreshPublicParties = globalThis.refreshPublicParties;
-          }
-          if (typeof globalThis.sendPartyChat === 'function') {
-            window.sendPartyChat = globalThis.sendPartyChat;
-          }
-          // Additional party-related functions
-          if (typeof globalThis.updatePartyDisplay === 'function') {
-            window.updatePartyDisplay = globalThis.updatePartyDisplay;
-          }
-          if (typeof globalThis.updatePartyChat === 'function') {
-            window.updatePartyChat = globalThis.updatePartyChat;
-          }
-          if (typeof globalThis.joinPublicParty === 'function') {
-            window.joinPublicParty = globalThis.joinPublicParty;
-          }
-          if (typeof globalThis.updatePartyLeaderboard === 'function') {
-            window.updatePartyLeaderboard = globalThis.updatePartyLeaderboard;
-          }
-          if (typeof globalThis.handlePartyRequest === 'function') {
-            window.handlePartyRequest = globalThis.handlePartyRequest;
-          }
-        `
-      }
-    }
   },
   
   // Environment variables configuration
@@ -74,6 +35,23 @@ export default defineConfig(({ mode }) => {
   
   
   // Plugins
-  plugins: []
+  plugins: [{
+    name: 'copy-icons',
+    writeBundle() {
+      // Copy icons to dist during build
+      const iconsDir = resolve(__dirname, 'icons');
+      const distIconsDir = resolve(__dirname, 'dist/icons');
+      
+      if (!existsSync(distIconsDir)){
+        mkdirSync(distIconsDir, { recursive: true });
+      }
+      
+      readdirSync(iconsDir).forEach(file => {
+        if (file.endsWith('.png')) {
+          copyFileSync(join(iconsDir, file), join(distIconsDir, file));
+        }
+      });
+    }
+  }]
   }
 })

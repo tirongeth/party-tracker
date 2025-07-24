@@ -142,6 +142,11 @@ export const push = (reference, value) => {
     return firebasePush(reference, value);
 };
 
+export const update = (reference, values) => {
+    if (!reference) return Promise.reject('No ref provided');
+    return firebaseUpdate(reference, values);
+};
+
 export const remove = (reference) => {
     if (!reference) return Promise.reject('No ref provided');
     return firebaseRemove(reference);
@@ -155,3 +160,6 @@ export const off = (reference, callback) => {
 export const serverTimestamp = () => {
     return firebaseServerTimestamp();
 };
+
+// Export auth and database for other modules
+export { auth, database };
