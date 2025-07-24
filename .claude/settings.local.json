@@ -30,7 +30,8 @@
       "Bash(taskkill:*)",
       "Bash(cp:*)",
       "Bash(mv:*)",
-      "Bash(gh run list:*)"
+      "Bash(gh run list:*)",
+      "Bash(gh workflow view:*)"
     ],
     "deny": []
   }

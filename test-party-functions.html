@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Party Functions</title>
+</head>
+<body>
+    <h1>Testing Party Functions</h1>
+    <button onclick="testFunctions()">Test Functions</button>
+    <div id="results"></div>
+    
+    <script>
+        function testFunctions() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h2>Function Availability:</h2>';
+            
+            const funcs = ['createNewParty', 'joinPartyByCode', 'leaveCurrentParty', 'sendPartyChat'];
+            
+            funcs.forEach(func => {
+                const exists = typeof window[func] === 'function';
+                results.innerHTML += `<p>${func}: ${exists ? '✅ Available' : '❌ Not Found'}</p>`;
+            });
+            
+            // Also check globalThis
+            results.innerHTML += '<h2>GlobalThis Check:</h2>';
+            funcs.forEach(func => {
+                const exists = typeof globalThis[func] === 'function';
+                results.innerHTML += `<p>globalThis.${func}: ${exists ? '✅ Available' : '❌ Not Found'}</p>`;
+            });
+        }
+        
+        // Run test on load
+        window.onload = testFunctions;
+    </script>
+</body>
+</html>

@@ -31,7 +31,24 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
     <!-- Canvas Confetti -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- Ensure party functions are available -->
+    <script>
+        // Fallback for party functions if not yet loaded
+        window.createNewParty = window.createNewParty || function() { 
+            console.log('Waiting for app to load...'); 
+            setTimeout(() => { if(window.createNewParty !== arguments.callee) window.createNewParty(); }, 100);
+        };
+        window.joinPartyByCode = window.joinPartyByCode || function() { 
+            console.log('Waiting for app to load...'); 
+            setTimeout(() => { if(window.joinPartyByCode !== arguments.callee) window.joinPartyByCode(); }, 100);
+        };
+        window.leaveCurrentParty = window.leaveCurrentParty || function() { 
+            console.log('Waiting for app to load...'); 
+            setTimeout(() => { if(window.leaveCurrentParty !== arguments.callee) window.leaveCurrentParty(); }, 100);
+        };
+    </script>
   <script type="module" crossorigin src="./assets/index-DEHNkM1m.js"></script>
   <link rel="stylesheet" crossorigin href="./assets/index-D8DKlKvX.css">
 </head>
