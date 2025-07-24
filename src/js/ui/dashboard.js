@@ -5,6 +5,7 @@
 
 import { getStateValue } from '../config/app-state.js';
 import { getBACStatus } from '../config/constants.js';
+import { getCurrentPartyId, getPartyLeaderboard, quickAddFriend } from '../features/parties.js';
 
 
 // ========================================
@@ -98,17 +99,27 @@ function updateStats() {
 // ========================================
 // UPDATE LEADERBOARD
 // ========================================
-function updateLeaderboard() {
+async function updateLeaderboard() {
     const leaderboard = document.getElementById('leaderboardList');
     if (!leaderboard) return;
     
-    const partyData = getStateValue('partyData') || {};
     leaderboard.innerHTML = '';
     
-    // Sort by highest BAC first (descending order)
-    const sorted = Object.values(partyData)
-        .sort((a, b) => b.bac - a.bac)
-        .slice(0, 5);
+    // Check if in a party
+    const currentPartyId = getCurrentPartyId();
+    let sorted = [];
+    
+    if (currentPartyId) {
+        // Use party-specific leaderboard
+        sorted = await getPartyLeaderboard(currentPartyId);
+        sorted = sorted.slice(0, 5);
+    } else {
+        // Use regular leaderboard
+        const partyData = getStateValue('partyData') || {};
+        sorted = Object.values(partyData)
+            .sort((a, b) => b.bac - a.bac)
+            .slice(0, 5);
+    }
     
     // Position-specific messages
     const positionMessages = [
@@ -140,6 +151,7 @@ function updateLeaderboard() {
             <span class="rank rank-${index + 1}">#${index + 1}</span>
             <span>${friend.name}</span>
             <span>${friend.bac.toFixed(3)}‰</span>
+            ${currentPartyId && friend.id ? `<button class="quick-add-btn" onclick="window.quickAddPartyFriend('${friend.id}')">+</button>` : ''}
         `;
         leaderboard.appendChild(item);
     });
@@ -200,6 +212,11 @@ function showFriendDetails(friend) {
     // TODO: Implement modal showing friend details
     console.log('Show friend details:', friend);
 }
+
+// Quick add friend from party
+window.quickAddPartyFriend = async function(userId) {
+    await quickAddFriend(userId);
+};
 
 // ========================================
 // UTILITY FUNCTIONS

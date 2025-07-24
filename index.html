@@ -98,6 +98,9 @@
                 <li><button class="nav-item" onclick="switchSection('friends')" type="button">
                     <i class="fas fa-users"></i> Friends
                 </button></li>
+                <li><button class="nav-item" onclick="switchSection('parties')" type="button">
+                    <i class="fas fa-champagne-glasses"></i> Parties
+                </button></li>
                 <li><button class="nav-item" onclick="switchSection('games')" type="button">
                     <i class="fas fa-gamepad"></i> Games
                 </button></li>
@@ -491,6 +494,95 @@
                     <div class="emergency-icon">🤝</div>
                     <div class="game-title">Call Sober Friend</div>
                     <div class="game-players">Designated Helpers</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Parties Section -->
+        <section id="parties" class="section">
+            <h2>🎉 Parties 🎉</h2>
+            
+            <!-- Current Party (if in one) -->
+            <div id="currentPartySection" class="party-section" style="display: none;">
+                <div class="party-header">
+                    <h3 id="currentPartyName">Current Party</h3>
+                    <div class="party-code-display" id="currentPartyCode">ABC123</div>
+                </div>
+                
+                <div class="party-leaderboard">
+                    <h4>🏆 Party Leaderboard</h4>
+                    <div id="partyLeaderboard">
+                        <!-- Party leaderboard will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="party-members">
+                    <h4>Party Members</h4>
+                    <div id="partyMembersList">
+                        <!-- Party members will be shown here -->
+                    </div>
+                </div>
+                
+                <button class="btn btn-danger" onclick="leaveCurrentParty()">
+                    <i class="fas fa-sign-out-alt"></i> Leave Party
+                </button>
+            </div>
+            
+            <!-- Party Creation -->
+            <div class="party-section">
+                <h3>Create New Party</h3>
+                <div style="display: grid; gap: 15px; margin: 20px 0;">
+                    <input type="text" id="partyName" placeholder="Party Name" class="form-input">
+                    <input type="text" id="partyAddress" placeholder="Party Address (optional)" class="form-input">
+                    <textarea id="partyDescription" placeholder="Party Description (optional)" class="form-input" rows="3"></textarea>
+                    
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <label>Privacy:</label>
+                        <select id="partyPrivacy" class="form-input" style="flex: 1;">
+                            <option value="private">Private (Code Required)</option>
+                            <option value="friends_only">Friends Only</option>
+                            <option value="public">Public</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="createNewParty()">
+                    <i class="fas fa-plus"></i> Create Party
+                </button>
+            </div>
+            
+            <!-- Join Party -->
+            <div class="party-section">
+                <h3>Join Party</h3>
+                <div class="party-join-section">
+                    <input type="text" id="joinPartyCode" placeholder="ENTER CODE" class="party-code-input" maxlength="6">
+                    <button class="btn btn-primary" onclick="joinPartyByCode()">
+                        <i class="fas fa-sign-in-alt"></i> Join
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Join Requests (for party creators) -->
+            <div id="partyRequestsSection" class="party-requests" style="display: none;">
+                <h3>🔔 Join Requests</h3>
+                <div id="partyRequestsList">
+                    <!-- Join requests will be shown here -->
+                </div>
+            </div>
+            
+            <!-- My Parties -->
+            <div class="party-section">
+                <h3>My Parties</h3>
+                <div class="party-grid" id="myPartiesList">
+                    <!-- User's parties will be listed here -->
+                </div>
+            </div>
+            
+            <!-- Public Parties -->
+            <div class="party-section">
+                <h3>Public Parties</h3>
+                <div class="party-grid" id="publicPartiesList">
+                    <!-- Public parties will be listed here -->
                 </div>
             </div>
         </section>

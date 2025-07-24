@@ -23,6 +23,7 @@ import * as Drinks from './features/drinks.js';
 import * as Games from './features/games.js';
 import * as Achievements from './features/achievements.js';
 import * as Devices from './features/devices.js';
+import * as Parties from './features/parties.js';
 
 // ========================================
 // EXPOSE ALL FUNCTIONS GLOBALLY
@@ -106,6 +107,15 @@ function exposeGlobalFunctions() {
     window.pairDeviceById = Devices.pairDeviceById;
     window.unpairDevice = Devices.unpairDevice;
     window.renameDevice = Devices.renameDevice;
+    
+    // Party functions
+    window.createNewParty = createNewParty;
+    window.joinPartyByCode = joinPartyByCode;
+    window.leaveCurrentParty = leaveCurrentParty;
+    window.approveJoinRequest = Parties.approveJoinRequest;
+    window.rejectJoinRequest = Parties.rejectJoinRequest;
+    window.setCurrentParty = Parties.setCurrentParty;
+    window.quickAddPartyFriend = Parties.quickAddFriend;
 }
 
 // ========================================
@@ -456,6 +466,8 @@ function switchSection(sectionId) {
             AllFunctions.updateFriendsList();
         } else if (sectionId === 'settings') {
             AllFunctions.updateToggleSwitches();
+        } else if (sectionId === 'parties') {
+            updatePartyUI();
         }
     } catch (error) {
         console.error('Section switch failed:', error);
@@ -729,4 +741,195 @@ function loadUserSettings() {
     
     // Update toggle switches visual state
     AllFunctions.updateToggleSwitches();
+}
+
+// ========================================
+// PARTY FUNCTIONS
+// ========================================
+async function createNewParty() {
+    const name = document.getElementById('partyName').value.trim();
+    const address = document.getElementById('partyAddress').value.trim();
+    const description = document.getElementById('partyDescription').value.trim();
+    const privacy = document.getElementById('partyPrivacy').value;
+    
+    if (!name) {
+        showNotification('Please enter a party name', 'error');
+        return;
+    }
+    
+    const result = await Parties.createParty({
+        name,
+        address,
+        description,
+        privacy
+    });
+    
+    if (result) {
+        // Clear form
+        document.getElementById('partyName').value = '';
+        document.getElementById('partyAddress').value = '';
+        document.getElementById('partyDescription').value = '';
+        
+        // Update UI
+        updatePartyUI();
+    }
+}
+
+async function joinPartyByCode() {
+    const code = document.getElementById('joinPartyCode').value.trim();
+    
+    if (!code) {
+        showNotification('Please enter a party code', 'error');
+        return;
+    }
+    
+    await Parties.joinParty(code);
+    
+    // Clear input
+    document.getElementById('joinPartyCode').value = '';
+    
+    // Update UI
+    updatePartyUI();
+}
+
+async function leaveCurrentParty() {
+    const currentPartyId = Parties.getCurrentPartyId();
+    if (currentPartyId) {
+        await Parties.leaveParty(currentPartyId);
+        updatePartyUI();
+    }
+}
+
+async function updatePartyUI() {
+    // Update current party section
+    const currentPartyId = Parties.getCurrentPartyId();
+    const currentPartySection = document.getElementById('currentPartySection');
+    
+    if (currentPartyId && currentPartySection) {
+        // Show current party section
+        currentPartySection.style.display = 'block';
+        
+        // We'll update the party details when we receive the partyUpdate event
+    } else if (currentPartySection) {
+        currentPartySection.style.display = 'none';
+    }
+    
+    // Update my parties list
+    const myParties = await Parties.getUserParties();
+    const myPartiesList = document.getElementById('myPartiesList');
+    if (myPartiesList) {
+        myPartiesList.innerHTML = myParties.map(party => `
+            <div class="party-card ${party.id === currentPartyId ? 'active' : ''}" onclick="setCurrentParty('${party.id}')">
+                <span class="party-privacy-badge privacy-${party.privacy}">
+                    ${party.privacy.replace('_', ' ')}
+                </span>
+                <h4>${party.name}</h4>
+                ${party.address ? `<p><i class="fas fa-map-marker-alt"></i> ${party.address}</p>` : ''}
+                <div class="party-members">
+                    ${Object.keys(party.members || {}).slice(0, 5).map(() => 
+                        `<div class="member-avatar">👤</div>`
+                    ).join('')}
+                    ${Object.keys(party.members || {}).length > 5 ? 
+                        `<span class="party-member-count">+${Object.keys(party.members).length - 5}</span>` : ''}
+                </div>
+                <p style="margin-top: 10px; opacity: 0.7;">Code: ${party.code}</p>
+            </div>
+        `).join('') || '<p style="opacity: 0.7;">No parties yet. Create one above!</p>';
+    }
+    
+    // Update public parties
+    const publicParties = await Parties.searchPublicParties();
+    const publicPartiesList = document.getElementById('publicPartiesList');
+    if (publicPartiesList) {
+        publicPartiesList.innerHTML = publicParties.map(party => `
+            <div class="party-card" onclick="Parties.joinParty('${party.code}')">
+                <h4>${party.name}</h4>
+                ${party.address ? `<p><i class="fas fa-map-marker-alt"></i> ${party.address}</p>` : ''}
+                <div class="party-members">
+                    <span>${party.memberCount} members</span>
+                </div>
+                <button class="btn btn-primary" style="margin-top: 10px;">
+                    <i class="fas fa-sign-in-alt"></i> Join
+                </button>
+            </div>
+        `).join('') || '<p style="opacity: 0.7;">No public parties available</p>';
+    }
+}
+
+// Listen for party events
+window.addEventListener('partyChanged', (event) => {
+    updatePartyUI();
+    updateUI(); // Update main dashboard
+});
+
+window.addEventListener('partyUpdate', async (event) => {
+    const party = event.detail;
+    const currentUser = getCurrentUser();
+    
+    // Update current party display
+    document.getElementById('currentPartyName').textContent = party.name;
+    document.getElementById('currentPartyCode').textContent = party.code;
+    
+    // Update party leaderboard
+    const leaderboard = await Parties.getPartyLeaderboard(party.id);
+    const partyLeaderboard = document.getElementById('partyLeaderboard');
+    if (partyLeaderboard) {
+        partyLeaderboard.innerHTML = leaderboard.map((member, index) => `
+            <div class="party-leaderboard-item">
+                <span class="rank rank-${index + 1}">#${index + 1}</span>
+                <span>${member.name}</span>
+                <span>${member.bac.toFixed(3)}‰</span>
+                ${member.id !== currentUser.uid ? 
+                    `<button class="quick-add-btn" onclick="quickAddPartyFriend('${member.id}')">+</button>` : ''}
+            </div>
+        `).join('') || '<p>No data yet</p>';
+    }
+    
+    // Update members list
+    const membersList = document.getElementById('partyMembersList');
+    if (membersList && party.members) {
+        membersList.innerHTML = Object.entries(party.members).map(([id, member]) => `
+            <div class="friend-item">
+                <div class="friend-info">
+                    <div class="friend-avatar-small">👤</div>
+                    <div class="friend-details">
+                        <h4>${member.name}</h4>
+                        <p>${member.role}</p>
+                    </div>
+                </div>
+                ${id !== currentUser.uid && party.creatorId === currentUser.uid ? 
+                    `<button class="btn btn-sm" onclick="Parties.removeFromParty('${party.id}', '${id}')">Remove</button>` : ''}
+            </div>
+        `).join('');
+    }
+    
+    // Show join requests if user is creator
+    const requestsSection = document.getElementById('partyRequestsSection');
+    const requestsList = document.getElementById('partyRequestsList');
+    if (party.creatorId === currentUser.uid && party.pendingRequests && Object.keys(party.pendingRequests).length > 0) {
+        requestsSection.style.display = 'block';
+        requestsList.innerHTML = Object.entries(party.pendingRequests).map(([userId, request]) => `
+            <div class="party-request-item">
+                <div>
+                    <strong>${request.name}</strong>
+                    <p style="opacity: 0.7; font-size: 0.9em;">Requested ${new Date(request.requestedAt).toLocaleString()}</p>
+                </div>
+                <div class="party-request-actions">
+                    <button class="approve-btn" onclick="approveJoinRequest('${party.id}', '${userId}')">
+                        <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button class="reject-btn" onclick="rejectJoinRequest('${party.id}', '${userId}')">
+                        <i class="fas fa-times"></i> Reject
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } else if (requestsSection) {
+        requestsSection.style.display = 'none';
+    }
+});
+
+// Make sure to expose setCurrentParty
+window.setCurrentParty = function(partyId) {
+    Parties.setCurrentParty(partyId);
 }
