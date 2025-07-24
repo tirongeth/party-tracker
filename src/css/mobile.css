@@ -36,59 +36,43 @@
     /* Navigation - Mobile Menu */
     nav {
         position: fixed;
-        bottom: 0;
-        top: auto;
+        top: 0;
+        left: 0;
+        right: 0;
         width: 100%;
         z-index: 1000;
         background: rgba(10, 10, 10, 0.95);
         backdrop-filter: blur(20px);
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Add scroll hint gradient */
-    nav::after {
-        content: '';
-        position: absolute;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        width: 30px;
-        background: linear-gradient(to right, transparent, rgba(10,10,10,0.95));
-        pointer-events: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .nav-container {
-        padding: 0;
+        padding: 10px 15px;
+        position: relative;
     }
     
     .logo {
-        display: none;
+        display: flex;
+        font-size: 1.2em;
     }
     
     .nav-menu {
-        display: flex !important;
-        justify-content: flex-start;
-        padding: 5px 0;
-        margin: 0;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: thin;
-        scrollbar-color: rgba(255,255,255,0.3) transparent;
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.95);
+        flex-direction: column;
+        padding: 20px;
+        gap: 10px;
+        border-radius: 0 0 20px 20px;
+        max-height: 70vh;
+        overflow-y: auto;
     }
     
-    /* Show scroll indicator */
-    .nav-menu::-webkit-scrollbar {
-        height: 4px;
-    }
-    
-    .nav-menu::-webkit-scrollbar-track {
-        background: rgba(255,255,255,0.1);
-    }
-    
-    .nav-menu::-webkit-scrollbar-thumb {
-        background: rgba(0,255,136,0.5);
-        border-radius: 2px;
+    .nav-menu.show {
+        display: flex;
     }
     
     .nav-menu li {
@@ -96,11 +80,12 @@
     }
     
     .nav-item {
-        flex-direction: column;
-        padding: 8px 10px;
-        font-size: 0.7em;
-        gap: 2px;
-        min-width: 60px;
+        flex-direction: row;
+        padding: 12px 20px;
+        font-size: 0.9em;
+        gap: 10px;
+        width: 100%;
+        justify-content: flex-start;
     }
     
     .nav-item i {
@@ -108,7 +93,11 @@
     }
     
     .mobile-menu-toggle {
-        display: none !important;
+        display: block !important;
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
     }
     
     /* Auth container mobile */
@@ -130,7 +119,7 @@
     }
     
     .section {
-        padding: 20px 10px 80px 10px; /* Extra bottom padding for nav */
+        padding: 80px 10px 20px 10px; /* Extra top padding for nav */
     }
     
     /* Action buttons */
@@ -291,23 +280,39 @@
     /* User profile widget */
     #userProfile {
         position: fixed;
-        top: 10px;
+        top: 60px;
         right: 10px;
-        padding: 10px;
+        padding: 8px;
+        font-size: 0.7em;
+        max-width: 120px;
+        background: rgba(10, 10, 10, 0.8);
+    }
+    
+    #userProfile h4 {
+        font-size: 0.9em;
+        margin-bottom: 5px;
+    }
+    
+    #userProfile p {
         font-size: 0.8em;
-        max-width: 150px;
+        margin: 2px 0;
+    }
+    
+    #userProfile button {
+        padding: 5px 10px;
+        font-size: 0.8em;
     }
     
     /* Connection status */
     .connection-status {
-        bottom: 70px; /* Above nav bar */
+        bottom: 20px;
         right: 10px;
         left: auto;
         top: auto;
         font-size: 0.7em;
         padding: 5px 10px;
         max-width: 120px;
-        z-index: 50; /* Below nav */
+        z-index: 50;
     }
     
     /* Alert banner */
