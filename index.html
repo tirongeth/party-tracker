@@ -163,6 +163,17 @@
         
         <!-- Dashboard Section -->
         <section id="dashboard" class="section active">
+            <!-- Party Info (shown when in a party) -->
+            <div id="dashboardPartyInfo" class="party-section" style="display: none; margin-bottom: 30px;">
+                <div class="party-header">
+                    <h3>🎉 Current Party: <span id="dashboardPartyName"></span></h3>
+                    <div class="party-code-display" id="dashboardPartyCode"></div>
+                </div>
+                <button class="btn" onclick="switchSection('parties')">
+                    <i class="fas fa-cog"></i> Manage Party
+                </button>
+            </div>
+            
             <div class="party-stats">
                 <div class="stat-card" onclick="showNotification('Party statistics!')">
                     <div class="stat-icon">🎊</div>
