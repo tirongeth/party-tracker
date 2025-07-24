@@ -27,7 +27,8 @@
       "Bash(tree:*)",
       "Bash(python:*)",
       "Bash(npm run preview:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(cp:*)"
     ],
     "deny": []
   }
