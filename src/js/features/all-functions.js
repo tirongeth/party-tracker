@@ -8,7 +8,7 @@ import { getFirebaseDatabase, getFirebaseAuth } from '../config/firebase.js';
 import { getAppState, setStateValue, getCurrentUser } from '../config/app-state.js';
 import { DRINK_PRESETS, getBACStatus } from '../config/constants.js';
 import { showNotification } from '../ui/notifications.js';
-import { ref, set, get, push, remove, onValue, off, serverTimestamp } from 'firebase/database';
+import { ref, set, get, push, remove, onValue, off, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
 // ========================================
 // FRIENDS SYSTEM FUNCTIONS

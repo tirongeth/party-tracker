@@ -5,7 +5,7 @@
 
 import { getFirebaseDatabase } from '../config/firebase.js';
 import { getCurrentUser, getStateValue, setStateValue } from '../config/app-state.js';
-import { ref, set, get, remove, onValue, off, serverTimestamp } from 'firebase/database';
+import { ref, set, get, remove, onValue, off, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { showNotification } from '../ui/notifications.js';
 import { handleError, validateInput, safeAsync } from '../utils/error-handler.js';
 

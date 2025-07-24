@@ -8,7 +8,7 @@ import { getAppState, setStateValue, getCurrentUser } from '../config/app-state.
 import { DRINK_PRESETS } from '../config/constants.js';
 import { showNotification } from '../ui/notifications.js';
 import { escapeHtml } from './all-functions.js';
-import { ref, set, remove } from 'firebase/database';
+import { ref, set, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from 'chart.js';
 import confetti from 'canvas-confetti';
 

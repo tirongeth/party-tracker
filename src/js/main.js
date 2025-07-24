@@ -8,7 +8,7 @@ import { initializeDevices } from './features/devices.js';
 import { updateUI } from './ui/dashboard.js';
 import { showNotification } from './ui/notifications.js';
 import { DRINK_PRESETS } from './config/constants.js';
-import { ref, onValue } from 'firebase/database';
+import { ref, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { 
     getAppState, 
     setStateValue, 

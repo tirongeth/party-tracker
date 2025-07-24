@@ -6,7 +6,7 @@
 import { getFirebaseDatabase } from '../config/firebase.js';
 import { getAppState, setStateValue, getCurrentUser } from '../config/app-state.js';
 import { showNotification } from '../ui/notifications.js';
-import { ref, set, onValue } from 'firebase/database';
+import { ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
 // Achievement definitions with progress tracking
 export const achievementDefinitions = {
