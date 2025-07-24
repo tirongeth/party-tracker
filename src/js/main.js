@@ -22,6 +22,7 @@ import * as AllFunctions from './features/all-functions.js';
 import * as Drinks from './features/drinks.js';
 import * as Games from './features/games.js';
 import * as Achievements from './features/achievements.js';
+import * as Devices from './features/devices.js';
 
 // ========================================
 // EXPOSE ALL FUNCTIONS GLOBALLY
@@ -100,6 +101,11 @@ function exposeGlobalFunctions() {
     window.updateAchievements = Achievements.updateAchievements;
     window.updateAchievementProgress = Achievements.updateAchievementProgress;
     window.checkAchievements = Achievements.checkAchievements;
+    
+    // Device functions
+    window.pairDeviceById = Devices.pairDeviceById;
+    window.unpairDevice = Devices.unpairDevice;
+    window.renameDevice = Devices.renameDevice;
 }
 
 // ========================================
