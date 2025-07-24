@@ -21,7 +21,8 @@
       "Bash(rm:*)",
       "Bash(git push:*)",
       "Bash(findstr:*)",
-      "Bash(npx gh-pages:*)"
+      "Bash(npx gh-pages:*)",
+      "Bash(curl:*)"
     ],
     "deny": []
   }

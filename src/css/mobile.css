@@ -45,6 +45,18 @@
         border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
     
+    /* Add scroll hint gradient */
+    nav::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 30px;
+        background: linear-gradient(to right, transparent, rgba(10,10,10,0.95));
+        pointer-events: none;
+    }
+    
     .nav-container {
         padding: 0;
     }
@@ -55,12 +67,28 @@
     
     .nav-menu {
         display: flex;
-        justify-content: space-around;
+        justify-content: flex-start;
         padding: 5px 0;
         margin: 0;
         flex-wrap: nowrap;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,255,255,0.3) transparent;
+    }
+    
+    /* Show scroll indicator */
+    .nav-menu::-webkit-scrollbar {
+        height: 4px;
+    }
+    
+    .nav-menu::-webkit-scrollbar-track {
+        background: rgba(255,255,255,0.1);
+    }
+    
+    .nav-menu::-webkit-scrollbar-thumb {
+        background: rgba(0,255,136,0.5);
+        border-radius: 2px;
     }
     
     .nav-menu li {
