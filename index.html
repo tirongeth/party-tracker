@@ -551,6 +551,22 @@
                     <!-- Stats will show here -->
                 </div>
                 
+                <!-- Party Leaderboard -->
+                <div style="margin: 20px 0;">
+                    <h4>🏆 Party Leaderboard</h4>
+                    <div id="partyLeaderboard" style="margin-top: 15px;">
+                        <!-- Leaderboard will show here -->
+                    </div>
+                </div>
+                
+                <!-- Pending Requests (for creator only) -->
+                <div id="pendingRequestsSection" style="display: none; margin: 20px 0;">
+                    <h4>📋 Join Requests</h4>
+                    <div id="pendingRequestsList" style="margin-top: 15px;">
+                        <!-- Requests will show here -->
+                    </div>
+                </div>
+                
                 <!-- Party Chat -->
                 <div style="margin: 20px 0;">
                     <h4>💬 Party Chat</h4>
@@ -576,10 +592,24 @@
                 
                 <div style="margin: 20px 0;">
                     <h4>Create New Party</h4>
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <input type="text" id="partyName" placeholder="Party Name" style="flex: 1; padding: 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; font-size: 1.1em;">
+                    <div style="display: grid; gap: 15px; margin-top: 15px;">
+                        <input type="text" id="partyName" placeholder="Party Name" style="padding: 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; font-size: 1.1em;">
+                        
+                        <select id="partyPrivacy" style="padding: 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white;">
+                            <option value="private">🔒 Private - Join by code only</option>
+                            <option value="friends-only">👥 Friends Only</option>
+                            <option value="public">🌍 Public - Anyone can join</option>
+                        </select>
+                        
+                        <select id="partyDuration" style="padding: 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white;">
+                            <option value="ongoing">♾️ Ongoing Party</option>
+                            <option value="24h">⏰ 24 Hour Party</option>
+                        </select>
+                        
+                        <input type="text" id="partyAddress" placeholder="📍 Party Location (optional)" style="padding: 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white;">
+                        
                         <button class="btn btn-primary" onclick="createNewParty()" style="padding: 15px 30px;">
-                            <i class="fas fa-plus"></i> Create
+                            <i class="fas fa-plus"></i> Create Party
                         </button>
                     </div>
                 </div>
@@ -595,6 +625,17 @@
                         </button>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Public Parties -->
+            <div class="card" style="margin-top: 20px;">
+                <h3>🌍 Public Parties Near You</h3>
+                <div id="publicPartiesList" style="margin-top: 15px;">
+                    <!-- Public parties will show here -->
+                </div>
+                <button class="btn" onclick="refreshPublicParties()" style="margin-top: 15px;">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
             </div>
         </section>
         
