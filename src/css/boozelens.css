@@ -182,6 +182,12 @@
             gap: 10px;
             font-size: 0.9em;
             z-index: 100;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .connection-status.connected {
+            opacity: 0;
         }
         
         .status-dot {

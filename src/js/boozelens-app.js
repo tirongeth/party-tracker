@@ -1045,14 +1045,25 @@
         function updateConnectionStatus(connected) {
             const statusElement = document.getElementById('connectionStatus');
             const dotElement = document.querySelector('.status-dot');
+            const connectionContainer = document.querySelector('.connection-status');
             
             if (statusElement && dotElement) {
                 if (connected) {
                     statusElement.textContent = 'Connected';
                     dotElement.style.background = '#00ff88';
+                    // Hide after 3 seconds when connected
+                    if (connectionContainer) {
+                        setTimeout(() => {
+                            connectionContainer.classList.add('connected');
+                        }, 3000);
+                    }
                 } else {
                     statusElement.textContent = 'Offline';
                     dotElement.style.background = '#ff4444';
+                    // Show when offline
+                    if (connectionContainer) {
+                        connectionContainer.classList.remove('connected');
+                    }
                 }
             }
         }
