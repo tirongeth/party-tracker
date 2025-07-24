@@ -182,12 +182,15 @@
             gap: 10px;
             font-size: 0.9em;
             z-index: 100;
-            transition: opacity 0.3s ease;
+            transition: all 0.3s ease;
             pointer-events: none;
+            transform: translateX(0);
         }
         
         .connection-status.connected {
             opacity: 0;
+            transform: translateX(100px);
+            visibility: hidden;
         }
         
         .status-dot {

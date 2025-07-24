@@ -272,10 +272,14 @@
     
     /* Connection status */
     .connection-status {
-        top: 10px;
-        left: 10px;
+        bottom: 70px; /* Above nav bar */
+        right: 10px;
+        left: auto;
+        top: auto;
         font-size: 0.7em;
         padding: 5px 10px;
+        max-width: 120px;
+        z-index: 50; /* Below nav */
     }
     
     /* Alert banner */

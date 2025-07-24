@@ -1051,11 +1051,11 @@
                 if (connected) {
                     statusElement.textContent = 'Connected';
                     dotElement.style.background = '#00ff88';
-                    // Hide after 3 seconds when connected
+                    // Hide after 1 second when connected
                     if (connectionContainer) {
                         setTimeout(() => {
                             connectionContainer.classList.add('connected');
-                        }, 3000);
+                        }, 1000);
                     }
                 } else {
                     statusElement.textContent = 'Offline';
