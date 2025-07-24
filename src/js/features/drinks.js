@@ -71,10 +71,17 @@ export async function logDrink() {
             }
         }
         
+        // Track achievements
+        if (typeof onDrinkLogged === 'function') {
+            // If achievements module is loaded
+            onDrinkLogged(type, drinkHistory);
+        }
+        
         // Confetti for water!
         if (type === 'water') {
-            if (window.confetti) {
-                confetti({
+            // Use global confetti if available (from CDN)
+            if (typeof window.confetti === 'function') {
+                window.confetti({
                     particleCount: 50,
                     spread: 60,
                     colors: ['#00d4ff', '#0099ff', '#0066ff'],

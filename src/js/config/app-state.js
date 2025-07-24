@@ -37,6 +37,9 @@ const appState = {
         sunriseWarrior: false
     },
     
+    // User achievements with progress tracking
+    userAchievements: {},
+    
     // History tracking
     locationHistory: [],
     drinkHistory: [],

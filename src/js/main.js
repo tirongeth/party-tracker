@@ -21,6 +21,7 @@ import { registerServiceWorker, initializePWA, initializeOfflineStorage } from '
 import * as AllFunctions from './features/all-functions.js';
 import * as Drinks from './features/drinks.js';
 import * as Games from './features/games.js';
+import * as Achievements from './features/achievements.js';
 
 // ========================================
 // EXPOSE ALL FUNCTIONS GLOBALLY
@@ -93,8 +94,12 @@ function exposeGlobalFunctions() {
     window.initializeLocationMap = AllFunctions.initializeLocationMap;
     window.updateFriendRequests = AllFunctions.updateFriendRequests;
     window.updateFriendsList = AllFunctions.updateFriendsList;
-    window.updateAchievements = AllFunctions.updateAchievements;
     window.escapeHtml = AllFunctions.escapeHtml;
+    
+    // Achievement functions
+    window.updateAchievements = Achievements.updateAchievements;
+    window.updateAchievementProgress = Achievements.updateAchievementProgress;
+    window.checkAchievements = Achievements.checkAchievements;
 }
 
 // ========================================
@@ -240,11 +245,17 @@ async function onUserAuthenticated(user) {
         // Initialize features
         initializeDevices();
         
+        // Load achievements
+        Achievements.loadAchievements();
+        
         // Setup Firebase listeners
         setupFirebaseListeners();
         
         // Load user settings
         loadUserSettings();
+        
+        // Track first timer achievement
+        Achievements.onFirstLogin();
         
         // Initialize UI
         updateUI();
@@ -427,7 +438,7 @@ function switchSection(sectionId) {
         
         // Section-specific initializations
         if (sectionId === 'achievements') {
-            AllFunctions.updateAchievements();
+            Achievements.updateAchievements();
         } else if (sectionId === 'drinks') {
             Drinks.updateDrinkStats();
             Drinks.updateDrinkChart();
@@ -712,12 +723,4 @@ function loadUserSettings() {
     
     // Update toggle switches visual state
     AllFunctions.updateToggleSwitches();
-    
-    // Load achievements
-    const achievements = getAppState().achievements;
-    Object.keys(achievements).forEach(key => {
-        if (localStorage.getItem(`achievement_${key}`)) {
-            achievements[key] = true;
-        }
-    });
 }

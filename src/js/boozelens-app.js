@@ -1098,6 +1098,11 @@
             
             // Load achievements from Firebase
             loadAchievements();
+            
+            // Track first timer achievement
+            if (userAchievements && userAchievements.firstTimer && !userAchievements.firstTimer.unlocked) {
+                updateAchievementProgress('firstTimer');
+            }
         }
         
         function updateToggleSwitches() {
@@ -1371,7 +1376,9 @@
                 
                 // Section-specific initializations
                 if (sectionId === 'achievements') {
-                    updateAchievementsUI();
+                    if (typeof updateAchievementsUI === 'function') {
+                        updateAchievementsUI();
+                    }
                 } else if (sectionId === 'drinks') {
                     updateDrinkStats();
                     updateDrinkChart();
@@ -1381,11 +1388,6 @@
                     updateFriendsList();
                 } else if (sectionId === 'settings') {
                     updateToggleSwitches();
-                }
-                
-                // Track first timer achievement on first login
-                if (userAchievements && userAchievements.firstTimer && !userAchievements.firstTimer.unlocked) {
-                    updateAchievementProgress('firstTimer');
                 }
             } catch (error) {
                 console.error('Section switch failed:', error);
@@ -1445,7 +1447,9 @@
             });
             
             // Achievement check - hydration tracking
-            updateAchievementProgress('hydroHomie');
+            if (typeof updateAchievementProgress === 'function') {
+                updateAchievementProgress('hydroHomie');
+            }
         }
         
         // Show friend details
@@ -1732,7 +1736,9 @@
             showNotification(`📍 Checked in at ${location}!`);
             
             // Update achievement
-            updateAchievementProgress('partyAnimal');
+            if (typeof updateAchievementProgress === 'function') {
+                updateAchievementProgress('partyAnimal');
+            }
             
             closeModal();
         }
@@ -1790,7 +1796,9 @@
             showNotification(`👥 ${buddyName} is now your buddy!`);
             
             // Achievement check
-            updateAchievementProgress('guardianAngel');
+            if (typeof updateAchievementProgress === 'function') {
+                updateAchievementProgress('guardianAngel');
+            }
             
             closeModal();
         }
