@@ -535,7 +535,7 @@ function updateConnectionStatus(connected) {
 // ========================================
 // MODAL FUNCTIONS
 // ========================================
-function showModal(type, data = null) {
+async function showModal(type, data = null) {
     const modal = document.getElementById('modal');
     const modalBody = document.getElementById('modalBody');
     
@@ -569,13 +569,32 @@ function showModal(type, data = null) {
             break;
             
         case 'checkin':
+            // Get user's parties for check-in
+            const userParties = await Parties.getUserParties();
+            const activeParties = userParties.filter(p => p.active);
+            
             content = `
                 <h2>📍 Check In</h2>
                 <p>Select your current location:</p>
                 <div class="location-map" id="locationMap">
                     <!-- Simulated map -->
                 </div>
+                
+                ${activeParties.length > 0 ? `
+                    <div style="margin: 20px 0;">
+                        <h3>🎉 Check in to a Party:</h3>
+                        ${activeParties.map(party => 
+                            `<button class="btn btn-primary" style="width: 100%; margin: 10px 0;" onclick="checkInLocation('Party: ${party.name}')">
+                                <i class="fas fa-champagne-glasses"></i> ${party.name}
+                                ${party.address ? ` - ${party.address}` : ''}
+                            </button>`
+                        ).join('')}
+                    </div>
+                    <hr style="margin: 20px 0; opacity: 0.3;">
+                ` : ''}
+                
                 <div style="margin: 20px 0;">
+                    <h3>📍 Or check in to a location:</h3>
                     ${['Dorm A - Room Party', 'Student Bar', 'Library Cafe', 'Sports Center', 'Main Campus', 'Off Campus'].map(loc => 
                         `<button class="btn" style="width: 100%; margin: 10px 0;" onclick="checkInLocation('${loc}')">${loc}</button>`
                     ).join('')}
@@ -747,31 +766,38 @@ function loadUserSettings() {
 // PARTY FUNCTIONS
 // ========================================
 async function createNewParty() {
-    const name = document.getElementById('partyName').value.trim();
-    const address = document.getElementById('partyAddress').value.trim();
-    const description = document.getElementById('partyDescription').value.trim();
-    const privacy = document.getElementById('partyPrivacy').value;
-    
-    if (!name) {
-        showNotification('Please enter a party name', 'error');
-        return;
-    }
-    
-    const result = await Parties.createParty({
-        name,
-        address,
-        description,
-        privacy
-    });
-    
-    if (result) {
-        // Clear form
-        document.getElementById('partyName').value = '';
-        document.getElementById('partyAddress').value = '';
-        document.getElementById('partyDescription').value = '';
+    try {
+        const name = document.getElementById('partyName').value.trim();
+        const address = document.getElementById('partyAddress').value.trim();
+        const description = document.getElementById('partyDescription').value.trim();
+        const privacy = document.getElementById('partyPrivacy').value;
+        const duration = document.getElementById('partyDuration').value;
         
-        // Update UI
-        updatePartyUI();
+        if (!name) {
+            showNotification('Please enter a party name', 'error');
+            return;
+        }
+        
+        const result = await Parties.createParty({
+            name,
+            address,
+            description,
+            privacy,
+            duration
+        });
+        
+        if (result) {
+            // Clear form
+            document.getElementById('partyName').value = '';
+            document.getElementById('partyAddress').value = '';
+            document.getElementById('partyDescription').value = '';
+            
+            // Update UI
+            updatePartyUI();
+        }
+    } catch (error) {
+        console.error('Error creating party:', error);
+        showNotification('Failed to create party', 'error');
     }
 }
 
@@ -833,6 +859,11 @@ async function updatePartyUI() {
                         `<span class="party-member-count">+${Object.keys(party.members).length - 5}</span>` : ''}
                 </div>
                 <p style="margin-top: 10px; opacity: 0.7;">Code: ${party.code}</p>
+                <p style="opacity: 0.7; font-size: 0.9em;">
+                    ${party.duration === 'ongoing' ? '🔄 Ongoing' : '⏰ 24 Hours'}
+                    ${party.expiresAt && party.duration === '24h' ? 
+                        ` - Ends ${new Date(party.expiresAt).toLocaleString()}` : ''}
+                </p>
             </div>
         `).join('') || '<p style="opacity: 0.7;">No parties yet. Create one above!</p>';
     }

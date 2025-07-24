@@ -44,9 +44,11 @@ export async function createParty(partyData) {
             address: partyData.address || '',
             privacy: partyData.privacy || PARTY_PRIVACY.PRIVATE,
             code: partyCode,
+            duration: partyData.duration || '24h',
             creatorId: user.uid,
             creatorName: user.displayName || user.email.split('@')[0],
             createdAt: firebaseServerTimestamp(),
+            expiresAt: partyData.duration === 'ongoing' ? null : Date.now() + (24 * 60 * 60 * 1000),
             members: {
                 [user.uid]: {
                     name: user.displayName || user.email.split('@')[0],
@@ -337,15 +339,23 @@ export async function getUserParties() {
 
         const userParties = userPartiesSnapshot.val();
         const parties = [];
+        const now = Date.now();
 
         for (const partyId of Object.keys(userParties)) {
             const partySnapshot = await firebaseGet(firebaseRef(database, `parties/${partyId}`));
-            if (partySnapshot.exists() && partySnapshot.val().active) {
-                parties.push({
-                    ...partySnapshot.val(),
-                    id: partyId,
-                    userRole: userParties[partyId].role
-                });
+            if (partySnapshot.exists()) {
+                const party = partySnapshot.val();
+                // Check if party is expired
+                if (party.active && (!party.expiresAt || party.expiresAt > now)) {
+                    parties.push({
+                        ...party,
+                        id: partyId,
+                        userRole: userParties[partyId].role
+                    });
+                } else if (party.expiresAt && party.expiresAt <= now) {
+                    // Mark expired parties as inactive
+                    await firebaseUpdate(firebaseRef(database, `parties/${partyId}`), { active: false });
+                }
             }
         }
 
@@ -363,9 +373,13 @@ export async function searchPublicParties(query = '') {
         if (!partiesSnapshot.exists()) return [];
 
         const parties = [];
+        const now = Date.now();
+        
         partiesSnapshot.forEach((childSnapshot) => {
             const party = childSnapshot.val();
-            if (party.active && party.privacy === PARTY_PRIVACY.PUBLIC) {
+            // Check if party is active and not expired
+            if (party.active && party.privacy === PARTY_PRIVACY.PUBLIC && 
+                (!party.expiresAt || party.expiresAt > now)) {
                 if (!query || party.name.toLowerCase().includes(query.toLowerCase())) {
                     parties.push({
                         ...party,
