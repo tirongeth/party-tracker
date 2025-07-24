@@ -3,7 +3,7 @@
 // ========================================
 // This module handles Firebase initialization using modular SDK
 
-import { initializeApp, getApps } from 'firebase/app';
+import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { 
     getAuth, 
     createUserWithEmailAndPassword,
@@ -14,7 +14,7 @@ import {
     updatePassword as firebaseUpdatePassword,
     EmailAuthProvider,
     reauthenticateWithCredential
-} from 'firebase/auth';
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
 import { 
     getDatabase, 
     ref as firebaseRef, 
@@ -22,10 +22,11 @@ import {
     set as firebaseSet,
     get as firebaseGet,
     push as firebasePush,
+    update as firebaseUpdate,
     remove as firebaseRemove,
     off as firebaseOff,
     serverTimestamp as firebaseServerTimestamp
-} from 'firebase/database';
+} from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
 // Firebase configuration - these are public keys, safe to expose
 const firebaseConfig = {

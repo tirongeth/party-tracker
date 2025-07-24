@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
   
   return {
   // Base path for deployment
-  base: '/boozelens/',
+  base: './',
   
   // Development server configuration
   server: {
