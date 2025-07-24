@@ -1,11 +1,13 @@
-// SIMPLE FUCKING PARTY SYSTEM THAT ACTUALLY WORKS
+// PARTY SYSTEM WITH ACTUAL FEATURES
 
 import { database, auth } from '../config/firebase.js';
-import { firebaseRef, firebaseSet, firebasePush, firebaseUpdate, firebaseGet, firebaseOnValue, firebaseServerTimestamp } from '../config/firebase.js';
+import { firebaseRef, firebaseSet, firebasePush, firebaseUpdate, firebaseGet, firebaseOnValue, firebaseServerTimestamp, firebaseRemove } from '../config/firebase.js';
 import { showNotification } from '../ui/notifications.js';
 
 // Current party state
 export let currentParty = null;
+let partyListener = null;
+let chatListener = null;
 
 // Create party - SIMPLE
 export async function createParty(name) {
@@ -36,6 +38,9 @@ export async function createParty(name) {
         // Join the party
         currentParty = party;
         localStorage.setItem('currentPartyId', party.id);
+        
+        // Start listening to party updates
+        startPartyListeners(party.id);
         
         return { success: true, code: code };
     } catch (error) {
@@ -78,6 +83,9 @@ export async function joinParty(code) {
         currentParty = foundParty;
         localStorage.setItem('currentPartyId', partyId);
         
+        // Start listening to party updates
+        startPartyListeners(partyId);
+        
         return { success: true };
     } catch (error) {
         console.error('Join party error:', error);
@@ -101,6 +109,9 @@ export async function leaveParty() {
         
         currentParty = null;
         localStorage.removeItem('currentPartyId');
+        
+        // Stop listeners
+        stopPartyListeners();
         
         return { success: true };
     } catch (error) {
@@ -126,14 +137,75 @@ export async function loadCurrentParty() {
     }
 }
 
-// Listen to party updates
-export function listenToParty(callback) {
-    if (!currentParty) return null;
+// Start party listeners
+function startPartyListeners(partyId) {
+    // Stop existing listeners
+    stopPartyListeners();
     
-    return firebaseOnValue(firebaseRef(database, `parties/${currentParty.id}`), (snapshot) => {
+    // Listen to party updates
+    partyListener = firebaseOnValue(firebaseRef(database, `parties/${partyId}`), (snapshot) => {
         if (snapshot.exists()) {
-            currentParty = { ...snapshot.val(), id: currentParty.id };
-            callback(currentParty);
+            currentParty = { ...snapshot.val(), id: partyId };
+            window.updatePartyDisplay && window.updatePartyDisplay();
         }
     });
+    
+    // Listen to chat
+    chatListener = firebaseOnValue(firebaseRef(database, `parties/${partyId}/chat`), (snapshot) => {
+        const messages = [];
+        snapshot.forEach((child) => {
+            messages.push({ id: child.key, ...child.val() });
+        });
+        window.updatePartyChat && window.updatePartyChat(messages);
+    });
+}
+
+// Stop party listeners
+function stopPartyListeners() {
+    if (partyListener) {
+        partyListener();
+        partyListener = null;
+    }
+    if (chatListener) {
+        chatListener();
+        chatListener = null;
+    }
+}
+
+// Send party message
+export async function sendPartyMessage(message) {
+    try {
+        if (!currentParty || !message.trim()) return { success: false };
+        
+        const user = auth.currentUser;
+        if (!user) return { success: false };
+        
+        await firebasePush(firebaseRef(database, `parties/${currentParty.id}/chat`), {
+            userId: user.uid,
+            userName: user.displayName || user.email.split('@')[0],
+            message: message.trim(),
+            timestamp: Date.now()
+        });
+        
+        return { success: true };
+    } catch (error) {
+        console.error('Send message error:', error);
+        return { success: false };
+    }
+}
+
+// Get party stats
+export function getPartyStats() {
+    if (!currentParty) return null;
+    
+    const memberCount = Object.keys(currentParty.members || {}).length;
+    const duration = Date.now() - currentParty.createdAt;
+    const hours = Math.floor(duration / (1000 * 60 * 60));
+    const minutes = Math.floor((duration % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return {
+        memberCount,
+        duration: hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`,
+        code: currentParty.code
+    };
 }

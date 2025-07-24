@@ -16,6 +16,7 @@ import {
     clearAppState
 } from './config/app-state.js';
 import { registerServiceWorker, initializePWA, initializeOfflineStorage } from './utils/pwa.js';
+import { partyFunctions as globalPartyFunctions, updatePartyFunctions, exposePartyFunctions } from './utils/global-party-functions.js';
 
 // Import all functions from feature modules
 import * as AllFunctions from './features/all-functions.js';
@@ -23,7 +24,102 @@ import * as Drinks from './features/drinks.js';
 import * as Games from './features/games.js';
 import * as Achievements from './features/achievements.js';
 import * as Devices from './features/devices.js';
-import * as Parties from './features/parties.js';
+import * as PartiesModule from './features/parties.js';
+
+// ========================================
+// IMMEDIATELY EXPOSE CRITICAL FUNCTIONS
+// ========================================
+// The global-party-functions module handles initial exposure
+
+// ========================================
+// PARTY FUNCTIONS - DEFINE FIRST
+// ========================================
+// Define Parties reference that will be set later
+let Parties = null;
+
+const partyFunctions = {
+    createNewParty: async function() {
+        console.log('createNewParty called');
+        if (!Parties) {
+            console.error('Parties module not loaded');
+            showNotification('System not ready, please try again', 'error');
+            return;
+        }
+        
+        const nameInput = document.getElementById('partyName');
+        if (!nameInput || !nameInput.value.trim()) {
+            showNotification('Enter a party name', 'error');
+            return;
+        }
+        
+        const result = await Parties.createParty(nameInput.value);
+        if (result.success) {
+            showNotification(`Party created! Code: ${result.code}`, 'success');
+            nameInput.value = '';
+            updatePartyDisplay();
+        } else {
+            showNotification(result.error || 'Failed to create party', 'error');
+        }
+    },
+    
+    joinPartyByCode: async function() {
+        console.log('joinPartyByCode called');
+        if (!Parties) {
+            console.error('Parties module not loaded');
+            showNotification('System not ready, please try again', 'error');
+            return;
+        }
+        
+        const codeInput = document.getElementById('joinPartyCode');
+        if (!codeInput || !codeInput.value.trim()) {
+            showNotification('Enter a party code', 'error');
+            return;
+        }
+        
+        const result = await Parties.joinParty(codeInput.value);
+        if (result.success) {
+            showNotification('Joined party!', 'success');
+            codeInput.value = '';
+            updatePartyDisplay();
+        } else {
+            showNotification(result.error || 'Failed to join party', 'error');
+        }
+    },
+    
+    leaveCurrentParty: async function() {
+        console.log('leaveCurrentParty called');
+        if (!Parties) {
+            console.error('Parties module not loaded');
+            showNotification('System not ready, please try again', 'error');
+            return;
+        }
+        
+        if (confirm('Leave this party?')) {
+            const result = await Parties.leaveParty();
+            if (result.success) {
+                showNotification('Left party', 'info');
+                updatePartyDisplay();
+            }
+        }
+    },
+    
+    sendPartyChat: async function() {
+        console.log('sendPartyChat called');
+        if (!Parties) {
+            console.error('Parties module not loaded');
+            showNotification('System not ready, please try again', 'error');
+            return;
+        }
+        
+        const input = document.getElementById('partyChatInput');
+        if (!input || !input.value.trim()) return;
+        
+        const result = await Parties.sendPartyMessage(input.value);
+        if (result.success) {
+            input.value = '';
+        }
+    }
+};
 
 // ========================================
 // EXPOSE ALL FUNCTIONS GLOBALLY
@@ -108,50 +204,14 @@ function exposeGlobalFunctions() {
     window.unpairDevice = Devices.unpairDevice;
     window.renameDevice = Devices.renameDevice;
     
-    // SIMPLE PARTY FUNCTIONS THAT WORK
-    window.createNewParty = async function() {
-        const nameInput = document.getElementById('partyName');
-        if (!nameInput || !nameInput.value.trim()) {
-            showNotification('Enter a party name', 'error');
-            return;
-        }
-        
-        const result = await Parties.createParty(nameInput.value);
-        if (result.success) {
-            showNotification(`Party created! Code: ${result.code}`, 'success');
-            nameInput.value = '';
-            updatePartyDisplay();
-        } else {
-            showNotification(result.error || 'Failed to create party', 'error');
-        }
-    };
+    // Party functions are handled by global-party-functions.js module
     
-    window.joinPartyByCode = async function() {
-        const codeInput = document.getElementById('joinPartyCode');
-        if (!codeInput || !codeInput.value.trim()) {
-            showNotification('Enter a party code', 'error');
-            return;
-        }
-        
-        const result = await Parties.joinParty(codeInput.value);
-        if (result.success) {
-            showNotification('Joined party!', 'success');
-            codeInput.value = '';
-            updatePartyDisplay();
-        } else {
-            showNotification(result.error || 'Failed to join party', 'error');
-        }
-    };
-    
-    window.leaveCurrentParty = async function() {
-        if (confirm('Leave this party?')) {
-            const result = await Parties.leaveParty();
-            if (result.success) {
-                showNotification('Left party', 'info');
-                updatePartyDisplay();
-            }
-        }
-    };
+    // Double check they're attached
+    console.log('Party functions exposed:', {
+        createNewParty: typeof window.createNewParty,
+        joinPartyByCode: typeof window.joinPartyByCode,
+        leaveCurrentParty: typeof window.leaveCurrentParty
+    });
 }
 
 // ========================================
@@ -159,6 +219,12 @@ function exposeGlobalFunctions() {
 // ========================================
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Starting BoozeLens app initialization...');
+    
+    // Set Parties module reference
+    Parties = PartiesModule;
+    
+    // Update global party functions with actual implementations
+    updatePartyFunctions(partyFunctions);
     
     // Expose all functions globally first
     exposeGlobalFunctions();
@@ -279,6 +345,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     console.log('✅ App initialization complete!');
+    
+    // Re-update party functions to ensure they're available
+    updatePartyFunctions(partyFunctions);
+    
+    // Verify they exist
+    setTimeout(() => {
+        console.log('Final check - Party functions:', {
+            createNewParty: window.createNewParty,
+            joinPartyByCode: window.joinPartyByCode,
+            leaveCurrentParty: window.leaveCurrentParty
+        });
+    }, 100);
 });
 
 // ========================================
@@ -790,7 +868,7 @@ function loadUserSettings() {
     AllFunctions.updateToggleSwitches();
 }
 
-// SIMPLE party display update
+// ENHANCED party display update
 function updatePartyDisplay() {
     const party = Parties.currentParty;
     const currentSection = document.getElementById('currentPartySection');
@@ -811,20 +889,44 @@ function updatePartyDisplay() {
         // Update members
         const membersList = document.getElementById('partyMembersList');
         if (membersList && party.members) {
+            const memberCount = Object.keys(party.members).length;
             membersList.innerHTML = Object.entries(party.members).map(([id, member]) => `
                 <div class="friend-item">
                     <div class="friend-info">
                         <div class="friend-avatar-small">👤</div>
                         <div class="friend-details">
                             <h4>${member.name}</h4>
+                            <p style="opacity: 0.7; font-size: 0.9em;">Joined ${new Date(member.joinedAt).toLocaleTimeString()}</p>
                         </div>
                     </div>
                 </div>
             `).join('');
         }
         
-        // Listen for updates
-        Parties.listenToParty(updatePartyDisplay);
+        // Update stats
+        const statsEl = document.getElementById('partyStats');
+        if (statsEl) {
+            const stats = Parties.getPartyStats();
+            if (stats) {
+                statsEl.innerHTML = `
+                    <div style="text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                        <div style="font-size: 2em;">👥</div>
+                        <div style="font-size: 1.5em; font-weight: bold;">${stats.memberCount}</div>
+                        <div style="opacity: 0.7;">Members</div>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                        <div style="font-size: 2em;">⏱️</div>
+                        <div style="font-size: 1.5em; font-weight: bold;">${stats.duration}</div>
+                        <div style="opacity: 0.7;">Duration</div>
+                    </div>
+                    <div style="text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
+                        <div style="font-size: 2em;">🎆</div>
+                        <div style="font-size: 1.5em; font-weight: bold;">${stats.code}</div>
+                        <div style="opacity: 0.7;">Party Code</div>
+                    </div>
+                `;
+            }
+        }
     } else {
         // Hide party sections
         if (currentSection) currentSection.style.display = 'none';
@@ -832,5 +934,31 @@ function updatePartyDisplay() {
     }
 }
 
+// Update party chat
+function updatePartyChat(messages) {
+    const chatEl = document.getElementById('partyChat');
+    if (!chatEl) return;
+    
+    chatEl.innerHTML = messages.map(msg => `
+        <div style="margin-bottom: 10px;">
+            <strong style="color: #00ff88;">${msg.userName}:</strong>
+            <span>${msg.message}</span>
+            <span style="opacity: 0.5; font-size: 0.8em; margin-left: 10px;">
+                ${new Date(msg.timestamp).toLocaleTimeString()}
+            </span>
+        </div>
+    `).join('');
+    
+    // Scroll to bottom
+    chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+// Send party chat message - delegate to partyFunctions
+async function sendPartyChat() {
+    return partyFunctions.sendPartyChat();
+}
+
 // Expose globally
 window.updatePartyDisplay = updatePartyDisplay;
+window.updatePartyChat = updatePartyChat;
+window.sendPartyChat = sendPartyChat;

@@ -25,6 +25,23 @@ export default defineConfig(({ mode }) => {
     outDir: 'dist',       // Output directory for production build
     assetsDir: 'assets',  // Directory for static assets
     sourcemap: true,      // Generate source maps for debugging
+    rollupOptions: {
+      output: {
+        // Ensure global functions are preserved
+        footer: `
+          // Ensure party functions are available globally
+          if (typeof globalThis.createNewParty === 'function') {
+            window.createNewParty = globalThis.createNewParty;
+          }
+          if (typeof globalThis.joinPartyByCode === 'function') {
+            window.joinPartyByCode = globalThis.joinPartyByCode;
+          }
+          if (typeof globalThis.leaveCurrentParty === 'function') {
+            window.leaveCurrentParty = globalThis.leaveCurrentParty;
+          }
+        `
+      }
+    }
   },
   
   // Environment variables configuration

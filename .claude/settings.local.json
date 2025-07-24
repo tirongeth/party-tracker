@@ -29,7 +29,8 @@
       "Bash(npm run preview:*)",
       "Bash(taskkill:*)",
       "Bash(cp:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(gh run list:*)"
     ],
     "deny": []
   }

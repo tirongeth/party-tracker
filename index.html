@@ -529,6 +529,25 @@
                     </div>
                 </div>
                 
+                <!-- Party Stats -->
+                <div id="partyStats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0;">
+                    <!-- Stats will show here -->
+                </div>
+                
+                <!-- Party Chat -->
+                <div style="margin: 20px 0;">
+                    <h4>💬 Party Chat</h4>
+                    <div id="partyChat" style="background: rgba(0, 0, 0, 0.3); border-radius: 10px; padding: 15px; height: 200px; overflow-y: auto; margin: 10px 0;">
+                        <!-- Chat messages show here -->
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="partyChatInput" placeholder="Type a message..." style="flex: 1; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; color: white;" onkeypress="if(event.key==='Enter')sendPartyChat()">
+                        <button class="btn" onclick="sendPartyChat()">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </button>
+                    </div>
+                </div>
+                
                 <button class="btn btn-danger" onclick="leaveCurrentParty()" style="width: 100%;">
                     <i class="fas fa-door-open"></i> Leave Party
                 </button>
