@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
   
   return {
   // Base path for deployment
-  base: './',             // Use relative paths for GitHub Pages
+  base: '/boozelens/',    // GitHub Pages deployment path
   
   // Development server configuration
   server: {
