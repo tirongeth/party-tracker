@@ -1,7 +1,7 @@
 {
-  "name": "BoozeLens - HSG Party Tracker",
+  "name": "BoozeLens - Picture Perfect Party",
   "short_name": "BoozeLens",
-  "description": "Real-time BAC monitoring and party safety app for HSG students",
+  "description": "Real-time BAC monitoring and party safety app - Picture Perfect Party",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

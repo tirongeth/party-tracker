@@ -1,7 +1,7 @@
 {
   "name": "hsg-party-tracker",
   "version": "1.0.0",
-  "description": "BoozeLens - HSG Party Tracker with real-time BAC monitoring",
+  "description": "BoozeLens - Picture Perfect Party with real-time BAC monitoring",
   "type": "module",
   "scripts": {
     "dev": "vite",

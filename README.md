@@ -1,6 +1,6 @@
-# 🎉 BoozeLens - HSG Party Tracker
+# 🎉 BoozeLens - Picture Perfect Party
 
-A real-time BAC (Blood Alcohol Content) monitoring system for safe partying at HSG (University of St. Gallen).
+A real-time BAC (Blood Alcohol Content) monitoring system for the Picture Perfect Party experience.
 
 ## 🚀 Quick Start
 
