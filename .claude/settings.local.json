@@ -26,7 +26,8 @@
       "Bash(find:*)",
       "Bash(tree:*)",
       "Bash(python:*)",
-      "Bash(npm run preview:*)"
+      "Bash(npm run preview:*)",
+      "Bash(taskkill:*)"
     ],
     "deny": []
   }

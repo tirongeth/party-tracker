@@ -1,47 +1,43 @@
 // ========================================
 // FIREBASE CONFIGURATION MODULE
 // ========================================
-// This module handles Firebase initialization
-// It reads the secret values from environment variables
+// This module handles Firebase initialization using modular SDK
 
-// Import Firebase modules
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getDatabase } from 'firebase/database';
+import { initializeApp, getApps } from 'firebase/app';
+import { 
+    getAuth, 
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut as firebaseSignOut,
+    onAuthStateChanged,
+    updateProfile as firebaseUpdateProfile,
+    updatePassword as firebaseUpdatePassword,
+    EmailAuthProvider,
+    reauthenticateWithCredential
+} from 'firebase/auth';
+import { 
+    getDatabase, 
+    ref as firebaseRef, 
+    onValue as firebaseOnValue,
+    set as firebaseSet,
+    get as firebaseGet,
+    push as firebasePush,
+    remove as firebaseRemove,
+    off as firebaseOff,
+    serverTimestamp as firebaseServerTimestamp
+} from 'firebase/database';
 
-// Reading values from environment variables (.env file)
+// Firebase configuration - these are public keys, safe to expose
 const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID,
-    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+    apiKey: "AIzaSyCuOjiHa8C0jgAte40E774CRJROTWTUdmg",
+    authDomain: "hsg-party-tracker.firebaseapp.com",
+    databaseURL: "https://hsg-party-tracker-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "hsg-party-tracker",
+    storageBucket: "hsg-party-tracker.firebasestorage.app",
+    messagingSenderId: "1047483086606",
+    appId: "1:1047483086606:web:a02d77baacd21166fb095f",
+    measurementId: "G-VFS4W30Z7P"
 };
-
-// Validate Firebase configuration
-const requiredFields = ['apiKey', 'authDomain', 'databaseURL', 'projectId'];
-const missingFields = requiredFields.filter(field => !firebaseConfig[field]);
-
-if (missingFields.length > 0) {
-    console.error('❌ Missing Firebase configuration:', missingFields);
-    console.error('Make sure all environment variables are set in .env file or GitHub Secrets');
-}
-
-// Validate Firebase configuration
-function validateFirebaseConfig() {
-    const requiredFields = ['apiKey', 'authDomain', 'databaseURL', 'projectId'];
-    const missingFields = requiredFields.filter(field => !firebaseConfig[field]);
-    
-    if (missingFields.length > 0) {
-        console.error('Missing required Firebase configuration:', missingFields);
-        console.error('Please ensure all environment variables are set in GitHub Secrets or .env file');
-        return false;
-    }
-    return true;
-}
 
 // Initialize Firebase app
 let app = null;
@@ -57,21 +53,15 @@ export function initializeFirebase() {
         return true;
     }
     
-    // Validate configuration before initializing
-    if (!validateFirebaseConfig()) {
-        console.error('❌ Firebase configuration validation failed');
-        // Show user-friendly error message
-        if (typeof window !== 'undefined' && window.showNotification) {
-            window.showNotification('Firebase configuration error. Please check the deployment.', 'error');
-        }
-        return false;
-    }
-    
     try {
-        // Initialize Firebase app with modern syntax
-        app = initializeApp(firebaseConfig);
+        // Initialize Firebase app
+        if (!getApps().length) {
+            app = initializeApp(firebaseConfig);
+        } else {
+            app = getApps()[0];
+        }
         
-        // Get Firebase services using modern imports
+        // Get Firebase services
         auth = getAuth(app);
         database = getDatabase(app);
         
@@ -81,9 +71,8 @@ export function initializeFirebase() {
         
     } catch (error) {
         console.error('❌ Firebase initialization error:', error);
-        // Show user-friendly error message
         if (typeof window !== 'undefined' && window.showNotification) {
-            window.showNotification('Failed to connect to Firebase. Please try again later.', 'error');
+            window.showNotification('Failed to connect to Firebase', 'error');
         }
         return false;
     }
@@ -92,7 +81,8 @@ export function initializeFirebase() {
 // Get the auth service
 export function getFirebaseAuth() {
     if (!auth) {
-        throw new Error('Firebase Auth not initialized. Call initializeFirebase() first.');
+        console.error('Firebase Auth not initialized. Call initializeFirebase() first.');
+        return null;
     }
     return auth;
 }
@@ -100,7 +90,68 @@ export function getFirebaseAuth() {
 // Get the database service
 export function getFirebaseDatabase() {
     if (!database) {
-        throw new Error('Firebase Database not initialized. Call initializeFirebase() first.');
+        console.error('Firebase Database not initialized. Call initializeFirebase() first.');
+        return null;
     }
     return database;
 }
+
+// Export Firebase Auth functions
+export {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    firebaseSignOut as signOut,
+    onAuthStateChanged,
+    firebaseUpdateProfile as updateProfile,
+    firebaseUpdatePassword as updatePassword,
+    EmailAuthProvider,
+    reauthenticateWithCredential
+};
+
+// Export Firebase Database functions with consistent naming
+export const ref = (pathOrDatabase, maybePath) => {
+    const db = getFirebaseDatabase();
+    if (!db) return null;
+    
+    // Handle both ref(database, path) and ref(path) signatures
+    if (typeof pathOrDatabase === 'string') {
+        return firebaseRef(db, pathOrDatabase);
+    } else if (maybePath !== undefined) {
+        return firebaseRef(pathOrDatabase, maybePath);
+    }
+    return firebaseRef(db, pathOrDatabase);
+};
+
+export const onValue = (reference, callback) => {
+    if (!reference) return;
+    return firebaseOnValue(reference, callback);
+};
+
+export const set = (reference, value) => {
+    if (!reference) return Promise.reject('No ref provided');
+    return firebaseSet(reference, value);
+};
+
+export const get = (reference) => {
+    if (!reference) return Promise.reject('No ref provided');
+    return firebaseGet(reference);
+};
+
+export const push = (reference, value) => {
+    if (!reference) return null;
+    return firebasePush(reference, value);
+};
+
+export const remove = (reference) => {
+    if (!reference) return Promise.reject('No ref provided');
+    return firebaseRemove(reference);
+};
+
+export const off = (reference, callback) => {
+    if (!reference) return;
+    return firebaseOff(reference, callback);
+};
+
+export const serverTimestamp = () => {
+    return firebaseServerTimestamp();
+};

@@ -3,10 +3,14 @@
 // ========================================
 // Handles all login, signup, and user authentication
 
-import { getFirebaseAuth, getFirebaseDatabase } from '../config/firebase.js';
+import { getFirebaseAuth, getFirebaseDatabase, 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword,
+    signOut as firebaseSignOut,
+    onAuthStateChanged 
+} from '../config/firebase.js';
 import { setCurrentUser, setStateValue } from '../config/app-state.js';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
-import { ref, set, get } from 'firebase/database';
+import { ref, set, get } from '../config/firebase.js';
 import { handleError, validateInput, safeAsync } from '../utils/error-handler.js';
 
 // Track if we're in signup mode

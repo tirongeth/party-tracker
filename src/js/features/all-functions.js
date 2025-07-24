@@ -4,11 +4,11 @@
 // This file contains ALL the functions from your original app
 // They're organized by category but maintain their original functionality
 
-import { getFirebaseDatabase, getFirebaseAuth } from '../config/firebase-compat.js';
+import { getFirebaseDatabase, getFirebaseAuth } from '../config/firebase.js';
 import { getAppState, setStateValue, getCurrentUser } from '../config/app-state.js';
 import { DRINK_PRESETS, getBACStatus } from '../config/constants.js';
 import { showNotification } from '../ui/notifications.js';
-import { ref, set, get, push, remove, onValue, off, serverTimestamp } from '../config/firebase-compat.js';
+import { ref, set, get, push, remove, onValue, off, serverTimestamp } from 'firebase/database';
 
 // ========================================
 // FRIENDS SYSTEM FUNCTIONS
