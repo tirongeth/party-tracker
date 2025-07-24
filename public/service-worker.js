@@ -41,11 +41,19 @@ self.addEventListener('activate', event => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', event => {
-  // Skip Firebase requests entirely - let them go through normally
-  if (event.request.url.includes('firebase') || 
-      event.request.url.includes('firebaseio.com') ||
-      event.request.url.includes('firebaseapp.com') ||
-      event.request.url.includes('googleapis.com')) {
+  // Skip Firebase and auth-related requests entirely - let them go through normally
+  const url = event.request.url;
+  if (url.includes('firebase') || 
+      url.includes('firebaseio.com') ||
+      url.includes('firebaseapp.com') ||
+      url.includes('googleapis.com') ||
+      url.includes('identitytoolkit.googleapis.com') ||
+      url.includes('securetoken.googleapis.com') ||
+      url.includes('firebaseinstallations.googleapis.com') ||
+      url.includes('firebasedatabase.app') ||
+      url.includes('firebaseremoteconfig.googleapis.com') ||
+      url.includes('auth') ||
+      url.includes('token')) {
     return;
   }
 

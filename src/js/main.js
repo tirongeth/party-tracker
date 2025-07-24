@@ -15,7 +15,7 @@ import {
     getCurrentUser,
     clearAppState
 } from './config/app-state.js';
-// import { registerServiceWorker, initializePWA, initializeOfflineStorage } from './utils/pwa.js';
+import { registerServiceWorker, initializePWA, initializeOfflineStorage } from './utils/pwa.js';
 
 // Import all functions from feature modules
 import * as AllFunctions from './features/all-functions.js';
@@ -106,22 +106,39 @@ document.addEventListener('DOMContentLoaded', () => {
     // Expose all functions globally first
     exposeGlobalFunctions();
     
-    // Initialize PWA features - TEMPORARILY DISABLED FOR DEBUGGING
-    // try {
-    //     if (registerServiceWorker) {
-    //         registerServiceWorker().catch(err => {
-    //             console.warn('Service worker registration failed:', err);
-    //         });
-    //     }
-    //     if (initializePWA) {
-    //         initializePWA();
-    //     }
-    //     if (initializeOfflineStorage) {
-    //         initializeOfflineStorage();
-    //     }
-    // } catch (pwaError) {
-    //     console.warn('PWA initialization error (non-critical):', pwaError);
-    // }
+    // First, unregister any existing service workers that might be blocking auth
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(registrations => {
+            if (registrations.length > 0) {
+                registrations.forEach(registration => {
+                    registration.unregister();
+                    console.log('Unregistered old service worker:', registration.scope);
+                });
+                // Reload after unregistering to ensure clean state
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+                return;
+            }
+        });
+    }
+    
+    // Initialize PWA features with fixed service worker
+    try {
+        if (registerServiceWorker) {
+            registerServiceWorker().catch(err => {
+                console.warn('Service worker registration failed:', err);
+            });
+        }
+        if (initializePWA) {
+            initializePWA();
+        }
+        if (initializeOfflineStorage) {
+            initializeOfflineStorage();
+        }
+    } catch (pwaError) {
+        console.warn('PWA initialization error (non-critical):', pwaError);
+    }
     
     // Initialize Firebase
     const firebaseReady = initializeFirebase();
