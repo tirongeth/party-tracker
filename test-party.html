@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Party Test</title>
+</head>
+<body>
+    <h1>Party Function Test</h1>
+    
+    <button onclick="testCreate()">Test Create Party</button>
+    <button onclick="testJoin()">Test Join Party</button>
+    <button onclick="testLeave()">Test Leave Party</button>
+    
+    <script type="module">
+        // Simple test to verify functions are exposed
+        window.testCreate = function() {
+            if (typeof window.createNewParty === 'function') {
+                alert('createNewParty is defined!');
+            } else {
+                alert('createNewParty is NOT defined!');
+            }
+        };
+        
+        window.testJoin = function() {
+            if (typeof window.joinPartyByCode === 'function') {
+                alert('joinPartyByCode is defined!');
+            } else {
+                alert('joinPartyByCode is NOT defined!');
+            }
+        };
+        
+        window.testLeave = function() {
+            if (typeof window.leaveCurrentParty === 'function') {
+                alert('leaveCurrentParty is defined!');
+            } else {
+                alert('leaveCurrentParty is NOT defined!');
+            }
+        };
+        
+        // Check on load
+        setTimeout(() => {
+            console.log('createNewParty:', typeof window.createNewParty);
+            console.log('joinPartyByCode:', typeof window.joinPartyByCode);
+            console.log('leaveCurrentParty:', typeof window.leaveCurrentParty);
+        }, 1000);
+    </script>
+</body>
+</html>

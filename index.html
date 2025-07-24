@@ -164,13 +164,13 @@
         <!-- Dashboard Section -->
         <section id="dashboard" class="section active">
             <!-- Party Info (shown when in a party) -->
-            <div id="dashboardPartyInfo" class="party-section" style="display: none; margin-bottom: 30px;">
-                <div class="party-header">
-                    <h3>🎉 Current Party: <span id="dashboardPartyName"></span></h3>
-                    <div class="party-code-display" id="dashboardPartyCode"></div>
+            <div id="dashboardPartyInfo" style="display: none; margin-bottom: 30px; background: rgba(0, 255, 136, 0.1); border: 2px solid #00ff88; padding: 20px; border-radius: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="color: #00ff88; margin: 0;">🎆 Party: <span id="dashboardPartyName"></span></h3>
+                    <div style="font-size: 1.5em; font-weight: bold; color: #00ff88;" id="dashboardPartyCode"></div>
                 </div>
-                <button class="btn" onclick="switchSection('parties')">
-                    <i class="fas fa-cog"></i> Manage Party
+                <button class="btn" onclick="switchSection('parties')" style="margin-top: 15px;">
+                    <i class="fas fa-users"></i> View Party
                 </button>
             </div>
             
@@ -509,128 +509,55 @@
             </div>
         </section>
         
-        <!-- Parties Section -->
+        <!-- Parties Section - SIMPLIFIED -->
         <section id="parties" class="section">
-            <h2>🎉 Parties 🎉</h2>
+            <h2>🎉 Party Mode 🎉</h2>
             
-            <!-- Current Party (if in one) -->
-            <div id="currentPartySection" class="party-section" style="display: none;">
-                <div class="party-header">
-                    <h3 id="currentPartyName">Current Party</h3>
-                    <div class="party-code-display" id="currentPartyCode">ABC123</div>
+            <!-- Current Party -->
+            <div id="currentPartySection" class="card" style="display: none; background: rgba(0, 255, 136, 0.1); border: 2px solid #00ff88;">
+                <h3 style="color: #00ff88; margin-bottom: 20px;">🎆 Current Party: <span id="currentPartyName"></span></h3>
+                
+                <div style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px;">
+                    <p style="margin-bottom: 10px;">Share this code:</p>
+                    <div style="font-size: 3em; font-weight: bold; letter-spacing: 0.2em; color: #00ff88;" id="currentPartyCode"></div>
                 </div>
                 
-                <!-- Party Stats -->
-                <div class="party-stats" id="partyStatsDisplay" style="margin: 20px 0;">
-                    <!-- Party statistics will be shown here -->
-                </div>
-                
-                <div class="party-leaderboard">
-                    <h4>🏆 Party Leaderboard</h4>
-                    <div id="partyLeaderboard">
-                        <!-- Party leaderboard will be populated here -->
+                <div style="margin: 20px 0;">
+                    <h4>👥 Party Members</h4>
+                    <div id="partyMembersList" style="margin-top: 15px;">
+                        <!-- Members show here -->
                     </div>
                 </div>
                 
-                <div class="party-members">
-                    <h4>Party Members</h4>
-                    <div id="partyMembersList">
-                        <!-- Party members will be shown here -->
-                    </div>
-                </div>
+                <button class="btn btn-danger" onclick="leaveCurrentParty()" style="width: 100%;">
+                    <i class="fas fa-door-open"></i> Leave Party
+                </button>
+            </div>
+            
+            <!-- Create or Join -->
+            <div class="card">
+                <h3>🎊 Start the Party</h3>
                 
-                <!-- Party Chat -->
-                <div class="party-chat" style="margin-top: 20px;">
-                    <h4>💬 Party Chat</h4>
-                    <div class="chat-messages party-chat-messages" id="partyChatMessages">
-                        <!-- Party chat messages will appear here -->
-                    </div>
-                    <div class="chat-reactions">
-                        <button class="reaction-btn" onclick="sendPartyReaction('🎉')">🎉</button>
-                        <button class="reaction-btn" onclick="sendPartyReaction('🍻')">🍻</button>
-                        <button class="reaction-btn" onclick="sendPartyReaction('🔥')">🔥</button>
-                        <button class="reaction-btn" onclick="sendPartyReaction('😂')">😂</button>
-                        <button class="reaction-btn" onclick="sendPartyReaction('👯')">👯</button>
-                        <button class="reaction-btn" onclick="sendPartyReaction('🚀')">🚀</button>
-                        <button class="reaction-btn" onclick="sendPartyReaction('❤️')">❤️</button>
-                        <button class="reaction-btn" onclick="sendPartyReaction('🤔')">🤔</button>
-                    </div>
-                    <div class="chat-input">
-                        <input type="text" id="partyChatInput" placeholder="Type a message..." onkeypress="handlePartyChatEnter(event)">
-                        <button class="btn" onclick="sendPartyMessage()">
-                            <i class="fas fa-paper-plane"></i>
+                <div style="margin: 20px 0;">
+                    <h4>Create New Party</h4>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <input type="text" id="partyName" placeholder="Party Name" style="flex: 1; padding: 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; font-size: 1.1em;">
+                        <button class="btn btn-primary" onclick="createNewParty()" style="padding: 15px 30px;">
+                            <i class="fas fa-plus"></i> Create
                         </button>
                     </div>
                 </div>
                 
-                <button class="btn btn-danger" style="margin-top: 20px;" onclick="leaveCurrentParty()">
-                    <i class="fas fa-sign-out-alt"></i> Leave Party
-                </button>
-            </div>
-            
-            <!-- Party Creation -->
-            <div class="party-section">
-                <h3>Create New Party</h3>
-                <div style="display: grid; gap: 15px; margin: 20px 0;">
-                    <input type="text" id="partyName" placeholder="Party Name" class="form-input">
-                    <input type="text" id="partyAddress" placeholder="Party Address (optional)" class="form-input">
-                    <textarea id="partyDescription" placeholder="Party Description (optional)" class="form-input" rows="3"></textarea>
-                    
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <label>Privacy:</label>
-                        <select id="partyPrivacy" class="form-input" style="flex: 1;">
-                            <option value="private">Private (Code Required)</option>
-                            <option value="friends_only">Friends Only</option>
-                            <option value="public">Public</option>
-                        </select>
-                    </div>
-                    
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <label>Duration:</label>
-                        <select id="partyDuration" class="form-input" style="flex: 1;">
-                            <option value="24h">24 Hours</option>
-                            <option value="ongoing">Ongoing (Group Chat)</option>
-                        </select>
-                    </div>
-                </div>
+                <div style="text-align: center; margin: 30px 0; opacity: 0.7;">- OR -</div>
                 
-                <button class="btn btn-primary" onclick="createNewParty()">
-                    <i class="fas fa-plus"></i> Create Party
-                </button>
-            </div>
-            
-            <!-- Join Party -->
-            <div class="party-section">
-                <h3>Join Party</h3>
-                <div class="party-join-section">
-                    <input type="text" id="joinPartyCode" placeholder="ENTER CODE" class="party-code-input" maxlength="6">
-                    <button class="btn btn-primary" onclick="joinPartyByCode()">
-                        <i class="fas fa-sign-in-alt"></i> Join
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Join Requests (for party creators) -->
-            <div id="partyRequestsSection" class="party-requests" style="display: none;">
-                <h3>🔔 Join Requests</h3>
-                <div id="partyRequestsList">
-                    <!-- Join requests will be shown here -->
-                </div>
-            </div>
-            
-            <!-- My Parties -->
-            <div class="party-section">
-                <h3>My Parties</h3>
-                <div class="party-grid" id="myPartiesList">
-                    <!-- User's parties will be listed here -->
-                </div>
-            </div>
-            
-            <!-- Public Parties -->
-            <div class="party-section">
-                <h3>Public Parties</h3>
-                <div class="party-grid" id="publicPartiesList">
-                    <!-- Public parties will be listed here -->
+                <div style="margin: 20px 0;">
+                    <h4>Join Existing Party</h4>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <input type="text" id="joinPartyCode" placeholder="ENTER CODE" maxlength="6" style="flex: 1; padding: 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; font-size: 1.3em; text-align: center; text-transform: uppercase; letter-spacing: 0.1em;">
+                        <button class="btn btn-primary" onclick="joinPartyByCode()" style="padding: 15px 30px;">
+                            <i class="fas fa-sign-in-alt"></i> Join
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>

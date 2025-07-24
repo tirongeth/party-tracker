@@ -24,8 +24,6 @@ import * as Games from './features/games.js';
 import * as Achievements from './features/achievements.js';
 import * as Devices from './features/devices.js';
 import * as Parties from './features/parties.js';
-import { partyUIFunctions } from './features/party-ui.js';
-import { sendPartyMessage, sendPartyReaction, listenToPartyChat, cleanupChat } from './features/party-chat.js';
 
 // ========================================
 // EXPOSE ALL FUNCTIONS GLOBALLY
@@ -110,28 +108,48 @@ function exposeGlobalFunctions() {
     window.unpairDevice = Devices.unpairDevice;
     window.renameDevice = Devices.renameDevice;
     
-    // Party functions - properly expose from party-ui module
-    window.createNewParty = partyUIFunctions.createNewParty;
-    window.joinPartyByCode = partyUIFunctions.joinPartyByCode;
-    window.leaveCurrentParty = partyUIFunctions.leaveCurrentParty;
-    window.approveJoinRequest = partyUIFunctions.approveJoinRequest;
-    window.rejectJoinRequest = partyUIFunctions.rejectJoinRequest;
-    window.setCurrentParty = partyUIFunctions.setCurrentParty;
-    window.quickAddPartyFriend = partyUIFunctions.quickAddPartyFriend;
-    window.updatePartyUI = partyUIFunctions.updatePartyUI;
-    
-    // Party chat functions
-    window.sendPartyMessage = () => {
-        const input = document.getElementById('partyChatInput');
-        if (input && input.value.trim()) {
-            sendPartyMessage(input.value);
-            input.value = '';
+    // SIMPLE PARTY FUNCTIONS THAT WORK
+    window.createNewParty = async function() {
+        const nameInput = document.getElementById('partyName');
+        if (!nameInput || !nameInput.value.trim()) {
+            showNotification('Enter a party name', 'error');
+            return;
+        }
+        
+        const result = await Parties.createParty(nameInput.value);
+        if (result.success) {
+            showNotification(`Party created! Code: ${result.code}`, 'success');
+            nameInput.value = '';
+            updatePartyDisplay();
+        } else {
+            showNotification(result.error || 'Failed to create party', 'error');
         }
     };
-    window.sendPartyReaction = sendPartyReaction;
-    window.handlePartyChatEnter = (event) => {
-        if (event.key === 'Enter') {
-            window.sendPartyMessage();
+    
+    window.joinPartyByCode = async function() {
+        const codeInput = document.getElementById('joinPartyCode');
+        if (!codeInput || !codeInput.value.trim()) {
+            showNotification('Enter a party code', 'error');
+            return;
+        }
+        
+        const result = await Parties.joinParty(codeInput.value);
+        if (result.success) {
+            showNotification('Joined party!', 'success');
+            codeInput.value = '';
+            updatePartyDisplay();
+        } else {
+            showNotification(result.error || 'Failed to join party', 'error');
+        }
+    };
+    
+    window.leaveCurrentParty = async function() {
+        if (confirm('Leave this party?')) {
+            const result = await Parties.leaveParty();
+            if (result.success) {
+                showNotification('Left party', 'info');
+                updatePartyDisplay();
+            }
         }
     };
 }
@@ -294,8 +312,9 @@ async function onUserAuthenticated(user) {
         // Initialize UI
         updateUI();
         
-        // Initialize party UI
-        partyUIFunctions.updatePartyUI();
+        // Load and display party
+        await Parties.loadCurrentParty();
+        updatePartyDisplay();
         
         const userData = getAppState().userData;
         const displayName = userData.username || user.email.split('@')[0];
@@ -488,7 +507,7 @@ function switchSection(sectionId) {
         } else if (sectionId === 'settings') {
             AllFunctions.updateToggleSwitches();
         } else if (sectionId === 'parties') {
-            partyUIFunctions.updatePartyUI();
+            updatePartyDisplay();
         }
     } catch (error) {
         console.error('Section switch failed:', error);
@@ -590,9 +609,7 @@ async function showModal(type, data = null) {
             break;
             
         case 'checkin':
-            // Get user's parties for check-in
-            const userParties = await Parties.getUserParties();
-            const activeParties = userParties.filter(p => p.active);
+            const party = Parties.currentParty;
             
             content = `
                 <h2>📍 Check In</h2>
@@ -600,22 +617,12 @@ async function showModal(type, data = null) {
                 <div class="location-map" id="locationMap">
                     <!-- Simulated map -->
                 </div>
-                
-                ${activeParties.length > 0 ? `
-                    <div style="margin: 20px 0;">
-                        <h3>🎉 Check in to a Party:</h3>
-                        ${activeParties.map(party => 
-                            `<button class="btn btn-primary" style="width: 100%; margin: 10px 0;" onclick="checkInLocation('Party: ${party.name}')">
-                                <i class="fas fa-champagne-glasses"></i> ${party.name}
-                                ${party.address ? ` - ${party.address}` : ''}
-                            </button>`
-                        ).join('')}
-                    </div>
-                    <hr style="margin: 20px 0; opacity: 0.3;">
-                ` : ''}
-                
                 <div style="margin: 20px 0;">
-                    <h3>📍 Or check in to a location:</h3>
+                    ${party ? `
+                        <button class="btn btn-primary" style="width: 100%; margin: 10px 0;" onclick="checkInLocation('Party: ${party.name}')">
+                            <i class="fas fa-champagne-glasses"></i> ${party.name}
+                        </button>
+                    ` : ''}
                     ${['Dorm A - Room Party', 'Student Bar', 'Library Cafe', 'Sports Center', 'Main Campus', 'Off Campus'].map(loc => 
                         `<button class="btn" style="width: 100%; margin: 10px 0;" onclick="checkInLocation('${loc}')">${loc}</button>`
                     ).join('')}
@@ -783,28 +790,47 @@ function loadUserSettings() {
     AllFunctions.updateToggleSwitches();
 }
 
-// Listen for party events
-window.addEventListener('partyChanged', (event) => {
-    const partyId = event.detail.partyId;
+// SIMPLE party display update
+function updatePartyDisplay() {
+    const party = Parties.currentParty;
+    const currentSection = document.getElementById('currentPartySection');
+    const dashboardInfo = document.getElementById('dashboardPartyInfo');
     
-    // Update UI
-    partyUIFunctions.updatePartyUI();
-    updateUI(); // Update main dashboard
-    
-    // Update chat listener
-    if (partyId) {
-        listenToPartyChat(partyId);
+    if (party) {
+        // Show party sections
+        if (currentSection) currentSection.style.display = 'block';
+        if (dashboardInfo) dashboardInfo.style.display = 'block';
+        
+        // Update party info
+        const nameEls = document.querySelectorAll('#currentPartyName, #dashboardPartyName');
+        const codeEls = document.querySelectorAll('#currentPartyCode, #dashboardPartyCode');
+        
+        nameEls.forEach(el => { if (el) el.textContent = party.name; });
+        codeEls.forEach(el => { if (el) el.textContent = party.code; });
+        
+        // Update members
+        const membersList = document.getElementById('partyMembersList');
+        if (membersList && party.members) {
+            membersList.innerHTML = Object.entries(party.members).map(([id, member]) => `
+                <div class="friend-item">
+                    <div class="friend-info">
+                        <div class="friend-avatar-small">👤</div>
+                        <div class="friend-details">
+                            <h4>${member.name}</h4>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Listen for updates
+        Parties.listenToParty(updatePartyDisplay);
     } else {
-        cleanupChat();
+        // Hide party sections
+        if (currentSection) currentSection.style.display = 'none';
+        if (dashboardInfo) dashboardInfo.style.display = 'none';
     }
-});
-
-window.addEventListener('partyUpdate', async (event) => {
-    const party = event.detail;
-    await partyUIFunctions.handlePartyUpdate(party);
-});
-
-// Make sure to expose setCurrentParty
-window.setCurrentParty = function(partyId) {
-    Parties.setCurrentParty(partyId);
 }
+
+// Expose globally
+window.updatePartyDisplay = updatePartyDisplay;
