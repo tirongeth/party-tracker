@@ -331,6 +331,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
+    // Add event delegation for party buttons as backup
+    document.addEventListener('click', (event) => {
+        const target = event.target;
+        
+        // Check if it's a party button by its onclick attribute
+        if (target.getAttribute('onclick')) {
+            const onclick = target.getAttribute('onclick');
+            
+            if (onclick.includes('createNewParty()') && partyFunctions.createNewParty) {
+                event.preventDefault();
+                partyFunctions.createNewParty();
+            } else if (onclick.includes('joinPartyByCode()') && partyFunctions.joinPartyByCode) {
+                event.preventDefault();
+                partyFunctions.joinPartyByCode();
+            } else if (onclick.includes('leaveCurrentParty()') && partyFunctions.leaveCurrentParty) {
+                event.preventDefault();
+                partyFunctions.leaveCurrentParty();
+            } else if (onclick.includes('sendPartyChat()') && partyFunctions.sendPartyChat) {
+                event.preventDefault();
+                partyFunctions.sendPartyChat();
+            }
+        }
+    });
+    
     // Save data before unload
     window.addEventListener('beforeunload', () => {
         Drinks.saveDrinkHistory();
