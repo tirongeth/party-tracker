@@ -132,6 +132,11 @@ function exposeGlobalFunctions() {
     window.spinBottle = Games.spinBottle;
     window.showBeerPongRules = Games.showBeerPongRules;
     window.showBeerPongGame = Games.showBeerPongGame;
+    window.showBeerPongTournament = Games.showBeerPongTournament;
+    window.setupTournament = Games.setupTournament;
+    window.startTournament = Games.startTournament;
+    window.selectWinner = Games.selectWinner;
+    window.resetTournament = Games.resetTournament;
     
     // Also expose some internal functions that are used
     window.getActiveLocations = AllFunctions.getActiveLocations;
