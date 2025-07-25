@@ -50,6 +50,50 @@ const gameData = {
             ]
         }
     },
+    specialBeerPongRules: [
+        "🎯 Make a rule! Everyone must follow it for the rest of the game",
+        "🔄 Switch sides! Both teams swap positions",
+        "👁️ Blindfold shot! Next shot must be taken blindfolded",
+        "🤝 Partner shot! Both teammates must hold the ball together",
+        "🎪 Trick shot only! Next 3 shots must be trick shots",
+        "🚫 No elbows! Next round, elbows must stay at your sides",
+        "💃 Dance before shooting! Do a 10-second dance before each shot",
+        "🎵 Sing while shooting! Must sing during your entire turn",
+        "🦩 Flamingo stance! Stand on one leg for your next shot",
+        "🔄 Opposite hand! Use your non-dominant hand for 2 turns",
+        "📱 Phone roulette! Text a random contact 'I love beer pong'",
+        "🎭 Accent round! Speak in an accent for 5 minutes",
+        "❄️ Ice cube challenge! Hold an ice cube while shooting",
+        "🤐 Silent round! No talking for 2 rounds",
+        "👯 Mirror mode! Copy everything your opponent does",
+        "🎯 Call your shot! Must call which cup you're aiming for",
+        "⏰ Speed round! 5-second shot clock for next 3 shots",
+        "🤡 Compliment battle! Compliment opponents before each shot",
+        "🎪 Spin before shooting! Do 3 spins before taking your shot",
+        "💪 Push-up penalty! Do 5 push-ups if you miss"
+    ],
+    specialBeerPongDares: [
+        "Take a shot of the opponents' choice",
+        "Let opponents post something on your social media",
+        "Call your crush and tell them you're thinking of them",
+        "Do 20 burpees right now",
+        "Let everyone go through your phone for 30 seconds",
+        "Reveal your most embarrassing story",
+        "Show your last 5 Google searches",
+        "Let opponents give you a nickname for the night",
+        "Speak in rhymes for the next 10 minutes",
+        "Do your best impression of someone in the room",
+        "Truth: Answer any question honestly",
+        "Swap an item of clothing with an opponent",
+        "Let opponents draw on your face with marker",
+        "Chug a mystery drink made by opponents",
+        "Do the chicken dance for 1 minute",
+        "Let everyone read your last text conversation",
+        "Freestyle rap for 30 seconds",
+        "Call your parents and tell them you love them",
+        "Do a handstand for 10 seconds",
+        "Let opponents choose your next drink"
+    ],
     neverHaveIEver: [
         // Social & Party
         "Never have I ever kissed someone I just met",
@@ -285,6 +329,16 @@ const gameState = {
         currentRound: 0,
         totalTeams: 0,
         rounds: []
+    },
+    // Beer Pong state
+    beerPong: {
+        currentMode: 'normal',
+        team1Name: 'Team 1',
+        team2Name: 'Team 2',
+        specialCups: {
+            team1: [],
+            team2: []
+        }
     }
 };
 
@@ -496,24 +550,95 @@ function createBeerPongGame() {
         </div>
         
         <div id="beerPongGame" style="display: block;">
-            <div class="score-display">
-                <div class="team-score">
-                    <div class="team-name">Team 1</div>
-                    <div class="team-points" id="team1Score">0</div>
-                    <button class="btn" onclick="addScore('team1')">+1</button>
+            <div id="gameModeSelection" style="display: block;">
+                <h3 style="text-align: center; margin-bottom: 20px;">Choose Your Game Mode</h3>
+                <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="startNormalBeerPong()" 
+                        style="padding: 20px 30px; font-size: 1.1em;">
+                        <i class="fas fa-beer"></i> Normal Beer Pong
+                    </button>
+                    <button class="btn btn-danger" onclick="startSpecialBeerPong()" 
+                        style="padding: 20px 30px; font-size: 1.1em;">
+                        <i class="fas fa-dice"></i> Special Beer Pong
+                    </button>
                 </div>
-                <div class="team-score">
-                    <div class="team-name">Team 2</div>
-                    <div class="team-points" id="team2Score">0</div>
-                    <button class="btn" onclick="addScore('team2')">+1</button>
+                <p style="text-align: center; margin-top: 20px; opacity: 0.7;">
+                    Special mode: Each cup has a dare or rule!
+                </p>
+            </div>
+            
+            <div id="teamNameSetup" style="display: none;">
+                <h3 style="text-align: center; margin-bottom: 20px;">Name Your Teams</h3>
+                <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap;">
+                    <div>
+                        <label>Team 1:</label>
+                        <input type="text" id="team1NameInput" placeholder="Enter team name" 
+                            style="padding: 10px; background: rgba(255,255,255,0.1); 
+                            border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; 
+                            color: white; width: 200px; margin-left: 10px;" value="Team 1">
+                    </div>
+                    <div>
+                        <label>Team 2:</label>
+                        <input type="text" id="team2NameInput" placeholder="Enter team name" 
+                            style="padding: 10px; background: rgba(255,255,255,0.1); 
+                            border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; 
+                            color: white; width: 200px; margin-left: 10px;" value="Team 2">
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="startGameWithNames()" style="padding: 10px 30px;">
+                        <i class="fas fa-play"></i> Start Game
+                    </button>
                 </div>
             </div>
-            <div style="text-align: center; margin: 30px 0;">
-                <button class="btn btn-primary" onclick="resetBeerPong()">
-                    <i class="fas fa-redo"></i> New Game
-                </button>
+            
+            <div id="normalGamePlay" style="display: none;">
+                <div class="score-display">
+                    <div class="team-score">
+                        <div class="team-name" id="team1Display">Team 1</div>
+                        <div class="team-points" id="team1Score">0</div>
+                        <button class="btn" onclick="addScore('team1')">+1</button>
+                    </div>
+                    <div class="team-score">
+                        <div class="team-name" id="team2Display">Team 2</div>
+                        <div class="team-points" id="team2Score">0</div>
+                        <button class="btn" onclick="addScore('team2')">+1</button>
+                    </div>
+                </div>
+                <div style="text-align: center; margin: 30px 0;">
+                    <button class="btn btn-primary" onclick="resetBeerPong()">
+                        <i class="fas fa-redo"></i> New Game
+                    </button>
+                </div>
+                <div id="gameStatus" style="text-align: center; font-size: 1.5em; margin-top: 20px;"></div>
             </div>
-            <div id="gameStatus" style="text-align: center; font-size: 1.5em; margin-top: 20px;"></div>
+            
+            <div id="specialGamePlay" style="display: none;">
+                <h3 style="text-align: center; margin-bottom: 20px;">
+                    <span id="specialTeam1Name">Team 1</span> vs <span id="specialTeam2Name">Team 2</span>
+                </h3>
+                <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 40px;">
+                    <div id="team1Cups" style="text-align: center;">
+                        <h4 id="specialTeam1Display">Team 1</h4>
+                        <div class="cup-formation" style="margin-top: 20px;">
+                        </div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 3em;">🏓</div>
+                        <button class="btn btn-primary" onclick="resetSpecialGame()" style="margin-top: 20px;">
+                            <i class="fas fa-redo"></i> Reset
+                        </button>
+                    </div>
+                    <div id="team2Cups" style="text-align: center;">
+                        <h4 id="specialTeam2Display">Team 2</h4>
+                        <div class="cup-formation" style="margin-top: 20px;">
+                        </div>
+                    </div>
+                </div>
+                <div id="ruleDisplay" style="display: none; margin-top: 30px; text-align: center; 
+                    padding: 20px; background: rgba(255,255,255,0.1); border-radius: 15px;">
+                </div>
+            </div>
         </div>
         
         <div id="beerPongTournament" style="display: none;">
@@ -806,6 +931,9 @@ export function resetBeerPong() {
     setStateValue('gameScores', { team1: 0, team2: 0 });
     updateBeerPongScore();
     document.getElementById('gameStatus').textContent = '';
+    
+    // Reset to mode selection
+    showBeerPongGame();
 }
 
 // Flip Cup
@@ -1237,6 +1365,12 @@ export function showBeerPongGame() {
     rulesDiv.style.display = 'none';
     tournamentDiv.style.display = 'none';
     gameDiv.style.display = 'block';
+    
+    // Reset to mode selection
+    document.getElementById('gameModeSelection').style.display = 'block';
+    document.getElementById('teamNameSetup').style.display = 'none';
+    document.getElementById('normalGamePlay').style.display = 'none';
+    document.getElementById('specialGamePlay').style.display = 'none';
 }
 
 // ========================================
@@ -1517,4 +1651,190 @@ export function resetTournament() {
     };
     
     showBeerPongTournament();
+}
+
+// ========================================
+// BEER PONG NORMAL & SPECIAL MODE FUNCTIONS
+// ========================================
+export function startNormalBeerPong() {
+    gameState.beerPong.currentMode = 'normal';
+    document.getElementById('gameModeSelection').style.display = 'none';
+    document.getElementById('teamNameSetup').style.display = 'block';
+}
+
+export function startSpecialBeerPong() {
+    gameState.beerPong.currentMode = 'special';
+    document.getElementById('gameModeSelection').style.display = 'none';
+    document.getElementById('teamNameSetup').style.display = 'block';
+}
+
+export function startGameWithNames() {
+    // Get team names
+    const team1Name = document.getElementById('team1NameInput').value.trim() || 'Team 1';
+    const team2Name = document.getElementById('team2NameInput').value.trim() || 'Team 2';
+    
+    gameState.beerPong.team1Name = team1Name;
+    gameState.beerPong.team2Name = team2Name;
+    
+    document.getElementById('teamNameSetup').style.display = 'none';
+    
+    if (gameState.beerPong.currentMode === 'normal') {
+        // Update normal game display
+        document.getElementById('team1Display').textContent = team1Name;
+        document.getElementById('team2Display').textContent = team2Name;
+        document.getElementById('normalGamePlay').style.display = 'block';
+    } else {
+        // Initialize special game
+        initializeSpecialGame(team1Name, team2Name);
+        document.getElementById('specialGamePlay').style.display = 'block';
+    }
+}
+
+function initializeSpecialGame(team1Name, team2Name) {
+    // Update team names
+    document.getElementById('specialTeam1Name').textContent = team1Name;
+    document.getElementById('specialTeam2Name').textContent = team2Name;
+    document.getElementById('specialTeam1Display').textContent = team1Name;
+    document.getElementById('specialTeam2Display').textContent = team2Name;
+    
+    // Initialize cups for both teams
+    gameState.beerPong.specialCups.team1 = createCupFormation('team1');
+    gameState.beerPong.specialCups.team2 = createCupFormation('team2');
+    
+    // Display cups
+    displayCupFormation('team1');
+    displayCupFormation('team2');
+}
+
+function createCupFormation(team) {
+    const cups = [];
+    // Create 10 cups with random rules/dares
+    for (let i = 0; i < 10; i++) {
+        const isRule = Math.random() > 0.5;
+        const content = isRule 
+            ? gameData.specialBeerPongRules[Math.floor(Math.random() * gameData.specialBeerPongRules.length)]
+            : gameData.specialBeerPongDares[Math.floor(Math.random() * gameData.specialBeerPongDares.length)];
+        
+        cups.push({
+            id: `${team}-cup-${i}`,
+            active: true,
+            type: isRule ? 'rule' : 'dare',
+            content: content
+        });
+    }
+    return cups;
+}
+
+function displayCupFormation(team) {
+    const cups = gameState.beerPong.specialCups[team];
+    const container = document.querySelector(`#${team}Cups .cup-formation`);
+    
+    // Create pyramid formation (4-3-2-1)
+    const rows = [4, 3, 2, 1];
+    let cupIndex = 0;
+    let formationHTML = '';
+    
+    rows.forEach((cupsInRow, rowIndex) => {
+        formationHTML += `<div style="display: flex; justify-content: center; margin-bottom: 5px;">`;
+        for (let i = 0; i < cupsInRow; i++) {
+            const cup = cups[cupIndex];
+            const cupStyle = cup.active 
+                ? 'font-size: 2.5em; cursor: pointer; margin: 0 5px; transition: transform 0.2s;'
+                : 'font-size: 2.5em; margin: 0 5px; opacity: 0.3;';
+            
+            formationHTML += `
+                <span id="${cup.id}" 
+                    style="${cupStyle}" 
+                    onclick="${cup.active ? `hitCup('${team}', ${cupIndex})` : ''}"
+                    onmouseover="this.style.transform='scale(1.1)'"
+                    onmouseout="this.style.transform='scale(1)'">
+                    ${cup.active ? '🥤' : '💨'}
+                </span>
+            `;
+            cupIndex++;
+        }
+        formationHTML += '</div>';
+    });
+    
+    container.innerHTML = formationHTML;
+}
+
+export function hitCup(team, cupIndex) {
+    const cup = gameState.beerPong.specialCups[team][cupIndex];
+    if (!cup.active) return;
+    
+    // Mark cup as hit
+    cup.active = false;
+    
+    // Display the rule/dare
+    const ruleDisplay = document.getElementById('ruleDisplay');
+    ruleDisplay.style.display = 'block';
+    ruleDisplay.innerHTML = `
+        <h3 style="color: ${cup.type === 'rule' ? '#00ff88' : '#ff0088'};">
+            ${cup.type === 'rule' ? '📜 NEW RULE!' : '🎯 DARE TIME!'}
+        </h3>
+        <p style="font-size: 1.3em; margin: 20px 0;">
+            ${cup.content}
+        </p>
+        <button class="btn btn-primary" onclick="closeRuleDisplay()">
+            Got it!
+        </button>
+    `;
+    
+    // Redisplay cups
+    displayCupFormation(team);
+    
+    // Check for winner
+    const activeCups = gameState.beerPong.specialCups[team].filter(c => c.active).length;
+    if (activeCups === 0) {
+        showSpecialGameWinner(team === 'team1' ? gameState.beerPong.team2Name : gameState.beerPong.team1Name);
+    }
+    
+    // Confetti for hits
+    if (confetti) {
+        confetti({
+            particleCount: 50,
+            spread: 60,
+            origin: { y: 0.6 },
+            colors: cup.type === 'rule' ? ['#00ff88', '#00d4ff'] : ['#ff0088', '#ff4444']
+        });
+    }
+}
+
+export function closeRuleDisplay() {
+    document.getElementById('ruleDisplay').style.display = 'none';
+}
+
+function showSpecialGameWinner(winnerName) {
+    document.getElementById('specialGamePlay').innerHTML = `
+        <div style="text-align: center; padding: 50px;">
+            <div style="font-size: 6em; margin-bottom: 20px;">🏆</div>
+            <h1 style="font-size: 3em; color: #FFD700; margin-bottom: 20px;">WINNER!</h1>
+            <h2 style="font-size: 2em; color: #00ff88;">${winnerName}</h2>
+            <p style="font-size: 1.2em; margin-top: 30px; opacity: 0.8;">
+                Conquered Special Beer Pong!
+            </p>
+            <button class="btn btn-primary" onclick="resetBeerPong()" style="margin-top: 30px;">
+                <i class="fas fa-redo"></i> Play Again
+            </button>
+        </div>
+    `;
+    
+    // Epic confetti
+    if (confetti) {
+        for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { x: Math.random(), y: Math.random() * 0.5 }
+                });
+            }, i * 300);
+        }
+    }
+}
+
+export function resetSpecialGame() {
+    initializeSpecialGame(gameState.beerPong.team1Name, gameState.beerPong.team2Name);
+    document.getElementById('ruleDisplay').style.display = 'none';
 }
