@@ -3,11 +3,8 @@
 
 const CACHE_NAME = 'boozelens-v5-party-fix';
 const urlsToCache = [
-  '../',
-  '../index.html',
-  '../src/css/boozelens.css',
-  '../src/css/mobile.css',
-  '../src/js/main.js',
+  './',
+  './index.html',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/webfonts/fa-solid-900.woff2',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
@@ -93,7 +90,7 @@ self.addEventListener('fetch', event => {
         }).catch(() => {
           // Return offline page for navigation requests
           if (event.request.destination === 'document') {
-            return caches.match('./index.html');
+            return caches.match('/index.html') || caches.match('./index.html') || caches.match('index.html');
           }
         });
       })
@@ -111,8 +108,8 @@ self.addEventListener('sync', event => {
 self.addEventListener('push', event => {
   const options = {
     body: event.data ? event.data.text() : 'New notification from BoozeLens',
-    icon: '../icons/icon-192x192.png',
-    badge: '../icons/icon-72x72.png',
+    icon: './icons/icon-192x192.png',
+    badge: './icons/icon-72x72.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
