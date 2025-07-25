@@ -130,6 +130,8 @@ function exposeGlobalFunctions() {
     window.showVotes = Games.showVotes;
     window.startSpinBottle = Games.startSpinBottle;
     window.spinBottle = Games.spinBottle;
+    window.showBeerPongRules = Games.showBeerPongRules;
+    window.showBeerPongGame = Games.showBeerPongGame;
     
     // Also expose some internal functions that are used
     window.getActiveLocations = AllFunctions.getActiveLocations;

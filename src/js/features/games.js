@@ -15,6 +15,41 @@ let gameHistory = [];
 
 // Game data - expanded with industrial-grade content
 const gameData = {
+    beerPongRules: {
+        standard: {
+            title: "📜 Standard Beer Pong Rules",
+            description: "The official way to play Beer Pong",
+            rules: [
+                { name: "🔄 Balls Back", desc: "Both partners make cups = shoot again! No re-racks during bonus shots." },
+                { name: "🔙 Behind-the-Back", desc: "Miss and grab the ball while it's on the table? Shoot behind your back for a bonus cup!" },
+                { name: "⚡ Bouncing", desc: "Bounce shots count as 2 cups! But opponents can swat bounced shots away." },
+                { name: "💪 Elbows", desc: "Keep those elbows behind the table edge when shooting. Breaking the plane = reshoot!" },
+                { name: "👀 Eye-to-Eye", desc: "To decide who goes first, one player from each team shoots while making eye contact. First to make it wins!" },
+                { name: "🔥 Fire", desc: "Make 2 in a row? Call 'heating up'. Make the 3rd? Call 'fire' and keep shooting until you miss!" },
+                { name: "🏝️ Island", desc: "Once per game, call 'island' on an isolated cup. Make it = remove 2 cups!" },
+                { name: "⏰ Overtime", desc: "Tied game? Each team sets up 3 cups in a triangle. No re-racks allowed!" },
+                { name: "🙏 Redemption", desc: "Lost all cups? Keep shooting until you miss! Make them all = overtime!" },
+                { name: "♻️ Re-racks", desc: "2 re-racks per game. Diamond, line, triangle - get creative!" },
+                { name: "🧹 Tidying-up", desc: "Tighten those cups anytime! Keep the formation clean." }
+            ]
+        },
+        creator: {
+            title: "🎯 Creator's Beer Pong Rules",
+            description: "The way Beer Pong was meant to be played! 🍺",
+            rules: [
+                { name: "👀 Eye-to-Eye", desc: "Same as standard - stare into their soul while shooting to go first!" },
+                { name: "♻️ Re-racks", desc: "2 per game - get creative with those formations!" },
+                { name: "🎩 Gentleman", desc: "Call 'Gentleman' to tidy cups OR force opponent to line up their last 2 cups!" },
+                { name: "🔄 Balls Back", desc: "Both make it = balls back baby! Keep that momentum going!" },
+                { name: "⚡ Bouncing", desc: "Bounce = 2 cups removed! High risk, high reward!" },
+                { name: "💪 Elbows", desc: "Watch those elbows - we're not playing reach pong!" },
+                { name: "🏝️ Island", desc: "Isolated cup = 2 cups removed when made. Call it out!" },
+                { name: "🎪 Trickshot", desc: "Ball on table after miss? Any creative shot = 2 cups! Behind back is for beginners!" },
+                { name: "💥 Double Trouble", desc: "Same cup hit twice? That cup + ALL touching cups are gone! Legendary move!" },
+                { name: "🎮 Redemption 2.0", desc: "Lost all cups? Make one to stay alive - but nothing gets removed! It's sudden death mode!" }
+            ]
+        }
+    },
     neverHaveIEver: [
         // Social & Party
         "Never have I ever kissed someone I just met",
@@ -427,24 +462,47 @@ function createKingsCupGame() {
 
 function createBeerPongGame() {
     return `
-        <div class="score-display">
-            <div class="team-score">
-                <div class="team-name">Team 1</div>
-                <div class="team-points" id="team1Score">0</div>
-                <button class="btn" onclick="addScore('team1')">+1</button>
-            </div>
-            <div class="team-score">
-                <div class="team-name">Team 2</div>
-                <div class="team-points" id="team2Score">0</div>
-                <button class="btn" onclick="addScore('team2')">+1</button>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div style="display: inline-flex; background: rgba(255,255,255,0.1); border-radius: 30px; padding: 5px;">
+                <button class="btn" id="standardRulesBtn" onclick="showBeerPongRules('standard')" 
+                    style="padding: 10px 20px; border-radius: 25px; margin: 0;">
+                    📜 Standard Rules
+                </button>
+                <button class="btn" id="creatorRulesBtn" onclick="showBeerPongRules('creator')" 
+                    style="padding: 10px 20px; border-radius: 25px; margin: 0;">
+                    🎯 Creator's Rules
+                </button>
+                <button class="btn btn-primary" id="playGameBtn" onclick="showBeerPongGame()" 
+                    style="padding: 10px 20px; border-radius: 25px; margin: 0;">
+                    🏓 Play Game
+                </button>
             </div>
         </div>
-        <div style="text-align: center; margin: 30px 0;">
-            <button class="btn btn-primary" onclick="resetBeerPong()">
-                <i class="fas fa-redo"></i> New Game
-            </button>
+        
+        <div id="beerPongRules" style="display: none; max-height: 400px; overflow-y: auto; padding: 20px; 
+            background: rgba(0,0,0,0.3); border-radius: 15px; margin-bottom: 20px;">
         </div>
-        <div id="gameStatus" style="text-align: center; font-size: 1.5em; margin-top: 20px;"></div>
+        
+        <div id="beerPongGame">
+            <div class="score-display">
+                <div class="team-score">
+                    <div class="team-name">Team 1</div>
+                    <div class="team-points" id="team1Score">0</div>
+                    <button class="btn" onclick="addScore('team1')">+1</button>
+                </div>
+                <div class="team-score">
+                    <div class="team-name">Team 2</div>
+                    <div class="team-points" id="team2Score">0</div>
+                    <button class="btn" onclick="addScore('team2')">+1</button>
+                </div>
+            </div>
+            <div style="text-align: center; margin: 30px 0;">
+                <button class="btn btn-primary" onclick="resetBeerPong()">
+                    <i class="fas fa-redo"></i> New Game
+                </button>
+            </div>
+            <div id="gameStatus" style="text-align: center; font-size: 1.5em; margin-top: 20px;"></div>
+        </div>
     `;
 }
 
@@ -1042,4 +1100,79 @@ export function spinBottle() {
             bottle.style.transform = 'rotate(0deg)';
         }, 100);
     }, 2000);
+}
+
+// ========================================
+// BEER PONG RULES FUNCTIONS
+// ========================================
+export function showBeerPongRules(type) {
+    const rulesDiv = document.getElementById('beerPongRules');
+    const gameDiv = document.getElementById('beerPongGame');
+    const rules = gameData.beerPongRules[type];
+    
+    // Update button styles
+    document.getElementById('standardRulesBtn').classList.remove('btn-primary');
+    document.getElementById('creatorRulesBtn').classList.remove('btn-primary');
+    document.getElementById('playGameBtn').classList.remove('btn-primary');
+    
+    document.getElementById(`${type}RulesBtn`).classList.add('btn-primary');
+    
+    // Hide game, show rules
+    gameDiv.style.display = 'none';
+    rulesDiv.style.display = 'block';
+    
+    // Display rules with fun animations
+    rulesDiv.innerHTML = `
+        <h2 style="text-align: center; margin-bottom: 10px;">${rules.title}</h2>
+        <p style="text-align: center; opacity: 0.8; margin-bottom: 20px;">${rules.description}</p>
+        <div style="display: grid; gap: 15px;">
+            ${rules.rules.map((rule, index) => `
+                <div class="rule-item" style="background: rgba(255,255,255,0.05); padding: 15px; 
+                    border-radius: 10px; border-left: 3px solid ${type === 'creator' ? '#00ff88' : '#00d4ff'};
+                    animation: slideIn 0.3s ease-out ${index * 0.05}s both;">
+                    <div style="font-weight: bold; font-size: 1.1em; margin-bottom: 5px;">
+                        ${rule.name}
+                    </div>
+                    <div style="opacity: 0.9; line-height: 1.4;">
+                        ${rule.desc}
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+        <style>
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateX(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+        </style>
+    `;
+    
+    if (confetti && type === 'creator') {
+        confetti({
+            particleCount: 50,
+            spread: 60,
+            origin: { y: 0.2 },
+            colors: ['#00ff88', '#00d4ff', '#ff0088']
+        });
+    }
+}
+
+export function showBeerPongGame() {
+    const rulesDiv = document.getElementById('beerPongRules');
+    const gameDiv = document.getElementById('beerPongGame');
+    
+    // Update button styles
+    document.getElementById('standardRulesBtn').classList.remove('btn-primary');
+    document.getElementById('creatorRulesBtn').classList.remove('btn-primary');
+    document.getElementById('playGameBtn').classList.add('btn-primary');
+    
+    // Hide rules, show game
+    rulesDiv.style.display = 'none';
+    gameDiv.style.display = 'block';
 }
