@@ -109,13 +109,27 @@
             };
         }
         
-        // Leave party
+        // Leave/Delete party
         const leaveBtn = document.getElementById('leavePartyBtn');
         if (leaveBtn) {
             leaveBtn.onclick = async function() {
-                if (window.Parties && confirm('Leave this party?')) {
-                    await window.Parties.leaveParty();
-                    if (window.Parties.updatePartyUI) window.Parties.updatePartyUI();
+                if (!window.Parties || !window.Parties.currentParty) return;
+                
+                const currentUser = window.getCurrentUser ? window.getCurrentUser() : null;
+                const isCreator = currentUser && window.Parties.currentParty.creatorId === currentUser.uid;
+                const confirmMsg = isCreator ? 'Delete this party? This will remove all members.' : 'Leave this party?';
+                
+                if (confirm(confirmMsg)) {
+                    let result;
+                    if (isCreator) {
+                        result = await window.Parties.deleteParty();
+                    } else {
+                        result = await window.Parties.leaveParty();
+                    }
+                    
+                    if (result && result.success) {
+                        if (window.Parties.updatePartyUI) window.Parties.updatePartyUI();
+                    }
                 }
             };
         }
@@ -189,6 +203,68 @@
                 if (e.key === 'Enter') {
                     const sendBtn = document.getElementById('sendPartyChatBtn');
                     if (sendBtn) sendBtn.click();
+                }
+            };
+        }
+        
+        // Refresh friends' parties
+        const refreshFriendsBtn = document.getElementById('refreshFriendsPartiesBtn');
+        if (refreshFriendsBtn) {
+            refreshFriendsBtn.onclick = async function() {
+                const list = document.getElementById('friendsPartiesList');
+                if (window.Parties && list) {
+                    list.innerHTML = 'Loading friends\' parties...';
+                    try {
+                        const parties = await window.getFriendsParties();
+                        if (parties.length === 0) {
+                            list.innerHTML = 'No friends\' parties found.';
+                        } else {
+                            list.innerHTML = parties.map(party => 
+                                '<div class="friend-item" style="margin-bottom: 15px;">' +
+                                    '<div class="friend-info">' +
+                                        '<div class="friend-avatar-small">🎉</div>' +
+                                        '<div class="friend-details">' +
+                                            '<h4>' + party.name + '</h4>' +
+                                            '<p style="opacity: 0.7;">' +
+                                                '👤 by ' + party.creatorName + ' • ' +
+                                                '👥 ' + party.memberCount + ' members' +
+                                                (party.address ? ' • 📍 ' + party.address : '') +
+                                                (party.duration === '24h' ? ' • ⏰ 24h party' : '') +
+                                            '</p>' +
+                                        '</div>' +
+                                    '</div>' +
+                                    '<button class="btn btn-primary" onclick="joinPublicParty(\'' + party.code + '\')">' +
+                                        'Join' +
+                                    '</button>' +
+                                '</div>'
+                            ).join('');
+                        }
+                    } catch (error) {
+                        list.innerHTML = 'Failed to load friends\' parties';
+                        console.error('Error loading friends parties:', error);
+                    }
+                }
+            };
+        }
+        
+        // Handle privacy change to hide ongoing option for public parties
+        const privacySelect = document.getElementById('partyPrivacy');
+        const durationSelect = document.getElementById('partyDuration');
+        if (privacySelect && durationSelect) {
+            privacySelect.onchange = function() {
+                if (this.value === 'public') {
+                    // For public parties, remove ongoing option and select 24h
+                    const ongoingOption = durationSelect.querySelector('option[value="ongoing"]');
+                    if (ongoingOption) {
+                        ongoingOption.style.display = 'none';
+                        durationSelect.value = '24h';
+                    }
+                } else {
+                    // For private/friends-only, show ongoing option
+                    const ongoingOption = durationSelect.querySelector('option[value="ongoing"]');
+                    if (ongoingOption) {
+                        ongoingOption.style.display = '';
+                    }
                 }
             };
         }
@@ -799,6 +875,17 @@
                         </button>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Friends' Parties -->
+            <div class="card" style="margin-top: 20px;">
+                <h3>👥 Friends' Parties</h3>
+                <div id="friendsPartiesList" style="margin-top: 15px;">
+                    <!-- Friends' parties will show here -->
+                </div>
+                <button class="btn" id="refreshFriendsPartiesBtn" style="margin-top: 15px;">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
             </div>
             
             <!-- Public Parties -->

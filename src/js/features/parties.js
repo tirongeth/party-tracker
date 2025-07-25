@@ -194,6 +194,41 @@ export async function leaveParty() {
     }
 }
 
+// Delete party (creator only)
+export async function deleteParty() {
+    try {
+        if (!auth.currentUser) {
+            return { success: false, error: 'Not authenticated' };
+        }
+        
+        if (!currentParty) {
+            return { success: false, error: 'Not in a party' };
+        }
+        
+        const user = auth.currentUser;
+        
+        // Check if user is the creator
+        if (currentParty.creatorId !== user.uid) {
+            return { success: false, error: 'Only the party creator can delete the party' };
+        }
+        
+        // Delete the entire party from Firebase
+        await remove(ref(database, `parties/${currentParty.id}`));
+        
+        // Clear local state
+        currentParty = null;
+        localStorage.removeItem('currentPartyId');
+        
+        // Stop listeners
+        stopPartyListeners();
+        
+        return { success: true };
+    } catch (error) {
+        console.error('Delete party error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
 // Load current party on startup
 export async function loadCurrentParty() {
     try {
@@ -357,6 +392,53 @@ export async function getPartyLeaderboard() {
     leaderboard.sort((a, b) => b.bac - a.bac);
     
     return leaderboard;
+}
+
+// Get friends' parties
+export async function getFriendsParties() {
+    try {
+        if (!auth.currentUser) return [];
+        
+        const user = auth.currentUser;
+        
+        // Get user's friends list
+        const friendsSnapshot = await get(ref(database, `users/${user.uid}/friends`));
+        const friends = friendsSnapshot.val() || {};
+        const friendIds = Object.keys(friends);
+        
+        if (friendIds.length === 0) return [];
+        
+        // Get all parties
+        const partiesSnapshot = await get(ref(database, 'parties'));
+        const parties = partiesSnapshot.val() || {};
+        
+        const friendsParties = [];
+        const now = Date.now();
+        
+        // Filter for friends-only parties created by friends
+        Object.entries(parties).forEach(([id, party]) => {
+            // Check if party is friends-only and not expired
+            if (party.privacy === 'friends-only' && 
+                (!party.expiresAt || party.expiresAt > now) &&
+                friendIds.includes(party.creatorId)) {
+                
+                const memberCount = Object.keys(party.members || {}).length;
+                friendsParties.push({
+                    ...party,
+                    id,
+                    memberCount,
+                    code: party.code,
+                    creatorName: friends[party.creatorId]?.name || 'Friend'
+                });
+            }
+        });
+        
+        // Sort by member count (popularity)
+        return friendsParties.sort((a, b) => b.memberCount - a.memberCount);
+    } catch (error) {
+        console.error('Error getting friends parties:', error);
+        return [];
+    }
 }
 
 // Get nearby public parties

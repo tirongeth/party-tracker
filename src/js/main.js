@@ -86,9 +86,11 @@ function exposeGlobalFunctions() {
     window.createParty = Parties.createParty;
     window.joinParty = Parties.joinParty;
     window.leaveParty = Parties.leaveParty;
+    window.deleteParty = Parties.deleteParty;
     window.sendPartyMessage = Parties.sendPartyMessage;
     window.getPartyByCode = Parties.getPartyByCode;
     window.getNearbyParties = Parties.getNearbyParties;
+    window.getFriendsParties = Parties.getFriendsParties;
     window.updatePartyDisplay = Parties.updatePartyUI;
     window.createNewParty = PartiesUI.createNewParty;
     window.joinPartyByCode = PartiesUI.joinPartyByCode;
@@ -1060,9 +1062,23 @@ function updatePartyDisplay() {
         // Update leaderboard
         updatePartyLeaderboard();
         
-        // Show pending requests if creator
+        // Update leave/delete button based on user role
+        const leaveBtn = document.getElementById('leavePartyBtn');
         const currentUser = getCurrentUser();
-        if (currentUser && party.creatorId === currentUser.uid) {
+        const isCreator = currentUser && party.creatorId === currentUser.uid;
+        
+        if (leaveBtn) {
+            if (isCreator) {
+                leaveBtn.innerHTML = '<i class="fas fa-trash"></i> Delete Party';
+                leaveBtn.className = 'btn btn-danger';
+            } else {
+                leaveBtn.innerHTML = '<i class="fas fa-door-open"></i> Leave Party';
+                leaveBtn.className = 'btn btn-danger';
+            }
+        }
+        
+        // Show pending requests if creator
+        if (isCreator) {
             const pendingSection = document.getElementById('pendingRequestsSection');
             const pendingList = document.getElementById('pendingRequestsList');
             
