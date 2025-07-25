@@ -5,7 +5,8 @@
 
 import { getAppState, setStateValue } from '../config/app-state.js';
 import { showNotification } from '../ui/notifications.js';
-import confetti from 'canvas-confetti';
+// Canvas confetti is loaded globally via CDN in index.html
+const confetti = window.confetti;
 
 // Game data
 const gameData = {
