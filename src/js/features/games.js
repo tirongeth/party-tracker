@@ -624,20 +624,7 @@ export function nextNeverHaveIEver() {
     document.getElementById('gameQuestion').textContent = questions[random];
 }
 
-// Truth or Dare
-export function showTruth() {
-    const truths = gameData.truths;
-    const random = Math.floor(Math.random() * truths.length);
-    document.getElementById('gameQuestion').textContent = truths[random];
-    selectRandomPlayer();
-}
-
-export function showDare() {
-    const dares = gameData.dares;
-    const random = Math.floor(Math.random() * dares.length);
-    document.getElementById('gameQuestion').textContent = dares[random];
-    selectRandomPlayer();
-}
+// Truth or Dare functions are defined later with player management
 
 function selectRandomPlayer() {
     const partyData = getAppState().partyData || {};
