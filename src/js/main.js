@@ -143,6 +143,9 @@ function exposeGlobalFunctions() {
     window.hitCup = Games.hitCup;
     window.closeRuleDisplay = Games.closeRuleDisplay;
     window.resetSpecialGame = Games.resetSpecialGame;
+    window.selectGameCategory = Games.selectGameCategory;
+    window.changeCategoryMidGame = Games.changeCategoryMidGame;
+    window.selectSpecialBeerPongCategory = Games.selectSpecialBeerPongCategory;
     
     // Also expose some internal functions that are used
     window.getActiveLocations = AllFunctions.getActiveLocations;

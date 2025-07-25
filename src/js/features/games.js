@@ -50,247 +50,502 @@ const gameData = {
             ]
         }
     },
-    specialBeerPongRules: [
-        "🎯 Make a rule! Everyone must follow it for the rest of the game",
-        "🔄 Switch sides! Both teams swap positions",
-        "👁️ Blindfold shot! Next shot must be taken blindfolded",
-        "🤝 Partner shot! Both teammates must hold the ball together",
-        "🎪 Trick shot only! Next 3 shots must be trick shots",
-        "🚫 No elbows! Next round, elbows must stay at your sides",
-        "💃 Dance before shooting! Do a 10-second dance before each shot",
-        "🎵 Sing while shooting! Must sing during your entire turn",
-        "🦩 Flamingo stance! Stand on one leg for your next shot",
-        "🔄 Opposite hand! Use your non-dominant hand for 2 turns",
-        "📱 Phone roulette! Text a random contact 'I love beer pong'",
-        "🎭 Accent round! Speak in an accent for 5 minutes",
-        "❄️ Ice cube challenge! Hold an ice cube while shooting",
-        "🤐 Silent round! No talking for 2 rounds",
-        "👯 Mirror mode! Copy everything your opponent does",
-        "🎯 Call your shot! Must call which cup you're aiming for",
-        "⏰ Speed round! 5-second shot clock for next 3 shots",
-        "🤡 Compliment battle! Compliment opponents before each shot",
-        "🎪 Spin before shooting! Do 3 spins before taking your shot",
-        "💪 Push-up penalty! Do 5 push-ups if you miss"
-    ],
-    specialBeerPongDares: [
-        "Take a shot of the opponents' choice",
-        "Let opponents post something on your social media",
-        "Call your crush and tell them you're thinking of them",
-        "Do 20 burpees right now",
-        "Let everyone go through your phone for 30 seconds",
-        "Reveal your most embarrassing story",
-        "Show your last 5 Google searches",
-        "Let opponents give you a nickname for the night",
-        "Speak in rhymes for the next 10 minutes",
-        "Do your best impression of someone in the room",
-        "Truth: Answer any question honestly",
-        "Swap an item of clothing with an opponent",
-        "Let opponents draw on your face with marker",
-        "Chug a mystery drink made by opponents",
-        "Do the chicken dance for 1 minute",
-        "Let everyone read your last text conversation",
-        "Freestyle rap for 30 seconds",
-        "Call your parents and tell them you love them",
-        "Do a handstand for 10 seconds",
-        "Let opponents choose your next drink"
-    ],
-    neverHaveIEver: [
-        // Social & Party
-        "Never have I ever kissed someone I just met",
-        "Never have I ever been kicked out of a bar or club",
-        "Never have I ever lied about my age to get into a club",
-        "Never have I ever danced on a table or bar",
-        "Never have I ever done a body shot",
-        "Never have I ever crashed a wedding or private party",
-        "Never have I ever been in a hot tub with strangers",
-        "Never have I ever karaoke'd while drunk",
-        "Never have I ever lost my phone on a night out",
-        "Never have I ever woken up wearing someone else's clothes",
-        
-        // Relationships
-        "Never have I ever ghosted someone",
-        "Never have I ever dated two people at once",
-        "Never have I ever had a one night stand",
-        "Never have I ever sent a risky text to the wrong person",
-        "Never have I ever stalked an ex on social media",
-        "Never have I ever been in love with my best friend",
-        "Never have I ever kissed someone to make someone else jealous",
-        "Never have I ever broken up with someone over text",
-        
-        // Embarrassing
-        "Never have I ever peed myself as an adult",
-        "Never have I ever thrown up in public",
-        "Never have I ever walked into a glass door",
-        "Never have I ever accidentally sent a screenshot to the person I was talking about",
-        "Never have I ever farted loudly in a quiet room",
-        "Never have I ever tripped and fallen in front of a crowd",
-        
-        // Wild & Crazy
-        "Never have I ever skinny dipped",
-        "Never have I ever been arrested",
-        "Never have I ever gotten a tattoo I regret",
-        "Never have I ever gone 3+ days without showering",
-        "Never have I ever eaten food off the floor",
-        "Never have I ever lied on my resume",
-        
-        // University/Work
-        "Never have I ever cheated on a test",
-        "Never have I ever slept with a coworker",
-        "Never have I ever called in sick when I wasn't",
-        "Never have I ever fallen asleep at work/in class",
-        "Never have I ever hooked up with a professor/boss"
-    ],
-    truths: [
-        // Relationships & Romance
-        "What's your biggest turn on?",
-        "Who was your worst kiss and why?",
-        "What's the most embarrassing thing you've done for love?",
-        "Have you ever been in love with two people at once?",
-        "What's your most embarrassing dating app story?",
-        "Who in this room would you most want to make out with?",
-        "What's the wildest place you've hooked up?",
-        "Have you ever cheated or been cheated on?",
-        
-        // Embarrassing Secrets
-        "What's the most embarrassing thing on your phone right now?",
-        "What's your most embarrassing drunk story?",
-        "What's the biggest lie you've ever told?",
-        "What's your worst habit that no one knows about?",
-        "What's the weirdest thing you do when you're alone?",
-        "What's your most embarrassing Google search?",
-        
-        // Wild Stories
-        "What's the most illegal thing you've done?",
-        "What's the craziest thing you've done for money?",
-        "What's your wildest fantasy?",
-        "Have you ever been caught doing something you shouldn't?",
-        "What's the most trouble you've gotten into?",
-        
-        // This Room
-        "Who in this room do you think is the best looking?",
-        "Who here would you want to switch lives with?",
-        "Who in this room has the best style?",
-        "If you had to date someone here, who would it be?",
-        "Who here do you think has the biggest secret?"
-    ],
-    dares: [
-        // Physical Challenges
-        "Do 10 pushups while someone sits on your back",
-        "Plank for 1 minute",
-        "Do your best twerk for 30 seconds",
-        "Give someone a lap dance for 10 seconds",
-        "Do the worm",
-        "Attempt a handstand",
-        
-        // Social Media
-        "Post 'I'm pregnant' on your story for 1 minute",
-        "Like your crush's oldest Instagram photo",
-        "Send the last photo in your gallery to your ex",
-        "Change your relationship status for 1 hour",
-        "Post an ugly selfie",
-        
-        // Embarrassing Actions
-        "Let someone draw on your face with marker",
-        "Speak in an accent for the next 3 rounds",
-        "Act like a chicken for 1 minute",
-        "Sing everything you say for the next 2 turns",
-        "Let someone style your hair however they want",
-        "Eat a spoonful of hot sauce",
-        
-        // Interactive
-        "Kiss the person to your left on the cheek",
-        "Give someone a 30 second massage",
-        "Let someone text anyone from your phone",
-        "Switch an item of clothing with someone",
-        "Let the group choose someone for you to call and sing to",
-        "Whisper something dirty to the person on your right",
-        
-        // Drinking
-        "Take a shot without using your hands",
-        "Make a gross drink combination and take a sip",
-        "Finish your drink",
-        "Waterfall for 5 seconds"
-    ],
-    wouldYouRather: [
-        // Funny & Light
-        "Would you rather have to sing everything you say or dance everywhere you walk?",
-        "Would you rather have fingers as long as legs or legs as short as fingers?",
-        "Would you rather always smell like garlic or always smell like wet dog?",
-        "Would you rather have a rewind button or a pause button for your life?",
-        "Would you rather be able to fly but only 1 foot off the ground or be invisible but only when no one is looking?",
-        
-        // Party & Social
-        "Would you rather go to a party where you know everyone or where you know no one?",
-        "Would you rather be the funniest person in the room or the smartest?",
-        "Would you rather never be able to drink alcohol again or never be able to eat chocolate again?",
-        "Would you rather drunk text your ex or your boss?",
-        "Would you rather throw up in front of your crush or pee yourself at a party?",
-        
-        // Relationships
-        "Would you rather date someone who's extremely hot but boring or average looking but hilarious?",
-        "Would you rather have your partner be best friends with their ex or hate their ex?",
-        "Would you rather catch your parents having sex or have them catch you?",
-        "Would you rather be in a relationship with someone who's too clingy or too distant?",
-        "Would you rather know when you're going to die or how you're going to die?",
-        
-        // Wild & Crazy
-        "Would you rather eat a live spider or a dead worm?",
-        "Would you rather swim in a pool of beer or a pool of wine?",
-        "Would you rather have sex with the lights on always or off always?",
-        "Would you rather be naked in public or have everyone read your texts?",
-        "Would you rather give up sex or give up food?"
-    ],
-    mostLikelyTo: [
-        // Party Related
-        "Who's most likely to get kicked out of a club?",
-        "Who's most likely to throw up tonight?",
-        "Who's most likely to drunk text their ex?",
-        "Who's most likely to lose their phone tonight?",
-        "Who's most likely to end up sleeping on the bathroom floor?",
-        
-        // Relationships
-        "Who's most likely to get married first?",
-        "Who's most likely to have a secret crush on someone here?",
-        "Who's most likely to cheat on their partner?",
-        "Who's most likely to fall in love with their best friend?",
-        "Who's most likely to have a one night stand?",
-        
-        // Life & Future
-        "Who's most likely to become famous?",
-        "Who's most likely to go to jail?",
-        "Who's most likely to become a millionaire?",
-        "Who's most likely to die first in a zombie apocalypse?",
-        "Who's most likely to have 10 kids?",
-        
-        // Funny
-        "Who's most likely to laugh at their own jokes?",
-        "Who's most likely to forget their own birthday?",
-        "Who's most likely to get lost in their own city?",
-        "Who's most likely to cry during a Disney movie?",
-        "Who's most likely to eat food off the floor?"
-    ],
-    spinBottleTasks: [
-        // Mild
-        "Give a compliment",
-        "Share your most embarrassing moment",
-        "Do your best impression of someone here",
-        "Sing a song for 30 seconds",
-        "Let them post something on your social media",
-        
-        // Medium
-        "Give a 30 second massage",
-        "Whisper something in their ear",
-        "Do a trust fall",
-        "Sit on their lap for the next round",
-        "Switch an item of clothing",
-        
-        // Spicy
-        "Kiss on the cheek",
-        "Give a lap dance for 10 seconds",
-        "Lick their ear",
-        "Take a body shot",
-        "Play with their hair for 1 minute"
-    ],
+    specialBeerPongRules: {
+        classic: [
+            "🎯 Make a rule! Everyone must follow it for the rest of the game",
+            "🔄 Switch sides! Both teams swap positions",
+            "💃 Dance before shooting! Do a 10-second dance before each shot",
+            "🎵 Sing while shooting! Must sing during your entire turn",
+            "🎭 Accent round! Speak in an accent for 5 minutes",
+            "🤐 Silent round! No talking for 2 rounds",
+            "👯 Mirror mode! Copy everything your opponent does",
+            "🎯 Call your shot! Must call which cup you're aiming for",
+            "⏰ Speed round! 5-second shot clock for next 3 shots",
+            "🤡 Compliment battle! Compliment opponents before each shot"
+        ],
+        gettingStarted: [
+            "🎯 Nice shot bonus! Make a cup = opponent drinks water",
+            "🤝 Team spirit! High five after every shot",
+            "🎵 Theme song! Pick a song to play during your turn",
+            "📣 Announce your shots! Describe your technique before shooting",
+            "🎪 Celebration dance! Do a victory dance after making a cup",
+            "👏 Applause rule! Everyone claps after a made cup",
+            "🎯 Practice shot! Get one practice shot per turn",
+            "🤗 Encouragement only! Only positive comments allowed",
+            "🎯 Second chance! Miss = get one retry per game",
+            "🏆 MVP! Best shot of the round gets to make a rule"
+        ],
+        normal: [
+            "👁️ Blindfold shot! Next shot must be taken blindfolded",
+            "🤝 Partner shot! Both teammates must hold the ball together",
+            "🎪 Trick shot only! Next 3 shots must be trick shots",
+            "🚫 No elbows! Next round, elbows must stay at your sides",
+            "🦩 Flamingo stance! Stand on one leg for your next shot",
+            "🔄 Opposite hand! Use your non-dominant hand for 2 turns",
+            "🎪 Spin before shooting! Do 3 spins before taking your shot",
+            "💪 Push-up penalty! Do 5 push-ups if you miss",
+            "🎯 Behind the back only! All shots must be behind the back",
+            "🤸 Gymnastics shot! Do a cartwheel before shooting"
+        ],
+        spicy: [
+            "👕 Strip pong! Remove clothing item when opponent makes cup",
+            "💋 Kiss for miss! Miss = kiss your teammate",
+            "🍑 Distraction allowed! Opponents can distract however they want",
+            "📱 Phone roulette! Text your ex 'I miss you'",
+            "🔥 Hot seat! Answer any question or take 2 shots",
+            "💃 Sexy dance! Do a lap dance if you miss",
+            "🎯 Body shots! Made cup = body shot off opponent",
+            "👅 Lick it! Lick the ball before shooting",
+            "🔥 Truth shot! Make cup = opponent answers truth question",
+            "💋 Make out break! Teams make out for 30 seconds"
+        ],
+        couples: [
+            "💑 Couple shots! Partners must be touching while shooting",
+            "💋 Kiss for cups! Make a cup = kiss your partner",
+            "🤝 Trust shot! Partner guides your blindfolded shot",
+            "💕 Compliment rule! Compliment partner before each shot",
+            "🎯 Love wins! Make 2 in a row = opponents kiss",
+            "👫 Switch partners! Play with opponent's partner for 1 round",
+            "💑 Couple's choice! Make cup = give opponents a couple dare",
+            "❤️ Heart eyes! Maintain eye contact with partner while shooting",
+            "💋 Victory kiss! Kiss for 10 seconds after making a cup",
+            "🤗 Support system! Hug partner after every shot"
+        ]
+    },
+    specialBeerPongDares: {
+        classic: [
+            "Take a shot chosen by opponents",
+            "Do 20 jumping jacks",
+            "Sing the alphabet backwards",
+            "Do your best impression of someone in the room",
+            "Tell your most embarrassing story",
+            "Do the chicken dance for 1 minute",
+            "Speak in rhymes for the next 5 minutes",
+            "Call a random contact and say 'I love you'",
+            "Do 10 push-ups",
+            "Let opponents choose your next drink"
+        ],
+        gettingStarted: [
+            "Give someone a high five",
+            "Tell a joke",
+            "Do your best dance move",
+            "Sing your favorite song chorus",
+            "Give someone a compliment",
+            "Do 5 jumping jacks",
+            "Share a fun fact about yourself",
+            "Do your best animal impression",
+            "Tell us your hidden talent",
+            "Make everyone laugh"
+        ],
+        normal: [
+            "Let opponents post something on your social media",
+            "Do 20 burpees right now",
+            "Let everyone go through your phone for 30 seconds",
+            "Show your last 5 Google searches",
+            "Let opponents give you a nickname for the night",
+            "Swap an item of clothing with an opponent",
+            "Let opponents draw on your face with marker",
+            "Chug a mystery drink made by opponents",
+            "Let everyone read your last text conversation",
+            "Freestyle rap for 30 seconds"
+        ],
+        spicy: [
+            "Call your crush and tell them you're thinking of them",
+            "Send a nude to your ex (or pretend to)",
+            "Reveal your body count",
+            "Let opponents go through your dating apps",
+            "Do a strip tease for 30 seconds",
+            "Make out with someone chosen by opponents",
+            "Send a dirty text to someone",
+            "Reveal your biggest kink",
+            "Take a body shot off someone",
+            "Flash everyone for 3 seconds"
+        ],
+        couples: [
+            "Kiss your partner for 30 seconds",
+            "Give your partner a lap dance",
+            "Reveal your partner's most annoying habit",
+            "Let your partner post on your social media",
+            "Switch clothes with your partner",
+            "Tell everyone your partner's biggest fear",
+            "Massage your partner for 1 minute",
+            "Share your wildest experience together",
+            "Feed your partner a shot",
+            "Whisper your fantasy to your partner"
+        ]
+    },
+    neverHaveIEver: {
+        classic: [
+            "Never have I ever been kicked out of a bar or club",
+            "Never have I ever lied about my age to get into a club", 
+            "Never have I ever karaoke'd while drunk",
+            "Never have I ever lost my phone on a night out",
+            "Never have I ever thrown up in public",
+            "Never have I ever called in sick when I wasn't",
+            "Never have I ever fallen asleep at work/in class",
+            "Never have I ever gotten a tattoo I regret",
+            "Never have I ever crashed a wedding or private party",
+            "Never have I ever danced on a table or bar"
+        ],
+        gettingStarted: [
+            "Never have I ever traveled to another continent",
+            "Never have I ever gone skydiving",
+            "Never have I ever been on TV",
+            "Never have I ever met a celebrity",
+            "Never have I ever won a competition",
+            "Never have I ever been in a helicopter",
+            "Never have I ever gone surfing",
+            "Never have I ever stayed up for 24 hours straight",
+            "Never have I ever eaten something I couldn't identify",
+            "Never have I ever gotten lost in a foreign country"
+        ],
+        normal: [
+            "Never have I ever ghosted someone",
+            "Never have I ever sent a risky text to the wrong person",
+            "Never have I ever walked into a glass door",
+            "Never have I ever farted loudly in a quiet room",
+            "Never have I ever tripped and fallen in front of a crowd",
+            "Never have I ever accidentally sent a screenshot to the person I was talking about",
+            "Never have I ever lied on my resume",
+            "Never have I ever eaten food off the floor",
+            "Never have I ever gone 3+ days without showering",
+            "Never have I ever broken something and blamed someone else"
+        ],
+        spicy: [
+            "Never have I ever kissed someone I just met",
+            "Never have I ever had a one night stand",
+            "Never have I ever skinny dipped",
+            "Never have I ever done a body shot",
+            "Never have I ever slept with a coworker",
+            "Never have I ever hooked up with a professor/boss",
+            "Never have I ever been in a hot tub with strangers",
+            "Never have I ever woken up wearing someone else's clothes",
+            "Never have I ever dated two people at once",
+            "Never have I ever kissed someone to make someone else jealous"
+        ],
+        couples: [
+            "Never have I ever been in love with my best friend",
+            "Never have I ever broken up with someone over text",
+            "Never have I ever stalked an ex on social media",
+            "Never have I ever been in love with two people at once",
+            "Never have I ever cheated or been cheated on",
+            "Never have I ever had a crush on my partner's friend",
+            "Never have I ever lied to my partner about where I was",
+            "Never have I ever kept a secret from my partner",
+            "Never have I ever dreamt about someone else while in a relationship",
+            "Never have I ever compared my partner to an ex"
+        ]
+    },
+    truths: {
+        classic: [
+            "What's your most embarrassing drunk story?",
+            "What's the biggest lie you've ever told?",
+            "What's the most trouble you've gotten into?",
+            "Have you ever been caught doing something you shouldn't?",
+            "What's your worst habit that no one knows about?",
+            "Who in this room has the best style?",
+            "Who here would you want to switch lives with?",
+            "What's the most embarrassing thing on your phone right now?",
+            "What's the craziest thing you've done for money?",
+            "What's your most embarrassing moment?"
+        ],
+        gettingStarted: [
+            "What's your dream vacation destination?",
+            "What's your biggest fear?",
+            "What's your hidden talent?",
+            "What's the best compliment you've ever received?",
+            "What's your favorite childhood memory?",
+            "If you could have dinner with anyone, who would it be?",
+            "What's your biggest pet peeve?",
+            "What's the best advice you've ever received?",
+            "What's your guilty pleasure TV show?",
+            "What's something you've never told anyone?"
+        ],
+        normal: [
+            "What's the weirdest thing you do when you're alone?",
+            "What's your most embarrassing Google search?",
+            "Who here do you think has the biggest secret?",
+            "What's the last lie you told?",
+            "What's your most irrational fear?",
+            "What's the most childish thing you still do?",
+            "What's your worst dating app experience?",
+            "What's the most embarrassing thing your parents have caught you doing?",
+            "What's your biggest insecurity?",
+            "What's the meanest thing you've ever said to someone?"
+        ],
+        spicy: [
+            "What's your biggest turn on?",
+            "Who was your worst kiss and why?",
+            "Who in this room would you most want to make out with?",
+            "What's the wildest place you've hooked up?",
+            "What's your wildest fantasy?",
+            "What's the most illegal thing you've done?",
+            "If you had to date someone here, who would it be?",
+            "What's your body count?",
+            "What's the kinkiest thing you've ever done?",
+            "Who in this room do you think is the best looking?"
+        ],
+        couples: [
+            "What's the most embarrassing thing you've done for love?",
+            "Have you ever been in love with two people at once?",
+            "Have you ever cheated or been cheated on?",
+            "What's your biggest relationship regret?",
+            "What's the longest you've gone without sex in a relationship?",
+            "What's something your partner does that annoys you?",
+            "Have you ever faked an orgasm?",
+            "What's your partner's most annoying habit?",
+            "What's something you've lied to your partner about?",
+            "If you could change one thing about your partner, what would it be?"
+        ]
+    },
+    dares: {
+        classic: [
+            "Do 10 pushups",
+            "Plank for 1 minute",
+            "Sing everything you say for the next 2 turns",
+            "Speak in an accent for the next 3 rounds",
+            "Act like a chicken for 1 minute",
+            "Do your best impression of someone in the room",
+            "Take a shot without using your hands",
+            "Finish your drink",
+            "Do 20 jumping jacks",
+            "Tell a joke and make someone laugh"
+        ],
+        gettingStarted: [
+            "Show your best dance move",
+            "Sing the chorus of your favorite song",
+            "Do your best celebrity impression",
+            "Tell your most embarrassing story",
+            "Show the last photo in your camera roll",
+            "Do 5 pushups",
+            "Speak in a British accent for 2 turns",
+            "Make animal noises for 30 seconds",
+            "Do the robot dance",
+            "High five everyone in the room"
+        ],
+        normal: [
+            "Let someone draw on your face with marker",
+            "Let someone style your hair however they want",
+            "Post an ugly selfie",
+            "Let someone text anyone from your phone",
+            "Eat a spoonful of hot sauce",
+            "Let the group choose someone for you to call and sing to",
+            "Make a gross drink combination and take a sip",
+            "Waterfall for 5 seconds",
+            "Let someone go through your phone for 30 seconds",
+            "Do the worm"
+        ],
+        spicy: [
+            "Do your best twerk for 30 seconds",
+            "Give someone a lap dance for 10 seconds",
+            "Kiss the person to your left on the cheek",
+            "Give someone a 30 second massage",
+            "Switch an item of clothing with someone",
+            "Whisper something dirty to the person on your right",
+            "Post 'I'm pregnant' on your story for 1 minute",
+            "Like your crush's oldest Instagram photo",
+            "Send the last photo in your gallery to your ex",
+            "Take a body shot off someone"
+        ],
+        couples: [
+            "Give your partner a 1 minute massage",
+            "Recreate your first kiss with your partner",
+            "Let your partner post something on your social media",
+            "Switch clothes with your partner for the rest of the game",
+            "Slow dance with your partner for 1 minute",
+            "Tell everyone your partner's most annoying habit",
+            "Let your partner draw on your face",
+            "Feed your partner a shot",
+            "Sit on your partner's lap for the next 3 rounds",
+            "Whisper your wildest fantasy to your partner"
+        ]
+    },
+    wouldYouRather: {
+        classic: [
+            "Would you rather have to sing everything you say or dance everywhere you walk?",
+            "Would you rather be the funniest person in the room or the smartest?",
+            "Would you rather never be able to drink alcohol again or never be able to eat chocolate again?",
+            "Would you rather have a rewind button or a pause button for your life?",
+            "Would you rather go to a party where you know everyone or where you know no one?",
+            "Would you rather always smell like garlic or always smell like wet dog?",
+            "Would you rather be able to fly or be invisible?",
+            "Would you rather be rich or famous?",
+            "Would you rather lose your phone or your wallet?",
+            "Would you rather always be 10 minutes late or 20 minutes early?"
+        ],
+        gettingStarted: [
+            "Would you rather have unlimited money or unlimited time?",
+            "Would you rather live in the city or the countryside?",
+            "Would you rather be able to read minds or see the future?",
+            "Would you rather travel to the past or the future?",
+            "Would you rather have a pet dragon or a pet unicorn?",
+            "Would you rather be a superhero or a supervillain?",
+            "Would you rather never use social media again or never watch TV again?",
+            "Would you rather always tell the truth or always lie?",
+            "Would you rather have super strength or super speed?",
+            "Would you rather live without music or without movies?"
+        ],
+        normal: [
+            "Would you rather have fingers as long as legs or legs as short as fingers?",
+            "Would you rather drunk text your ex or your boss?",
+            "Would you rather throw up in front of your crush or pee yourself at a party?",
+            "Would you rather be able to fly but only 1 foot off the ground or be invisible but only when no one is looking?",
+            "Would you rather eat a live spider or a dead worm?",
+            "Would you rather swim in a pool of beer or a pool of wine?",
+            "Would you rather burp glitter or fart confetti?",
+            "Would you rather have a third arm or a third leg?",
+            "Would you rather always speak in rhymes or sing everything you say?",
+            "Would you rather have taste buds in your butt or poop through your mouth?"
+        ],
+        spicy: [
+            "Would you rather date someone who's extremely hot but boring or average looking but hilarious?",
+            "Would you rather have sex with the lights on always or off always?",
+            "Would you rather be naked in public or have everyone read your texts?",
+            "Would you rather give up sex or give up food?",
+            "Would you rather have a threesome or be in an open relationship?",
+            "Would you rather sleep with your boss or your best friend's partner?",
+            "Would you rather be dominant or submissive?",
+            "Would you rather have great sex once a month or mediocre sex every day?",
+            "Would you rather be caught masturbating or catch your parents doing it?",
+            "Would you rather send nudes to your ex or your boss?"
+        ],
+        couples: [
+            "Would you rather have your partner be best friends with their ex or hate their ex?",
+            "Would you rather catch your parents having sex or have them catch you?",
+            "Would you rather be in a relationship with someone who's too clingy or too distant?",
+            "Would you rather know when you're going to die or how you're going to die?",
+            "Would you rather have your partner forget your birthday or your anniversary?",
+            "Would you rather have a partner who's too jealous or not jealous at all?",
+            "Would you rather argue every day for a week or not talk for a week?",
+            "Would you rather have your partner be a bad kisser or bad in bed?",
+            "Would you rather live with your partner's parents or have them live with you?",
+            "Would you rather have your partner cheat emotionally or physically?"
+        ]
+    },
+    mostLikelyTo: {
+        classic: [
+            "Who's most likely to get kicked out of a club?",
+            "Who's most likely to throw up tonight?",
+            "Who's most likely to become famous?",
+            "Who's most likely to become a millionaire?",
+            "Who's most likely to forget their own birthday?",
+            "Who's most likely to get lost in their own city?",
+            "Who's most likely to cry during a Disney movie?",
+            "Who's most likely to eat food off the floor?",
+            "Who's most likely to laugh at their own jokes?",
+            "Who's most likely to lose their phone tonight?"
+        ],
+        gettingStarted: [
+            "Who's most likely to win a Nobel Prize?",
+            "Who's most likely to travel the world?",
+            "Who's most likely to write a book?",
+            "Who's most likely to start their own business?",
+            "Who's most likely to become a teacher?",
+            "Who's most likely to adopt a pet?",
+            "Who's most likely to learn a new language?",
+            "Who's most likely to run a marathon?",
+            "Who's most likely to become vegetarian?",
+            "Who's most likely to move to another country?"
+        ],
+        normal: [
+            "Who's most likely to drunk text their ex?",
+            "Who's most likely to end up sleeping on the bathroom floor?",
+            "Who's most likely to go to jail?",
+            "Who's most likely to die first in a zombie apocalypse?",
+            "Who's most likely to have 10 kids?",
+            "Who's most likely to get a weird tattoo?",
+            "Who's most likely to join a cult?",
+            "Who's most likely to become a crazy cat person?",
+            "Who's most likely to marry for money?",
+            "Who's most likely to fake their own death?"
+        ],
+        spicy: [
+            "Who's most likely to have a one night stand?",
+            "Who's most likely to have a secret crush on someone here?",
+            "Who's most likely to sleep with their boss?",
+            "Who's most likely to have a threesome?",
+            "Who's most likely to send nudes?",
+            "Who's most likely to have sex in public?",
+            "Who's most likely to date two people at once?",
+            "Who's most likely to have a sugar daddy/mommy?",
+            "Who's most likely to do porn?",
+            "Who's most likely to have the highest body count?"
+        ],
+        couples: [
+            "Who's most likely to get married first?",
+            "Who's most likely to cheat on their partner?",
+            "Who's most likely to fall in love with their best friend?",
+            "Who's most likely to have kids first?",
+            "Who's most likely to forget their anniversary?",
+            "Who's most likely to get divorced?",
+            "Who's most likely to propose in public?",
+            "Who's most likely to have a destination wedding?",
+            "Who's most likely to elope?",
+            "Who's most likely to stay single forever?"
+        ]
+    },
+    spinBottleTasks: {
+        classic: [
+            "Give a compliment",
+            "Share your most embarrassing moment",
+            "Do your best impression of someone here",
+            "Sing a song for 30 seconds",
+            "Tell them something you like about them",
+            "Do a silly dance together",
+            "Take a selfie together",
+            "Give them a high five",
+            "Tell a joke",
+            "Share a secret"
+        ],
+        gettingStarted: [
+            "Give them a hug",
+            "Say something nice about them",
+            "Show them your best dance move",
+            "Teach them your secret handshake",
+            "Play rock paper scissors",
+            "Thumb wrestle",
+            "Staring contest for 30 seconds",
+            "Tell them your favorite thing about the party",
+            "Share your worst pickup line",
+            "Do 5 jumping jacks together"
+        ],
+        normal: [
+            "Let them post something on your social media",
+            "Give a 30 second massage",
+            "Whisper something in their ear",
+            "Do a trust fall",
+            "Sit on their lap for the next round",
+            "Feed them a snack",
+            "Let them style your hair",
+            "Arm wrestle",
+            "Let them draw on your hand",
+            "Share an embarrassing photo from your phone"
+        ],
+        spicy: [
+            "Kiss on the cheek",
+            "Give a lap dance for 10 seconds",
+            "Switch an item of clothing",
+            "Take a body shot",
+            "Play with their hair for 1 minute",
+            "Whisper your dirtiest thought",
+            "Lick their ear",
+            "Give them a hickey",
+            "Make out for 10 seconds",
+            "Remove an item of clothing"
+        ],
+        couples: [
+            "Kiss for 30 seconds",
+            "Give your partner a 1 minute massage",
+            "Whisper what you want to do later",
+            "Share your favorite memory together",
+            "Recreate your first kiss",
+            "Slow dance for 1 minute",
+            "Feed each other a shot",
+            "Tell them what you love most about them",
+            "Give them a lap dance",
+            "Make out until the next turn"
+        ]
+    },
     trivia: [
         {
             question: "When was HSG founded?",
@@ -339,7 +594,9 @@ const gameState = {
             team1: [],
             team2: []
         }
-    }
+    },
+    // Category state for games
+    selectedCategory: 'classic'
 };
 
 // ========================================
@@ -426,7 +683,29 @@ export function closeGame() {
 // ========================================
 function createNeverHaveIEverGame() {
     return `
-        <div id="playerSetup" style="display: block;">
+        <div id="categorySelection" style="display: block;">
+            <h3 style="text-align: center; margin-bottom: 20px;">Choose Your Vibe</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px;">
+                <button class="btn btn-primary" onclick="selectGameCategory('classic', 'neverHaveIEver')">
+                    <i class="fas fa-beer"></i> Classic
+                </button>
+                <button class="btn" onclick="selectGameCategory('gettingStarted', 'neverHaveIEver')">
+                    <i class="fas fa-play-circle"></i> Getting Started
+                </button>
+                <button class="btn" onclick="selectGameCategory('normal', 'neverHaveIEver')">
+                    <i class="fas fa-dice"></i> Normal
+                </button>
+                <button class="btn btn-danger" onclick="selectGameCategory('spicy', 'neverHaveIEver')">
+                    <i class="fas fa-fire"></i> Spicy
+                </button>
+                <button class="btn" style="background: linear-gradient(45deg, #ff0088, #ff4444);" 
+                    onclick="selectGameCategory('couples', 'neverHaveIEver')">
+                    <i class="fas fa-heart"></i> Couples
+                </button>
+            </div>
+        </div>
+        
+        <div id="playerSetup" style="display: none;">
             <h3 style="text-align: center; margin-bottom: 20px;">Add Players</h3>
             <div style="display: flex; gap: 10px; margin-bottom: 20px;">
                 <input type="text" id="playerNameInput" placeholder="Enter player name" 
@@ -445,6 +724,9 @@ function createNeverHaveIEverGame() {
         </div>
         
         <div id="gamePlay" style="display: none;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <span class="category-badge" id="categoryBadge">Classic</span>
+            </div>
             <div class="question-card" id="gameQuestion">
                 Ready to start!
             </div>
@@ -456,10 +738,27 @@ function createNeverHaveIEverGame() {
                 <button class="btn" onclick="resetToPlayerSetup()">
                     <i class="fas fa-users"></i> Change Players
                 </button>
+                <button class="btn" onclick="changeCategoryMidGame('neverHaveIEver')">
+                    <i class="fas fa-sync"></i> Change Category
+                </button>
+            </div>
+            <div style="text-align: center; opacity: 0.7;">
+                <p>Drink if you've done it! 🍻</p>
+            </div>
         </div>
-        <div style="text-align: center; opacity: 0.7;">
-            <p>Drink if you've done it! 🍻</p>
-        </div>
+        
+        <style>
+            .category-badge {
+                display: inline-block;
+                padding: 5px 15px;
+                background: linear-gradient(45deg, #00ff88, #00d4ff);
+                border-radius: 20px;
+                font-size: 0.9em;
+                font-weight: bold;
+                color: #000;
+                text-transform: uppercase;
+            }
+        </style>
     `;
 }
 
@@ -856,9 +1155,58 @@ function initializeGame(gameType) {
     }
 }
 
+// ========================================
+// CATEGORY SELECTION
+// ========================================
+export function selectGameCategory(category, gameType) {
+    gameState.selectedCategory = category;
+    
+    // Update UI to show next step
+    document.getElementById('categorySelection').style.display = 'none';
+    
+    if (gameType === 'truthOrDare' || gameType === 'specialBeerPong') {
+        // These games don't need player setup
+        document.getElementById('gamePlay').style.display = 'block';
+        updateCategoryBadge();
+    } else {
+        // Show player setup for other games
+        document.getElementById('playerSetup').style.display = 'block';
+    }
+}
+
+export function changeCategoryMidGame(gameType) {
+    // Hide game play, show category selection
+    document.getElementById('gamePlay').style.display = 'none';
+    document.getElementById('categorySelection').style.display = 'block';
+}
+
+function updateCategoryBadge() {
+    const badge = document.getElementById('categoryBadge');
+    if (badge) {
+        const categoryNames = {
+            classic: 'Classic',
+            gettingStarted: 'Getting Started',
+            normal: 'Normal',
+            spicy: 'Spicy 🔥',
+            couples: 'Couples 💕'
+        };
+        badge.textContent = categoryNames[gameState.selectedCategory] || 'Classic';
+        
+        // Update badge color based on category
+        const categoryColors = {
+            classic: 'linear-gradient(45deg, #00ff88, #00d4ff)',
+            gettingStarted: 'linear-gradient(45deg, #4CAF50, #8BC34A)',
+            normal: 'linear-gradient(45deg, #2196F3, #03A9F4)',
+            spicy: 'linear-gradient(45deg, #ff0088, #ff4444)',
+            couples: 'linear-gradient(45deg, #E91E63, #FF4081)'
+        };
+        badge.style.background = categoryColors[gameState.selectedCategory] || categoryColors.classic;
+    }
+}
+
 // Never Have I Ever
 export function nextNeverHaveIEver() {
-    const questions = gameData.neverHaveIEver;
+    const questions = gameData.neverHaveIEver[gameState.selectedCategory] || gameData.neverHaveIEver.classic;
     const random = Math.floor(Math.random() * questions.length);
     document.getElementById('gameQuestion').textContent = questions[random];
 }
@@ -1106,6 +1454,7 @@ export function startNeverHaveIEver() {
     
     document.getElementById('playerSetup').style.display = 'none';
     document.getElementById('gamePlay').style.display = 'block';
+    updateCategoryBadge();
     gameHistory = [];
 }
 
@@ -1136,14 +1485,14 @@ export function nextTurnTruthOrDare() {
 
 // Update existing functions to show next turn button
 export function showTruth() {
-    const truths = gameData.truths;
+    const truths = gameData.truths[gameState.selectedCategory] || gameData.truths.classic;
     const truth = truths[Math.floor(Math.random() * truths.length)];
     document.getElementById('gameQuestion').textContent = truth;
     document.getElementById('nextTurnBtn').style.display = 'inline-block';
 }
 
 export function showDare() {
-    const dares = gameData.dares;
+    const dares = gameData.dares[gameState.selectedCategory] || gameData.dares.classic;
     const dare = dares[Math.floor(Math.random() * dares.length)];
     document.getElementById('gameQuestion').textContent = dare;
     document.getElementById('nextTurnBtn').style.display = 'inline-block';
@@ -1165,7 +1514,7 @@ export function startWouldYouRather() {
 let currentWouldYouRatherVotes = { 0: [], 1: [] };
 
 export function nextWouldYouRather() {
-    const questions = gameData.wouldYouRather;
+    const questions = gameData.wouldYouRather[gameState.selectedCategory] || gameData.wouldYouRather.classic;
     const question = questions[Math.floor(Math.random() * questions.length)];
     
     // Split the question
@@ -1216,7 +1565,7 @@ export function startMostLikelyTo() {
 }
 
 export function nextMostLikelyTo() {
-    const questions = gameData.mostLikelyTo;
+    const questions = gameData.mostLikelyTo[gameState.selectedCategory] || gameData.mostLikelyTo.classic;
     const question = questions[Math.floor(Math.random() * questions.length)];
     
     document.getElementById('gameQuestion').textContent = question;
@@ -1269,7 +1618,7 @@ export function spinBottle() {
         `;
         
         // Show random task
-        const tasks = gameData.spinBottleTasks;
+        const tasks = gameData.spinBottleTasks[gameState.selectedCategory] || gameData.spinBottleTasks.classic;
         const task = tasks[Math.floor(Math.random() * tasks.length)];
         
         document.getElementById('gameTask').textContent = task;
@@ -1665,6 +2014,42 @@ export function startNormalBeerPong() {
 export function startSpecialBeerPong() {
     gameState.beerPong.currentMode = 'special';
     document.getElementById('gameModeSelection').style.display = 'none';
+    
+    // Show category selection first
+    const categoryDiv = document.createElement('div');
+    categoryDiv.id = 'specialCategorySelection';
+    categoryDiv.innerHTML = `
+        <h3 style="text-align: center; margin-bottom: 20px;">Choose Your Vibe</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px;">
+            <button class="btn btn-primary" onclick="selectSpecialBeerPongCategory('classic')">
+                <i class="fas fa-beer"></i> Classic
+            </button>
+            <button class="btn" onclick="selectSpecialBeerPongCategory('gettingStarted')">
+                <i class="fas fa-play-circle"></i> Getting Started
+            </button>
+            <button class="btn" onclick="selectSpecialBeerPongCategory('normal')">
+                <i class="fas fa-dice"></i> Normal
+            </button>
+            <button class="btn btn-danger" onclick="selectSpecialBeerPongCategory('spicy')">
+                <i class="fas fa-fire"></i> Spicy
+            </button>
+            <button class="btn" style="background: linear-gradient(45deg, #ff0088, #ff4444);" 
+                onclick="selectSpecialBeerPongCategory('couples')">
+                <i class="fas fa-heart"></i> Couples
+            </button>
+        </div>
+    `;
+    
+    const gameDiv = document.getElementById('beerPongGame');
+    if (document.getElementById('specialCategorySelection')) {
+        document.getElementById('specialCategorySelection').remove();
+    }
+    gameDiv.insertBefore(categoryDiv, gameDiv.firstChild);
+}
+
+export function selectSpecialBeerPongCategory(category) {
+    gameState.selectedCategory = category;
+    document.getElementById('specialCategorySelection').style.display = 'none';
     document.getElementById('teamNameSetup').style.display = 'block';
 }
 
@@ -1708,12 +2093,15 @@ function initializeSpecialGame(team1Name, team2Name) {
 
 function createCupFormation(team) {
     const cups = [];
+    const rules = gameData.specialBeerPongRules[gameState.selectedCategory] || gameData.specialBeerPongRules.classic;
+    const dares = gameData.specialBeerPongDares[gameState.selectedCategory] || gameData.specialBeerPongDares.classic;
+    
     // Create 10 cups with random rules/dares
     for (let i = 0; i < 10; i++) {
         const isRule = Math.random() > 0.5;
         const content = isRule 
-            ? gameData.specialBeerPongRules[Math.floor(Math.random() * gameData.specialBeerPongRules.length)]
-            : gameData.specialBeerPongDares[Math.floor(Math.random() * gameData.specialBeerPongDares.length)];
+            ? rules[Math.floor(Math.random() * rules.length)]
+            : dares[Math.floor(Math.random() * dares.length)];
         
         cups.push({
             id: `${team}-cup-${i}`,
