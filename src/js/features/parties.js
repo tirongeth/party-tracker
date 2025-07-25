@@ -24,7 +24,7 @@ export async function createParty(name, options = {}) {
             creatorId: user.uid,
             creatorName: user.displayName || user.email.split('@')[0],
             privacy: options.privacy || 'private', // private, friends-only, public
-            duration: options.duration || 'ongoing', // 24h or ongoing
+            duration: options.duration || '24h', // 24h or ongoing
             address: options.address || '',
             maxMembers: options.maxMembers || 50,
             description: options.description || '',

@@ -139,6 +139,40 @@
             };
         }
         
+        // Send party chat
+        const sendChatBtn = document.getElementById('sendPartyChatBtn');
+        if (sendChatBtn) {
+            sendChatBtn.onclick = async function() {
+                const input = document.getElementById('partyChatInput');
+                if (!input || !input.value.trim()) return;
+                
+                if (!window.Parties) {
+                    alert('App still loading, please try again');
+                    return;
+                }
+                
+                try {
+                    const result = await window.Parties.sendPartyMessage(input.value.trim());
+                    if (result.success) {
+                        input.value = '';
+                    }
+                } catch (error) {
+                    console.error('Failed to send message:', error);
+                }
+            };
+        }
+        
+        // Handle enter key for party chat
+        const chatInput = document.getElementById('partyChatInput');
+        if (chatInput) {
+            chatInput.onkeypress = async function(e) {
+                if (e.key === 'Enter') {
+                    const sendBtn = document.getElementById('sendPartyChatBtn');
+                    if (sendBtn) sendBtn.click();
+                }
+            };
+        }
+        
         console.log('Party handlers initialized');
     };
     
