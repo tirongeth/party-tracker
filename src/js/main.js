@@ -113,6 +113,24 @@ function exposeGlobalFunctions() {
     window.nextTrivia = Games.nextTrivia;
     window.answerTrivia = Games.answerTrivia;
     
+    // Player management functions
+    window.addPlayer = Games.addPlayer;
+    window.removePlayer = Games.removePlayer;
+    window.resetToPlayerSetup = Games.resetToPlayerSetup;
+    window.startNeverHaveIEver = Games.startNeverHaveIEver;
+    window.startTruthOrDare = Games.startTruthOrDare;
+    window.nextTurnTruthOrDare = Games.nextTurnTruthOrDare;
+    
+    // New game functions
+    window.startWouldYouRather = Games.startWouldYouRather;
+    window.nextWouldYouRather = Games.nextWouldYouRather;
+    window.voteWouldYouRather = Games.voteWouldYouRather;
+    window.startMostLikelyTo = Games.startMostLikelyTo;
+    window.nextMostLikelyTo = Games.nextMostLikelyTo;
+    window.showVotes = Games.showVotes;
+    window.startSpinBottle = Games.startSpinBottle;
+    window.spinBottle = Games.spinBottle;
+    
     // Also expose some internal functions that are used
     window.getActiveLocations = AllFunctions.getActiveLocations;
     window.createLocationMap = AllFunctions.createLocationMap;
