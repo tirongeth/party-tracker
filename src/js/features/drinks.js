@@ -9,11 +9,9 @@ import { DRINK_PRESETS } from '../config/constants.js';
 import { showNotification } from '../ui/notifications.js';
 import { escapeHtml } from './all-functions.js';
 import { ref, set, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-import { Chart, DoughnutController, ArcElement, Tooltip, Legend } from 'chart.js';
-import confetti from 'canvas-confetti';
-
-// Register Chart.js components
-Chart.register(DoughnutController, ArcElement, Tooltip, Legend);
+// Chart.js is loaded globally via CDN in index.html
+const Chart = window.Chart;
+const confetti = window.confetti;
 
 // Chart instance
 let drinkChart = null;
