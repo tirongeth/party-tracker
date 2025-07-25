@@ -126,14 +126,34 @@
             refreshBtn.onclick = async function() {
                 const list = document.getElementById('publicPartiesList');
                 if (window.Parties && list) {
-                    list.innerHTML = 'Loading...';
-                    const parties = await window.Parties.getNearbyParties();
-                    if (parties.length === 0) {
-                        list.innerHTML = 'No public parties found';
-                    } else {
-                        list.innerHTML = parties.map(p => 
-                            '<div>' + p.name + ' - ' + p.memberCount + ' members</div>'
-                        ).join('');
+                    list.innerHTML = 'Loading parties...';
+                    try {
+                        const parties = await window.Parties.getNearbyParties();
+                        if (parties.length === 0) {
+                            list.innerHTML = 'No public parties found. Create one!';
+                        } else {
+                            list.innerHTML = parties.map(party => 
+                                '<div class="friend-item" style="margin-bottom: 15px;">' +
+                                    '<div class="friend-info">' +
+                                        '<div class="friend-avatar-small">🎉</div>' +
+                                        '<div class="friend-details">' +
+                                            '<h4>' + party.name + '</h4>' +
+                                            '<p style="opacity: 0.7;">' +
+                                                '👥 ' + party.memberCount + ' members' +
+                                                (party.address ? ' • 📍 ' + party.address : '') +
+                                                (party.duration === '24h' ? ' • ⏰ 24h party' : '') +
+                                            '</p>' +
+                                        '</div>' +
+                                    '</div>' +
+                                    '<button class="btn btn-primary" onclick="joinPublicParty(\'' + party.code + '\')">' +
+                                        'Join' +
+                                    '</button>' +
+                                '</div>'
+                            ).join('');
+                        }
+                    } catch (error) {
+                        list.innerHTML = 'Failed to load parties';
+                        console.error('Error loading parties:', error);
                     }
                 }
             };
@@ -174,6 +194,30 @@
         }
         
         console.log('Party handlers initialized');
+    };
+    
+    // Global function to join public parties
+    window.joinPublicParty = async function(code) {
+        if (!window.Parties) {
+            alert('App still loading, please try again');
+            return;
+        }
+        
+        try {
+            const result = await window.Parties.joinParty(code, true);
+            if (result.success) {
+                alert('Joined party!');
+                if (window.Parties.updatePartyUI) window.Parties.updatePartyUI();
+                // Refresh the public parties list
+                const refreshBtn = document.getElementById('refreshPartiesBtn');
+                if (refreshBtn) refreshBtn.click();
+            } else {
+                alert(result.error || 'Failed to join party');
+            }
+        } catch (error) {
+            alert('Failed to join party');
+            console.error(error);
+        }
     };
     
     // Try to init after DOM loads and periodically
@@ -732,8 +776,8 @@
                         </select>
                         
                         <select id="partyDuration" style="padding: 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white;">
-                            <option value="ongoing">♾️ Ongoing Party</option>
                             <option value="24h">⏰ 24 Hour Party</option>
+                            <option value="ongoing">♾️ Ongoing Party</option>
                         </select>
                         
                         <input type="text" id="partyAddress" placeholder="📍 Party Location (optional)" style="padding: 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white;">
