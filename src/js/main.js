@@ -94,6 +94,11 @@ function exposeGlobalFunctions() {
         window.getNearbyParties = Parties.getNearbyParties;
         window.getFriendsParties = Parties.getFriendsParties;
         window.updatePartyDisplay = updatePartyDisplay; // Use main.js version, not parties.js
+        
+        // New creator control functions
+        window.kickMember = Parties.kickMember;
+        window.updatePartySettings = Parties.updatePartySettings;
+        window.togglePartyLock = Parties.togglePartyLock;
     }
     
     // Party UI functions
@@ -1278,24 +1283,45 @@ function updatePartyDisplay() {
         const nameEls = document.querySelectorAll('#currentPartyName, #dashboardPartyName');
         const codeEls = document.querySelectorAll('#currentPartyCode, #dashboardPartyCode');
         
-        nameEls.forEach(el => { if (el) el.textContent = party.name; });
+        nameEls.forEach(el => { 
+            if (el) {
+                el.innerHTML = party.name + ` <span style="font-size: 0.8em; opacity: 0.7;">by ${party.creatorName || 'Unknown'}</span>`;
+            }
+        });
         codeEls.forEach(el => { if (el) el.textContent = party.code; });
         
         // Update members
         const membersList = document.getElementById('partyMembersList');
         if (membersList && party.members) {
+            const currentUser = getCurrentUser();
+            const isCreator = currentUser && party.creatorId === currentUser.uid;
             const memberCount = Object.keys(party.members).length;
-            membersList.innerHTML = Object.entries(party.members).map(([id, member]) => `
-                <div class="friend-item">
-                    <div class="friend-info">
-                        <div class="friend-avatar-small">👤</div>
-                        <div class="friend-details">
-                            <h4>${member.name}</h4>
-                            <p style="opacity: 0.7; font-size: 0.9em;">Joined ${new Date(member.joinedAt).toLocaleTimeString()}</p>
+            
+            membersList.innerHTML = Object.entries(party.members).map(([id, member]) => {
+                const isThisUserCreator = id === party.creatorId;
+                const isCurrentUser = currentUser && id === currentUser.uid;
+                
+                return `
+                    <div class="friend-item">
+                        <div class="friend-info">
+                            <div class="friend-avatar-small">${isThisUserCreator ? '👑' : '👤'}</div>
+                            <div class="friend-details">
+                                <h4>${member.name} ${isThisUserCreator ? '<span style="color: #00ff88;">(Host)</span>' : ''}</h4>
+                                <p style="opacity: 0.7; font-size: 0.9em;">
+                                    ${member.role === 'creator' ? 'Party Host • ' : ''}
+                                    Joined ${new Date(member.joinedAt).toLocaleTimeString()}
+                                </p>
+                            </div>
                         </div>
+                        ${isCreator && !isCurrentUser && !isThisUserCreator ? `
+                            <button class="btn btn-danger" style="padding: 5px 10px; font-size: 0.9em;" 
+                                    onclick="kickMemberFromParty('${id}', '${member.name}')">
+                                <i class="fas fa-user-times"></i> Kick
+                            </button>
+                        ` : ''}
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
         
         // Update stats
@@ -1341,8 +1367,25 @@ function updatePartyDisplay() {
             }
         }
         
-        // Show pending requests if creator
+        // Show creator-only sections
         if (isCreator) {
+            // Show creator controls
+            const creatorControlsSection = document.getElementById('creatorControlsSection');
+            if (creatorControlsSection) {
+                creatorControlsSection.style.display = 'block';
+                
+                // Update lock button text
+                const lockBtn = document.getElementById('lockPartyBtn');
+                if (lockBtn) {
+                    if (party.locked) {
+                        lockBtn.innerHTML = '<i class="fas fa-lock-open"></i> Unlock Party';
+                    } else {
+                        lockBtn.innerHTML = '<i class="fas fa-lock"></i> Lock Party';
+                    }
+                }
+            }
+            
+            // Show pending requests
             const pendingSection = document.getElementById('pendingRequestsSection');
             const pendingList = document.getElementById('pendingRequestsList');
             
@@ -1371,11 +1414,25 @@ function updatePartyDisplay() {
             } else if (pendingSection) {
                 pendingSection.style.display = 'none';
             }
+        } else {
+            // Hide creator-only sections for non-creators
+            const creatorControlsSection = document.getElementById('creatorControlsSection');
+            if (creatorControlsSection) creatorControlsSection.style.display = 'none';
+            
+            const pendingSection = document.getElementById('pendingRequestsSection');
+            if (pendingSection) pendingSection.style.display = 'none';
         }
     } else {
         // Hide party sections
         if (currentSection) currentSection.style.display = 'none';
         if (dashboardInfo) dashboardInfo.style.display = 'none';
+        
+        // Also hide creator sections
+        const creatorControlsSection = document.getElementById('creatorControlsSection');
+        if (creatorControlsSection) creatorControlsSection.style.display = 'none';
+        
+        const pendingSection = document.getElementById('pendingRequestsSection');
+        if (pendingSection) pendingSection.style.display = 'none';
     }
 }
 
@@ -1445,8 +1502,66 @@ async function handlePartyRequest(userId, approve) {
     }
 }
 
+// Kick member from party
+async function kickMemberFromParty(memberId, memberName) {
+    const confirmMsg = `Kick ${memberName} from the party?`;
+    if (!confirm(confirmMsg)) return;
+    
+    const reason = prompt('Reason for kick (optional):') || '';
+    
+    const result = await Parties.kickMember(memberId, reason);
+    if (result.success) {
+        showNotification(`${memberName} has been removed from the party`, 'info');
+        updatePartyDisplay();
+    } else {
+        showNotification(result.error || 'Failed to kick member', 'error');
+    }
+}
+
+// Toggle party lock UI
+async function togglePartyLockUI() {
+    if (!Parties.currentParty) return;
+    
+    const isLocked = Parties.currentParty.locked;
+    const confirmMsg = isLocked 
+        ? 'Unlock the party? New members will be able to join.' 
+        : 'Lock the party? No new members will be able to join.';
+    
+    if (!confirm(confirmMsg)) return;
+    
+    const result = await Parties.togglePartyLock(!isLocked);
+    if (result.success) {
+        showNotification(result.locked ? 'Party locked' : 'Party unlocked', 'info');
+        updatePartyDisplay();
+    } else {
+        showNotification(result.error || 'Failed to update party lock', 'error');
+    }
+}
+
+// Edit party settings UI
+function editPartySettings() {
+    const party = Parties.currentParty;
+    if (!party) return;
+    
+    const newName = prompt('Party name:', party.name);
+    if (newName && newName !== party.name) {
+        Parties.updatePartySettings({ name: newName }).then(result => {
+            if (result.success) {
+                showNotification('Party name updated', 'success');
+                updatePartyDisplay();
+            } else {
+                showNotification(result.error || 'Failed to update', 'error');
+            }
+        });
+    }
+}
+
+
 // Expose globally
 window.updatePartyDisplay = updatePartyDisplay;
 window.updatePartyChat = updatePartyChat;
 window.updatePartyLeaderboard = updatePartyLeaderboard;
 window.handlePartyRequest = handlePartyRequest;
+window.kickMemberFromParty = kickMemberFromParty;
+window.togglePartyLockUI = togglePartyLockUI;
+window.editPartySettings = editPartySettings;

@@ -3,6 +3,7 @@
 import { database, auth, ref, set, push, update, get, onValue, serverTimestamp, remove } from '../config/firebase.js';
 import { showNotification } from '../ui/notifications.js';
 import { partyCache, leaderboardCache, batchReadingsCache, CACHE_TTL, createCacheKey } from '../utils/cache.js';
+import { getAppState } from '../config/app-state.js';
 
 // Current party state
 export let currentParty = null;
@@ -21,6 +22,10 @@ export async function createParty(name, options = {}) {
         const user = auth.currentUser;
         if (!user) throw new Error('Not logged in');
         
+        // Get username from app state
+        const userData = getAppState().userData;
+        const userName = userData.username || user.email.split('@')[0];
+        
         const code = Math.random().toString(36).substring(2, 8).toUpperCase();
         const partyRef = push(ref(database, 'parties'));
         
@@ -29,7 +34,7 @@ export async function createParty(name, options = {}) {
             name: name,
             code: code,
             creatorId: user.uid,
-            creatorName: user.displayName || user.email.split('@')[0],
+            creatorName: userName,
             privacy: options.privacy || 'private', // private, friends-only, public
             duration: options.duration || '24h', // 24h or ongoing
             address: options.address || '',
@@ -37,7 +42,7 @@ export async function createParty(name, options = {}) {
             description: options.description || '',
             members: {
                 [user.uid]: {
-                    name: user.displayName || user.email.split('@')[0],
+                    name: userName,
                     joinedAt: Date.now(),
                     role: 'creator'
                 }
@@ -100,6 +105,17 @@ export async function joinParty(code, autoJoin = false) {
         const foundParty = await getPartyByCode(code);
         if (!foundParty) throw new Error('Invalid code');
         
+        // Check if user is banned
+        const isBanned = await isUserBanned(foundParty.id, user.uid);
+        if (isBanned) {
+            throw new Error('You have been banned from this party');
+        }
+        
+        // Check if party is locked
+        if (foundParty.locked && !autoJoin) {
+            throw new Error('This party is locked. No new members allowed.');
+        }
+        
         // Check if already a member
         if (foundParty.members && foundParty.members[user.uid]) {
             // Already in party, just set as current
@@ -120,11 +136,15 @@ export async function joinParty(code, autoJoin = false) {
             throw new Error('Party has expired');
         }
         
+        // Get username from app state
+        const userData = getAppState().userData;
+        const userName = userData.username || user.email.split('@')[0];
+        
         // Handle different privacy levels
         if (foundParty.privacy === 'public' || autoJoin) {
             // Direct join for public parties
             await update(ref(database, `parties/${foundParty.id}/members/${user.uid}`), {
-                name: user.displayName || user.email.split('@')[0],
+                name: userName,
                 joinedAt: Date.now(),
                 role: 'member'
             });
@@ -147,7 +167,7 @@ export async function joinParty(code, autoJoin = false) {
             
             // Join as friend
             await update(ref(database, `parties/${foundParty.id}/members/${user.uid}`), {
-                name: user.displayName || user.email.split('@')[0],
+                name: userName,
                 joinedAt: Date.now(),
                 role: 'friend'
             });
@@ -161,7 +181,7 @@ export async function joinParty(code, autoJoin = false) {
         } else {
             // Private party - request to join
             await update(ref(database, `parties/${foundParty.id}/pendingRequests/${user.uid}`), {
-                name: user.displayName || user.email.split('@')[0],
+                name: userName,
                 requestedAt: Date.now()
             });
             
@@ -174,7 +194,7 @@ export async function joinParty(code, autoJoin = false) {
     }
 }
 
-// Leave party - SIMPLE
+// Leave party - ENHANCED with creator check
 export async function leaveParty() {
     try {
         if (!currentParty) return { success: true };
@@ -182,7 +202,13 @@ export async function leaveParty() {
         const user = auth.currentUser;
         if (!user) throw new Error('Not logged in');
         
-        // Remove from party
+        // Check if user is the creator
+        if (currentParty.creatorId === user.uid) {
+            // Creator leaving should delete the party
+            return await deleteParty();
+        }
+        
+        // Regular member leaving
         await set(
             ref(database, `parties/${currentParty.id}/members/${user.uid}`), 
             null
@@ -418,9 +444,13 @@ export async function sendPartyMessage(message) {
         const user = auth.currentUser;
         if (!user) return { success: false };
         
+        // Get username from app state
+        const userData = getAppState().userData;
+        const userName = userData.username || user.email.split('@')[0];
+        
         await push(ref(database, `parties/${currentParty.id}/chat`), {
             userId: user.uid,
-            userName: user.displayName || user.email.split('@')[0],
+            userName: userName,
             message: message.trim(),
             timestamp: Date.now()
         });
@@ -659,6 +689,127 @@ export async function getNearbyParties() {
     } catch (error) {
         console.error('Get nearby parties error:', error);
         return [];
+    }
+}
+
+// Kick member from party (creator only)
+export async function kickMember(memberId, reason = '') {
+    try {
+        if (!currentParty || !auth.currentUser) {
+            return { success: false, error: 'Not in a party or not authenticated' };
+        }
+        
+        // Only creator can kick
+        if (currentParty.creatorId !== auth.currentUser.uid) {
+            return { success: false, error: 'Only the party creator can kick members' };
+        }
+        
+        // Can't kick yourself
+        if (memberId === auth.currentUser.uid) {
+            return { success: false, error: 'Cannot kick yourself. Use delete party instead.' };
+        }
+        
+        // Check if member exists
+        if (!currentParty.members || !currentParty.members[memberId]) {
+            return { success: false, error: 'Member not found in party' };
+        }
+        
+        // Log the kick action (for potential moderation history)
+        await push(ref(database, `parties/${currentParty.id}/moderation`), {
+            action: 'kick',
+            targetId: memberId,
+            targetName: currentParty.members[memberId].name,
+            moderatorId: auth.currentUser.uid,
+            reason: reason,
+            timestamp: Date.now()
+        });
+        
+        // Remove member
+        await remove(ref(database, `parties/${currentParty.id}/members/${memberId}`));
+        
+        // Add to banned list to prevent immediate rejoin
+        await set(ref(database, `parties/${currentParty.id}/banned/${memberId}`), {
+            bannedAt: Date.now(),
+            bannedBy: auth.currentUser.uid,
+            reason: reason
+        });
+        
+        return { success: true };
+    } catch (error) {
+        console.error('Kick member error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Update party settings (creator only)
+export async function updatePartySettings(settings) {
+    try {
+        if (!currentParty || !auth.currentUser) {
+            return { success: false, error: 'Not in a party or not authenticated' };
+        }
+        
+        // Only creator can update settings
+        if (currentParty.creatorId !== auth.currentUser.uid) {
+            return { success: false, error: 'Only the party creator can update settings' };
+        }
+        
+        // Validate settings
+        const allowedSettings = ['name', 'privacy', 'maxMembers', 'description', 'address', 'locked'];
+        const updates = {};
+        
+        for (const [key, value] of Object.entries(settings)) {
+            if (allowedSettings.includes(key)) {
+                updates[key] = value;
+            }
+        }
+        
+        if (Object.keys(updates).length === 0) {
+            return { success: false, error: 'No valid settings provided' };
+        }
+        
+        // Update Firebase
+        await update(ref(database, `parties/${currentParty.id}`), updates);
+        
+        return { success: true };
+    } catch (error) {
+        console.error('Update party settings error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+// Lock/unlock party (creator only)
+export async function togglePartyLock(locked) {
+    try {
+        if (!currentParty || !auth.currentUser) {
+            return { success: false, error: 'Not in a party or not authenticated' };
+        }
+        
+        // Only creator can lock/unlock
+        if (currentParty.creatorId !== auth.currentUser.uid) {
+            return { success: false, error: 'Only the party creator can lock/unlock the party' };
+        }
+        
+        await update(ref(database, `parties/${currentParty.id}`), {
+            locked: locked,
+            lockedAt: locked ? Date.now() : null
+        });
+        
+        return { success: true, locked: locked };
+    } catch (error) {
+        console.error('Toggle party lock error:', error);
+        return { success: false, error: error.message };
+    }
+}
+
+
+// Check if user is banned from party
+export async function isUserBanned(partyId, userId) {
+    try {
+        const bannedSnapshot = await get(ref(database, `parties/${partyId}/banned/${userId}`));
+        return bannedSnapshot.exists();
+    } catch (error) {
+        console.error('Check ban status error:', error);
+        return false;
     }
 }
 

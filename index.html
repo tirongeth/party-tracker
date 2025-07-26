@@ -588,6 +588,19 @@
                     </div>
                 </div>
                 
+                <!-- Creator Controls (for creator only) -->
+                <div id="creatorControlsSection" style="display: none; margin: 20px 0;">
+                    <h4>🎛️ Host Controls</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 15px;">
+                        <button class="btn" onclick="togglePartyLockUI()" id="lockPartyBtn">
+                            <i class="fas fa-lock"></i> Lock Party
+                        </button>
+                        <button class="btn" onclick="editPartySettings()">
+                            <i class="fas fa-edit"></i> Edit Settings
+                        </button>
+                    </div>
+                </div>
+                
                 <!-- Party Chat -->
                 <div style="margin: 20px 0;">
                     <h4>💬 Party Chat</h4>
