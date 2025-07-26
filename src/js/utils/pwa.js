@@ -20,9 +20,8 @@ if (window.matchMedia('(display-mode: standalone)').matches ||
 export async function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         try {
-            // Use base URL for GitHub Pages deployment
-            const baseUrl = window.location.pathname.includes('/boozelens/') ? '/boozelens/' : '/';
-            const registration = await navigator.serviceWorker.register(baseUrl + 'service-worker.js');
+            // Use relative path for service worker
+            const registration = await navigator.serviceWorker.register('./service-worker.js');
             console.log('ServiceWorker registered:', registration);
             
             // Check for updates
