@@ -366,6 +366,9 @@
                 <li><button class="nav-item" onclick="switchSection('friends')" type="button">
                     <i class="fas fa-users"></i> Friends
                 </button></li>
+                <li><button class="nav-item" onclick="switchSection('photos')" type="button">
+                    <i class="fas fa-camera-retro"></i> Photos
+                </button></li>
                 <li><button class="nav-item" onclick="switchSection('parties')" type="button">
                     <i class="fas fa-champagne-glasses"></i> Parties
                 </button></li>
@@ -535,6 +538,52 @@
                 <div id="friendsList">
                     <!-- Friends list will be populated here -->
                 </div>
+            </div>
+        </section>
+        
+        <!-- Photos Section -->
+        <section id="photos" class="section">
+            <h2>📸 Party Photos Feed</h2>
+            
+            <!-- Upload Status for ESP32 devices -->
+            <div id="uploadStatus" class="upload-status" style="display: none;">
+                <div class="upload-progress">
+                    <i class="fas fa-spinner fa-spin"></i> Uploading photo from your BoozeLens...
+                </div>
+            </div>
+            
+            <!-- Photo Feed Controls -->
+            <div class="photo-controls">
+                <button class="btn btn-primary" onclick="refreshPhotoFeed()">
+                    <i class="fas fa-sync"></i> Refresh Feed
+                </button>
+                <select id="photoFilter" onchange="filterPhotos()" class="photo-filter">
+                    <option value="all">All Photos</option>
+                    <option value="recent">Last 24 Hours</option>
+                    <option value="party">Current Party Only</option>
+                    <option value="high-bac">High BAC Moments 🔥</option>
+                </select>
+            </div>
+            
+            <!-- Photo Feed Grid -->
+            <div class="photo-feed" id="photoFeed">
+                <!-- Photos will be dynamically loaded here -->
+                <div class="photo-placeholder">
+                    <i class="fas fa-camera-retro" style="font-size: 4em; opacity: 0.3;"></i>
+                    <p style="opacity: 0.5;">No photos yet! Connect your BoozeLens to start capturing moments!</p>
+                </div>
+            </div>
+            
+            <!-- Photo Upload Instructions -->
+            <div class="info-box" style="margin-top: 30px;">
+                <h3>🎞️ BoozeLens Setup</h3>
+                <p>Your BoozeLens keychain automatically uploads photos when:</p>
+                <ol>
+                    <li>You take a photo with the button</li>
+                    <li>Your device is connected to WiFi</li>
+                    <li>Optional: BAC reading can be included</li>
+                </ol>
+                <p><strong>Privacy:</strong> Photos are only visible to your friends!</p>
             </div>
         </section>
         

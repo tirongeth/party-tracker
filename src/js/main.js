@@ -25,6 +25,7 @@ import * as Achievements from './features/achievements.js';
 import * as Devices from './features/devices.js';
 import * as PartiesModule from './features/parties.js';
 import * as PartiesUI from './features/parties-ui.js';
+import * as Photos from './features/photos.js';
 
 // ========================================
 // PARTY MODULE REFERENCE
@@ -164,6 +165,17 @@ function exposeGlobalFunctions() {
     window.pairDeviceById = Devices.pairDeviceById;
     window.unpairDevice = Devices.unpairDevice;
     window.renameDevice = Devices.renameDevice;
+    
+    // Photo functions
+    window.refreshPhotoFeed = Photos.refreshPhotoFeed;
+    window.filterPhotos = Photos.filterPhotos;
+    window.toggleLike = Photos.toggleLike;
+    window.addComment = Photos.addComment;
+    window.deletePhoto = Photos.deletePhoto;
+    window.viewPhoto = Photos.viewPhoto;
+    window.showComments = Photos.showComments;
+    window.sharePhoto = Photos.sharePhoto;
+    window.handleBoozeLensUpload = Photos.handlePhotoUpload;
     
     console.log('✅ All functions exposed globally including party functions');
 }
@@ -533,6 +545,9 @@ async function onUserAuthenticated(user) {
         // Initialize features
         initializeDevices();
         
+        // Initialize photos module
+        Photos.initializePhotos();
+        
         // Load achievements
         Achievements.loadAchievements();
         
@@ -743,6 +758,9 @@ function switchSection(sectionId) {
             Drinks.updateEmergencySummary();
         } else if (sectionId === 'friends') {
             AllFunctions.updateFriendsList();
+        } else if (sectionId === 'photos') {
+            // Photos feed updates automatically via listener
+            Photos.refreshPhotoFeed();
         } else if (sectionId === 'settings') {
             AllFunctions.updateToggleSwitches();
         } else if (sectionId === 'parties') {
