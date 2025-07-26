@@ -43,6 +43,7 @@ function updateFriendsGrid() {
         
         const card = document.createElement('div');
         card.className = 'card friend-card';
+        card.setAttribute('data-friend-id', data.friendId || deviceId);
         card.onclick = () => showFriendDetails(data);
         
         const trendIcon = data.trend === 'up' ? '📈' : data.trend === 'down' ? '📉' : '➡️';
@@ -188,6 +189,9 @@ function updateVisualizer() {
 // ========================================
 // ALERT SYSTEM
 // ========================================
+let lastAlertTime = 0;
+const ALERT_COOLDOWN = 5 * 60 * 1000; // 5 minutes between alerts
+
 function checkForAlerts() {
     const partyData = getStateValue('partyData') || {};
     // Only check recent data (within 24 hours)
@@ -196,22 +200,36 @@ function checkForAlerts() {
     );
     
     if (criticalFriends.length > 0) {
-        const alertBanner = document.getElementById('alertBanner');
-        const alertText = document.getElementById('alertText');
+        const now = Date.now();
         
-        if (alertBanner && alertText) {
+        // Show notification instead of persistent banner (with cooldown)
+        if (now - lastAlertTime > ALERT_COOLDOWN) {
             const names = criticalFriends.map(f => f.name).join(', ');
-            alertText.textContent = `⚠️ ${names} need${criticalFriends.length > 1 ? '' : 's'} attention! BAC too high!`;
-            
-            if (!alertBanner.classList.contains('show')) {
-                alertBanner.classList.add('show');
+            showNotification(
+                `⚠️ ${names} need${criticalFriends.length > 1 ? '' : 's'} attention! BAC too high!`, 
+                'warning'
+            );
+            lastAlertTime = now;
+        }
+        
+        // Add subtle indicator to friend cards instead
+        criticalFriends.forEach(friend => {
+            const card = document.querySelector(`[data-friend-id="${friend.friendId || friend.deviceId}"]`);
+            if (card) {
+                card.classList.add('bac-warning');
             }
-        }
+        });
     } else {
-        const alertBanner = document.getElementById('alertBanner');
-        if (alertBanner) {
-            alertBanner.classList.remove('show');
-        }
+        // Remove warning indicators
+        document.querySelectorAll('.bac-warning').forEach(card => {
+            card.classList.remove('bac-warning');
+        });
+    }
+    
+    // Hide the old alert banner if it exists
+    const alertBanner = document.getElementById('alertBanner');
+    if (alertBanner) {
+        alertBanner.style.display = 'none';
     }
 }
 
