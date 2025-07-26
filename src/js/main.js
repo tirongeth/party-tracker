@@ -93,7 +93,7 @@ function exposeGlobalFunctions() {
         window.getPartyByCode = Parties.getPartyByCode;
         window.getNearbyParties = Parties.getNearbyParties;
         window.getFriendsParties = Parties.getFriendsParties;
-        window.updatePartyDisplay = Parties.updatePartyUI;
+        window.updatePartyDisplay = updatePartyDisplay; // Use main.js version, not parties.js
     }
     
     // Party UI functions

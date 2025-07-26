@@ -1,5 +1,5 @@
 // UI wrapper functions for party HTML onclick handlers
-import { createParty, getPartyByCode, joinParty, leaveParty, sendPartyMessage, getNearbyParties, updatePartyUI } from './parties.js';
+import { createParty, getPartyByCode, joinParty, leaveParty, sendPartyMessage, getNearbyParties } from './parties.js';
 import { showNotification } from '../ui/notifications.js';
 
 export async function createNewParty() {
@@ -25,7 +25,7 @@ export async function createNewParty() {
             showNotification(`Party created! Code: ${result.code}`, 'success');
             nameInput.value = '';
             if (addressInput) addressInput.value = '';
-            updatePartyUI();
+            if (window.updatePartyDisplay) window.updatePartyDisplay();
         } else {
             showNotification(result.error || 'Failed to create party', 'error');
         }
@@ -73,7 +73,7 @@ export async function joinPartyByCode() {
                 showNotification('Joined party!', 'success');
             }
             codeInput.value = '';
-            updatePartyUI();
+            if (window.updatePartyDisplay) window.updatePartyDisplay();
         } else {
             showNotification(result.error || 'Failed to join party', 'error');
         }
@@ -88,7 +88,7 @@ export async function leaveCurrentParty() {
             const result = await leaveParty();
             if (result.success) {
                 showNotification('Left party', 'info');
-                updatePartyUI();
+                if (window.updatePartyDisplay) window.updatePartyDisplay();
             }
         } catch (error) {
             showNotification('Failed to leave party', 'error');
@@ -152,7 +152,7 @@ export async function joinPublicParty(code) {
         const result = await joinParty(code, true);
         if (result.success) {
             showNotification('Joined public party!', 'success');
-            updatePartyUI();
+            if (window.updatePartyDisplay) window.updatePartyDisplay();
         } else {
             showNotification(result.error || 'Failed to join party', 'error');
         }

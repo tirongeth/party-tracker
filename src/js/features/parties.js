@@ -235,14 +235,41 @@ export async function loadCurrentParty() {
         const partyId = localStorage.getItem('currentPartyId');
         if (!partyId) return;
         
+        const user = auth.currentUser;
+        if (!user) {
+            console.log('No authenticated user, clearing party state');
+            localStorage.removeItem('currentPartyId');
+            return;
+        }
+        
         const partySnapshot = await get(ref(database, `parties/${partyId}`));
         if (partySnapshot.exists()) {
-            currentParty = { ...partySnapshot.val(), id: partyId };
+            const partyData = partySnapshot.val();
+            
+            // Validate membership
+            if (!partyData.members || !partyData.members[user.uid]) {
+                console.log('User not a member of stored party');
+                localStorage.removeItem('currentPartyId');
+                return;
+            }
+            
+            // Check expiration
+            if (partyData.expiresAt && Date.now() > partyData.expiresAt) {
+                console.log('Stored party has expired');
+                localStorage.removeItem('currentPartyId');
+                return;
+            }
+            
+            // Set current party and start listeners
+            currentParty = { ...partyData, id: partyId };
+            startPartyListeners(partyId);
         } else {
+            console.log('Stored party no longer exists');
             localStorage.removeItem('currentPartyId');
         }
     } catch (error) {
         console.error('Load party error:', error);
+        localStorage.removeItem('currentPartyId');
     }
 }
 
@@ -254,8 +281,43 @@ function startPartyListeners(partyId) {
     // Listen to party updates
     partyListener = onValue(ref(database, `parties/${partyId}`), (snapshot) => {
         if (snapshot.exists()) {
-            currentParty = { ...snapshot.val(), id: partyId };
-            window.updatePartyDisplay && window.updatePartyDisplay();
+            const partyData = snapshot.val();
+            const user = auth.currentUser;
+            
+            // Validate party state
+            if (!partyData || !user) {
+                handlePartyRemoved();
+                return;
+            }
+            
+            // Check if user is still a member
+            if (!partyData.members || !partyData.members[user.uid]) {
+                console.log('User no longer a member of party');
+                handlePartyRemoved();
+                return;
+            }
+            
+            // Check if party has expired
+            if (partyData.expiresAt && Date.now() > partyData.expiresAt) {
+                console.log('Party has expired');
+                handlePartyRemoved();
+                return;
+            }
+            
+            // Update state with validated data
+            currentParty = { ...partyData, id: partyId };
+            
+            // Ensure localStorage is in sync
+            localStorage.setItem('currentPartyId', partyId);
+            
+            // Update UI
+            if (typeof window !== 'undefined' && window.updatePartyDisplay) {
+                window.updatePartyDisplay();
+            }
+        } else {
+            // Party was deleted or doesn't exist
+            console.log('Party no longer exists in Firebase');
+            handlePartyRemoved();
         }
     });
     
@@ -278,6 +340,26 @@ function stopPartyListeners() {
     if (chatListener) {
         chatListener();
         chatListener = null;
+    }
+}
+
+// Handle party removal (deleted, expired, or kicked out)
+function handlePartyRemoved() {
+    // Clear state
+    currentParty = null;
+    localStorage.removeItem('currentPartyId');
+    
+    // Stop listeners
+    stopPartyListeners();
+    
+    // Update UI
+    if (typeof window !== 'undefined' && window.updatePartyDisplay) {
+        window.updatePartyDisplay();
+    }
+    
+    // Show notification
+    if (typeof window !== 'undefined' && window.showNotification) {
+        window.showNotification('You have left the party', 'info');
     }
 }
 
@@ -484,76 +566,5 @@ export async function quickAddFriend(friendId) {
     return { success: false };
 }
 
-export function updatePartyUI() {
-    console.log('Updating party UI, current party:', currentParty);
-    
-    // Get all party-related elements
-    const currentPartySection = document.getElementById('currentPartySection');
-    const dashboardPartyInfo = document.getElementById('dashboardPartyInfo');
-    
-    if (!currentParty) {
-        // Hide party sections when not in a party
-        if (currentPartySection) currentPartySection.style.display = 'none';
-        if (dashboardPartyInfo) dashboardPartyInfo.style.display = 'none';
-        return;
-    }
-    
-    // Show current party section
-    if (currentPartySection) {
-        currentPartySection.style.display = 'block';
-        
-        // Update party name and code
-        const nameEl = document.getElementById('currentPartyName');
-        const codeEl = document.getElementById('currentPartyCode');
-        if (nameEl) nameEl.textContent = currentParty.name;
-        if (codeEl) codeEl.textContent = currentParty.code;
-        
-        // Update members list
-        const membersEl = document.getElementById('partyMembersList');
-        if (membersEl && currentParty.members) {
-            const membersList = Object.entries(currentParty.members).map(([uid, member]) => `
-                <div class="friend-item" style="margin-bottom: 10px;">
-                    <div class="friend-info">
-                        <div class="friend-avatar-small">${member.role === 'creator' ? '👑' : '🎉'}</div>
-                        <div class="friend-details">
-                            <h4>${member.name}</h4>
-                            <p style="opacity: 0.7;">Joined ${new Date(member.joinedAt).toLocaleTimeString()}</p>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-            membersEl.innerHTML = membersList;
-        }
-        
-        // Update party stats
-        const statsEl = document.getElementById('partyStats');
-        if (statsEl && currentParty.stats) {
-            statsEl.innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-icon">🍺</div>
-                    <div class="stat-value">${currentParty.stats.totalDrinks || 0}</div>
-                    <div class="stat-label">Total Drinks</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-value">${(currentParty.stats.avgBac || 0).toFixed(2)}‰</div>
-                    <div class="stat-label">Avg BAC</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon">⚡</div>
-                    <div class="stat-value">${(currentParty.stats.peakBac || 0).toFixed(2)}‰</div>
-                    <div class="stat-label">Peak BAC</div>
-                </div>
-            `;
-        }
-    }
-    
-    // Update dashboard party info
-    if (dashboardPartyInfo) {
-        dashboardPartyInfo.style.display = 'block';
-        const dashName = document.getElementById('dashboardPartyName');
-        const dashCode = document.getElementById('dashboardPartyCode');
-        if (dashName) dashName.textContent = currentParty.name;
-        if (dashCode) dashCode.textContent = currentParty.code;
-    }
-}
+// Note: UI updates are handled by updatePartyDisplay() in main.js
+// This avoids circular dependencies and keeps UI logic centralized
