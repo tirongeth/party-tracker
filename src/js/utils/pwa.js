@@ -18,9 +18,8 @@ if (window.matchMedia('(display-mode: standalone)').matches ||
 // REGISTER SERVICE WORKER
 // ========================================
 export async function registerServiceWorker() {
-    // Service worker registration is now handled by register-sw.js
-    // This avoids the GitHub Pages 404 issue
-    console.log('Service worker registration handled by register-sw.js');
+    // Service worker registration disabled due to GitHub Pages issues
+    console.log('Service worker registration disabled');
     return null;
 }
 
