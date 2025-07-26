@@ -20,6 +20,14 @@ if (window.matchMedia('(display-mode: standalone)').matches ||
 export async function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         try {
+            // Debug: try different paths
+            console.log('Current location:', window.location.href);
+            console.log('Trying to register service worker...');
+            
+            // First, let's check if the file exists
+            const testFetch = await fetch('./sw.js');
+            console.log('Fetch test for sw.js:', testFetch.status, testFetch.statusText);
+            
             // Use relative path for service worker
             const registration = await navigator.serviceWorker.register('./sw.js');
             console.log('ServiceWorker registered:', registration);

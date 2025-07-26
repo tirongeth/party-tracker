@@ -40,7 +40,8 @@
       "Bash(node:*)",
       "WebFetch(domain:tirongeth.github.io)",
       "WebFetch(domain:api.github.com)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": []
   }
