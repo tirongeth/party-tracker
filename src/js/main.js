@@ -83,16 +83,20 @@ function exposeGlobalFunctions() {
     window.clearDrinkHistory = Drinks.clearDrinkHistory;
     window.deleteAccount = AllFunctions.deleteAccount;
     
-    // Party functions
-    window.createParty = Parties.createParty;
-    window.joinParty = Parties.joinParty;
-    window.leaveParty = Parties.leaveParty;
-    window.deleteParty = Parties.deleteParty;
-    window.sendPartyMessage = Parties.sendPartyMessage;
-    window.getPartyByCode = Parties.getPartyByCode;
-    window.getNearbyParties = Parties.getNearbyParties;
-    window.getFriendsParties = Parties.getFriendsParties;
-    window.updatePartyDisplay = Parties.updatePartyUI;
+    // Party functions - ONLY expose if Parties module is loaded
+    if (Parties) {
+        window.createParty = Parties.createParty;
+        window.joinParty = Parties.joinParty;
+        window.leaveParty = Parties.leaveParty;
+        window.deleteParty = Parties.deleteParty;
+        window.sendPartyMessage = Parties.sendPartyMessage;
+        window.getPartyByCode = Parties.getPartyByCode;
+        window.getNearbyParties = Parties.getNearbyParties;
+        window.getFriendsParties = Parties.getFriendsParties;
+        window.updatePartyDisplay = Parties.updatePartyUI;
+    }
+    
+    // Party UI functions
     window.createNewParty = PartiesUI.createNewParty;
     window.joinPartyByCode = PartiesUI.joinPartyByCode;
     window.leaveCurrentParty = PartiesUI.leaveCurrentParty;
@@ -309,6 +313,12 @@ class PartyEventManager {
 
     // Handle create party
     async handleCreateParty() {
+        // Check authentication first
+        if (!getCurrentUser()) {
+            showNotification('Please sign in to create a party', 'error');
+            return;
+        }
+        
         const nameInput = document.getElementById('partyName');
         const privacySelect = document.getElementById('partyPrivacy');
         const durationSelect = document.getElementById('partyDuration');
@@ -343,6 +353,12 @@ class PartyEventManager {
 
     // Handle join party
     async handleJoinParty() {
+        // Check authentication first
+        if (!getCurrentUser()) {
+            showNotification('Please sign in to join a party', 'error');
+            return;
+        }
+        
         const codeInput = document.getElementById('joinPartyCode');
         if (!codeInput?.value.trim()) {
             showNotification('Please enter a party code', 'error');
@@ -553,63 +569,68 @@ const partyEventManager = new PartyEventManager();
 // ========================================
 // INITIALIZE APP
 // ========================================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     console.log('🚀 Starting BoozeLens app initialization...');
     
-    // Set Parties module reference BEFORE exposing functions
-    Parties = PartiesModule;
-    window.Parties = PartiesModule; // Also expose globally for debugging
-    
-    // Expose all functions globally first
-    exposeGlobalFunctions();
-    
-    // Initialize the party event manager
-    partyEventManager.init().catch(err => {
-        console.error('Failed to initialize party event manager:', err);
-        showNotification('Party features may not work properly', 'warning');
-    });
-    
-    // First, unregister any existing service workers that might be blocking auth
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(registrations => {
-            if (registrations.length > 0) {
-                registrations.forEach(registration => {
-                    registration.unregister();
-                    console.log('Unregistered old service worker:', registration.scope);
-                });
-                // Reload after unregistering to ensure clean state
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-                return;
-            }
-        });
-    }
-    
-    // Initialize PWA features with fixed service worker
     try {
-        if (registerServiceWorker) {
-            registerServiceWorker().catch(err => {
-                console.warn('Service worker registration failed:', err);
+        // Step 1: Initialize Firebase FIRST
+        const firebaseReady = initializeFirebase();
+        if (!firebaseReady) {
+            console.error('Firebase failed to initialize!');
+            showNotification('❌ Failed to connect to Firebase', 'error');
+            return;
+        }
+        console.log('✅ Firebase initialized');
+        
+        // Step 2: Set up party module references
+        Parties = PartiesModule;
+        window.Parties = PartiesModule;
+        console.log('✅ Party module references set');
+        
+        // Step 3: Expose all functions globally
+        exposeGlobalFunctions();
+        console.log('✅ Global functions exposed');
+        
+        // Step 4: Initialize the party event manager
+        await partyEventManager.init().catch(err => {
+            console.error('Failed to initialize party event manager:', err);
+            showNotification('Party features may not work properly', 'warning');
+        });
+        console.log('✅ Party event manager initialized');
+        
+        // Step 5: Handle service workers (non-critical)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                if (registrations.length > 0) {
+                    registrations.forEach(registration => {
+                        registration.unregister();
+                        console.log('Unregistered old service worker:', registration.scope);
+                    });
+                    // Reload after unregistering to ensure clean state
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                    return;
+                }
             });
         }
-        if (initializePWA) {
-            initializePWA();
+        
+        // Step 6: Initialize PWA features (non-critical)
+        try {
+            if (registerServiceWorker) {
+                registerServiceWorker().catch(err => {
+                    console.warn('Service worker registration failed:', err);
+                });
+            }
+            if (initializePWA) {
+                initializePWA();
+            }
+            if (initializeOfflineStorage) {
+                initializeOfflineStorage();
+            }
+        } catch (pwaError) {
+            console.warn('PWA initialization error (non-critical):', pwaError);
         }
-        if (initializeOfflineStorage) {
-            initializeOfflineStorage();
-        }
-    } catch (pwaError) {
-        console.warn('PWA initialization error (non-critical):', pwaError);
-    }
-    
-    // Initialize Firebase
-    const firebaseReady = initializeFirebase();
-    if (!firebaseReady) {
-        console.error('Firebase failed to initialize!');
-        showNotification('❌ Failed to connect to Firebase', 'error');
-        return;
-    }
     
     // Setup auth form
     const authForm = document.getElementById('authForm');
@@ -685,7 +706,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    console.log('✅ App initialization complete!');
+        console.log('✅ App initialization complete!');
+        
+    } catch (error) {
+        console.error('❌ App initialization failed:', error);
+        showNotification('Failed to initialize app', 'error');
+    }
 });
 
 // ========================================
