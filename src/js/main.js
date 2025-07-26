@@ -718,6 +718,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
     
+    // Add scroll effect to navigation
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+        const nav = document.querySelector('nav');
+        const currentScroll = window.pageYOffset;
+        
+        if (nav) {
+            if (currentScroll > 50) {
+                nav.classList.add('scrolled');
+            } else {
+                nav.classList.remove('scrolled');
+            }
+        }
+        
+        lastScroll = currentScroll;
+    });
+    
         console.log('✅ App initialization complete!');
         
     } catch (error) {

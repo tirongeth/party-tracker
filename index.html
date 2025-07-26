@@ -94,37 +94,37 @@
     <!-- Navigation -->
     <nav>
         <div class="nav-container">
-            <div class="logo">
-                <img src="./logo/web_icon.png" alt="BoozeLens" style="height: 32px; width: 32px; margin-right: 8px; vertical-align: middle;">
+            <div class="logo" onclick="switchSection('dashboard')">
+                <img src="./logo/web_icon.png" alt="BoozeLens">
                 BoozeLens
             </div>
             <ul class="nav-menu" id="navMenu">
-                <li><button class="nav-item active" onclick="switchSection('dashboard')" type="button">
-                    <i class="fas fa-home"></i> Dashboard
+                <li><button class="nav-item active" onclick="switchSection('dashboard')" type="button" title="Dashboard">
+                    <i class="fas fa-home"></i><span>Dashboard</span>
                 </button></li>
-                <li><button class="nav-item" onclick="switchSection('friends')" type="button">
-                    <i class="fas fa-users"></i> Friends
+                <li><button class="nav-item" onclick="switchSection('friends')" type="button" title="Friends">
+                    <i class="fas fa-users"></i><span>Friends</span>
                 </button></li>
-                <li><button class="nav-item" onclick="switchSection('photos')" type="button">
-                    <i class="fas fa-camera-retro"></i> Photos
+                <li><button class="nav-item" onclick="switchSection('photos')" type="button" title="Photos">
+                    <i class="fas fa-camera-retro"></i><span>Photos</span>
                 </button></li>
-                <li><button class="nav-item" onclick="switchSection('parties')" type="button">
-                    <i class="fas fa-champagne-glasses"></i> Parties
+                <li><button class="nav-item" onclick="switchSection('parties')" type="button" title="Parties">
+                    <i class="fas fa-champagne-glasses"></i><span>Parties</span>
                 </button></li>
-                <li><button class="nav-item" onclick="switchSection('games')" type="button">
-                    <i class="fas fa-gamepad"></i> Games
+                <li><button class="nav-item" onclick="switchSection('games')" type="button" title="Games">
+                    <i class="fas fa-gamepad"></i><span>Games</span>
                 </button></li>
-                <li><button class="nav-item" onclick="switchSection('achievements')" type="button">
-                    <i class="fas fa-trophy"></i> Achievements
+                <li><button class="nav-item" onclick="switchSection('achievements')" type="button" title="Achievements">
+                    <i class="fas fa-trophy"></i><span>Achievements</span>
                 </button></li>
-                <li><button class="nav-item" onclick="switchSection('drinks')" type="button">
-                    <i class="fas fa-beer"></i> Drinks
+                <li><button class="nav-item" onclick="switchSection('drinks')" type="button" title="Drinks">
+                    <i class="fas fa-beer"></i><span>Drinks</span>
                 </button></li>
-                <li><button class="nav-item" onclick="switchSection('emergency')" type="button">
-                    <i class="fas fa-ambulance"></i> Emergency
+                <li><button class="nav-item" onclick="switchSection('emergency')" type="button" title="Emergency">
+                    <i class="fas fa-ambulance"></i><span>Emergency</span>
                 </button></li>
-                <li><button class="nav-item" onclick="switchSection('settings')" type="button">
-                    <i class="fas fa-cog"></i> Settings
+                <li><button class="nav-item" onclick="switchSection('settings')" type="button" title="Settings">
+                    <i class="fas fa-cog"></i><span>Settings</span>
                 </button></li>
             </ul>
             <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" type="button">
