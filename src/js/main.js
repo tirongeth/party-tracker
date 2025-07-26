@@ -182,218 +182,373 @@ function exposeGlobalFunctions() {
 
 
 // ========================================
-// PARTY BUTTON HANDLERS (BACKUP)
+// PARTY EVENT MANAGEMENT SYSTEM
 // ========================================
-function initializePartyButtons() {
-    console.log('Initializing party buttons...');
-    
-    // Create party button
-    document.addEventListener('click', async (e) => {
-        if (e.target.closest('button[onclick*="createNewParty"]')) {
-            e.preventDefault();
-            console.log('Create party clicked');
-            
-            const nameInput = document.getElementById('partyName');
-            const privacySelect = document.getElementById('partyPrivacy');
-            const durationSelect = document.getElementById('partyDuration');
-            const addressInput = document.getElementById('partyAddress');
-            
-            if (!nameInput || !nameInput.value.trim()) {
-                showNotification('Enter a party name', 'error');
-                return;
-            }
-            
-            const options = {
-                privacy: privacySelect ? privacySelect.value : 'private',
-                duration: durationSelect ? durationSelect.value : 'ongoing',
-                address: addressInput ? addressInput.value : ''
+class PartyEventManager {
+    constructor() {
+        this.initialized = false;
+        this.handlers = new Map();
+        this.moduleReady = false;
+    }
+
+    // Initialize the event system
+    async init() {
+        if (this.initialized) return;
+        
+        console.log('🎯 Initializing Party Event Manager');
+        
+        // Wait for party module to be ready
+        await this.waitForModule();
+        
+        // Set up event delegation
+        this.setupEventDelegation();
+        
+        // Set up form handlers
+        this.setupFormHandlers();
+        
+        this.initialized = true;
+        console.log('✅ Party Event Manager initialized');
+    }
+
+    // Wait for party module to load
+    async waitForModule() {
+        const maxAttempts = 50; // 5 seconds max
+        let attempts = 0;
+        
+        while (!window.Parties && attempts < maxAttempts) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+        
+        if (!window.Parties) {
+            throw new Error('Party module failed to load');
+        }
+        
+        this.moduleReady = true;
+    }
+
+    // Set up centralized event delegation
+    setupEventDelegation() {
+        // Remove any existing listeners first
+        if (this.delegationHandler) {
+            document.removeEventListener('click', this.delegationHandler);
+        }
+        
+        // Create delegation handler
+        this.delegationHandler = async (e) => {
+            // Party button handlers
+            const handlers = {
+                '#createPartyBtn': () => this.handleCreateParty(),
+                '#joinPartyBtn': () => this.handleJoinParty(),
+                '#leavePartyBtn': () => this.handleLeaveParty(),
+                '#sendPartyChatBtn': () => this.handleSendChat(),
+                '#refreshPartiesBtn': () => this.handleRefreshParties(),
+                '#refreshFriendsPartiesBtn': () => this.handleRefreshFriendsParties(),
+                '[data-action="join-public-party"]': (target) => this.handleJoinPublicParty(target.dataset.partyCode)
             };
             
-            try {
-                const result = await Parties.createParty(nameInput.value.trim(), options);
-                if (result.success) {
-                    showNotification(`Party created! Code: ${result.code}`, 'success');
-                    nameInput.value = '';
-                    if (addressInput) addressInput.value = '';
-                    updatePartyDisplay();
-                } else {
-                    showNotification(result.error || 'Failed to create party', 'error');
+            // Check each handler
+            for (const [selector, handler] of Object.entries(handlers)) {
+                const target = e.target.closest(selector);
+                if (target) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    if (!this.moduleReady) {
+                        showNotification('App still loading, please wait...', 'warning');
+                        return;
+                    }
+                    
+                    try {
+                        await handler(target);
+                    } catch (error) {
+                        console.error('Event handler error:', error);
+                        showNotification('An error occurred. Please try again.', 'error');
+                    }
+                    break;
                 }
-            } catch (error) {
-                showNotification('Failed to create party', 'error');
             }
+        };
+        
+        // Add the delegation handler
+        document.addEventListener('click', this.delegationHandler);
+    }
+
+    // Set up form-specific handlers
+    setupFormHandlers() {
+        // Party chat enter key
+        const chatInput = document.getElementById('partyChatInput');
+        if (chatInput) {
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    this.handleSendChat();
+                }
+            });
         }
         
-        // Join party button
-        else if (e.target.closest('button[onclick*="joinPartyByCode"]')) {
-            e.preventDefault();
-            console.log('Join party clicked');
+        // Privacy select change
+        const privacySelect = document.getElementById('partyPrivacy');
+        const durationSelect = document.getElementById('partyDuration');
+        if (privacySelect && durationSelect) {
+            privacySelect.addEventListener('change', (e) => {
+                const ongoingOption = durationSelect.querySelector('option[value="ongoing"]');
+                if (!ongoingOption) return;
+                
+                if (e.target.value === 'public') {
+                    ongoingOption.style.display = 'none';
+                    if (durationSelect.value === 'ongoing') {
+                        durationSelect.value = '24h';
+                    }
+                } else {
+                    ongoingOption.style.display = '';
+                }
+            });
+        }
+    }
+
+    // Handle create party
+    async handleCreateParty() {
+        const nameInput = document.getElementById('partyName');
+        const privacySelect = document.getElementById('partyPrivacy');
+        const durationSelect = document.getElementById('partyDuration');
+        const addressInput = document.getElementById('partyAddress');
+        
+        if (!nameInput?.value.trim()) {
+            showNotification('Please enter a party name', 'error');
+            return;
+        }
+        
+        const options = {
+            privacy: privacySelect?.value || 'private',
+            duration: durationSelect?.value || '24h',
+            address: addressInput?.value || ''
+        };
+        
+        try {
+            const result = await Parties.createParty(nameInput.value.trim(), options);
+            if (result.success) {
+                showNotification(`Party created! Code: ${result.code}`, 'success');
+                nameInput.value = '';
+                if (addressInput) addressInput.value = '';
+                updatePartyDisplay();
+            } else {
+                showNotification(result.error || 'Failed to create party', 'error');
+            }
+        } catch (error) {
+            console.error('Create party error:', error);
+            showNotification('Failed to create party', 'error');
+        }
+    }
+
+    // Handle join party
+    async handleJoinParty() {
+        const codeInput = document.getElementById('joinPartyCode');
+        if (!codeInput?.value.trim()) {
+            showNotification('Please enter a party code', 'error');
+            return;
+        }
+        
+        const code = codeInput.value.trim().toUpperCase();
+        
+        try {
+            // Preview party first
+            showNotification('Checking party...', 'info');
+            const party = await Parties.getPartyByCode(code);
             
-            const codeInput = document.getElementById('joinPartyCode');
-            if (!codeInput || !codeInput.value.trim()) {
-                showNotification('Enter a party code', 'error');
+            if (!party) {
+                showNotification('Invalid party code', 'error');
                 return;
             }
             
-            const code = codeInput.value.trim();
+            // Show confirmation dialog
+            const memberCount = Object.keys(party.members || {}).length;
+            const confirmMsg = `Join "${party.name}"?\n` +
+                `👥 ${memberCount} members\n` +
+                `🔒 Privacy: ${party.privacy || 'Unknown'}\n` +
+                `📍 ${party.address || 'No location set'}\n` +
+                `⏱️ ${party.duration === '24h' ? '24 hour party' : 'Ongoing party'}`;
             
-            try {
-                // First, get party info to preview
-                showNotification('Checking party...', 'info');
-                const party = await Parties.getPartyByCode(code);
-                
-                if (!party) {
-                    showNotification('Invalid party code', 'error');
-                    return;
-                }
-                
-                // Show party preview
-                const memberCount = Object.keys(party.members || {}).length;
-                const confirmMsg = `Join "${party.name}"?\n` +
-                    `👥 ${memberCount} members\n` +
-                    `🔒 Privacy: ${party.privacy || 'Unknown'}\n` +
-                    `📍 ${party.address || 'No location set'}\n` +
-                    `⏱️ ${party.duration === '24h' ? '24 hour party' : 'Ongoing party'}`;
-                
-                if (!confirm(confirmMsg)) {
-                    return;
-                }
-                
-                const result = await Parties.joinParty(code);
-                if (result.success) {
-                    if (result.pending) {
-                        showNotification('Join request sent! Waiting for approval.', 'info');
-                    } else if (result.alreadyMember) {
-                        showNotification('Rejoined party!', 'success');
-                    } else {
-                        showNotification('Joined party!', 'success');
-                    }
-                    codeInput.value = '';
-                    updatePartyDisplay();
+            if (!confirm(confirmMsg)) return;
+            
+            const result = await Parties.joinParty(code);
+            if (result.success) {
+                if (result.pending) {
+                    showNotification('Join request sent! Waiting for approval.', 'info');
+                } else if (result.alreadyMember) {
+                    showNotification('Rejoined party!', 'success');
                 } else {
-                    showNotification(result.error || 'Failed to join party', 'error');
+                    showNotification('Joined party!', 'success');
                 }
-            } catch (error) {
-                showNotification('Failed to join party', 'error');
+                codeInput.value = '';
+                updatePartyDisplay();
+            } else {
+                showNotification(result.error || 'Failed to join party', 'error');
             }
+        } catch (error) {
+            console.error('Join party error:', error);
+            showNotification('Failed to join party', 'error');
         }
+    }
+
+    // Handle leave party
+    async handleLeaveParty() {
+        const currentParty = Parties.currentParty;
+        const currentUser = getCurrentUser();
         
-        // Leave party button
-        else if (e.target.closest('button[onclick*="leaveCurrentParty"]')) {
-            e.preventDefault();
-            console.log('Leave party clicked');
-            
-            if (confirm('Leave this party?')) {
-                try {
-                    const result = await Parties.leaveParty();
-                    if (result.success) {
-                        showNotification('Left party', 'info');
-                        updatePartyDisplay();
-                    }
-                } catch (error) {
-                    showNotification('Failed to leave party', 'error');
-                }
-            }
-        }
+        if (!currentParty) return;
         
-        // Send chat button
-        else if (e.target.closest('button[onclick*="sendPartyChat"]')) {
-            e.preventDefault();
-            console.log('Send chat clicked');
-            
-            const input = document.getElementById('partyChatInput');
-            if (!input || !input.value.trim()) return;
-            
-            try {
-                const result = await Parties.sendPartyMessage(input.value);
-                if (result.success) {
-                    input.value = '';
-                }
-            } catch (error) {
-                showNotification('Failed to send message', 'error');
-            }
-        }
+        const isCreator = currentUser && currentParty.creatorId === currentUser.uid;
+        const confirmMsg = isCreator 
+            ? 'Delete this party? This will remove all members.' 
+            : 'Leave this party?';
         
-        // Refresh parties button
-        else if (e.target.closest('button[onclick*="refreshPublicParties"]')) {
-            e.preventDefault();
-            console.log('Refresh parties clicked');
-            
-            const listEl = document.getElementById('publicPartiesList');
-            if (!listEl) return;
-            
-            listEl.innerHTML = '<p style="opacity: 0.7;">Loading parties...</p>';
-            
-            try {
-                const publicParties = await Parties.getNearbyParties();
+        if (!confirm(confirmMsg)) return;
+        
+        try {
+            const result = isCreator 
+                ? await Parties.deleteParty()
+                : await Parties.leaveParty();
                 
-                if (publicParties.length === 0) {
-                    listEl.innerHTML = '<p style="opacity: 0.7;">No public parties found. Create one!</p>';
-                    return;
-                }
-                
-                listEl.innerHTML = publicParties.map(party => `
-                    <div class="friend-item" style="margin-bottom: 15px;">
-                        <div class="friend-info">
-                            <div class="friend-avatar-small">🎉</div>
-                            <div class="friend-details">
-                                <h4>${party.name}</h4>
-                                <p style="opacity: 0.7;">
-                                    👥 ${party.memberCount} members
-                                    ${party.address ? `• 📍 ${party.address}` : ''}
-                                    ${party.duration === '24h' ? '• ⏰ 24h party' : ''}
-                                </p>
-                            </div>
+            if (result.success) {
+                showNotification(isCreator ? 'Party deleted' : 'Left party', 'info');
+                updatePartyDisplay();
+            } else {
+                showNotification(result.error || 'Operation failed', 'error');
+            }
+        } catch (error) {
+            console.error('Leave/delete party error:', error);
+            showNotification('Operation failed', 'error');
+        }
+    }
+
+    // Handle send chat
+    async handleSendChat() {
+        const input = document.getElementById('partyChatInput');
+        if (!input?.value.trim()) return;
+        
+        try {
+            const result = await Parties.sendPartyMessage(input.value.trim());
+            if (result.success) {
+                input.value = '';
+            }
+        } catch (error) {
+            console.error('Send chat error:', error);
+            showNotification('Failed to send message', 'error');
+        }
+    }
+
+    // Handle refresh public parties
+    async handleRefreshParties() {
+        const listEl = document.getElementById('publicPartiesList');
+        if (!listEl) return;
+        
+        listEl.innerHTML = '<p style="opacity: 0.7;">Loading parties...</p>';
+        
+        try {
+            const publicParties = await Parties.getNearbyParties();
+            
+            if (publicParties.length === 0) {
+                listEl.innerHTML = '<p style="opacity: 0.7;">No public parties found. Create one!</p>';
+                return;
+            }
+            
+            listEl.innerHTML = publicParties.map(party => `
+                <div class="friend-item" style="margin-bottom: 15px;">
+                    <div class="friend-info">
+                        <div class="friend-avatar-small">🎉</div>
+                        <div class="friend-details">
+                            <h4>${party.name}</h4>
+                            <p style="opacity: 0.7;">
+                                👥 ${party.memberCount} members
+                                ${party.address ? `• 📍 ${party.address}` : ''}
+                                ${party.duration === '24h' ? '• ⏰ 24h party' : ''}
+                            </p>
                         </div>
-                        <button class="btn btn-primary" data-party-code="${party.code}">
-                            Join
-                        </button>
                     </div>
-                `).join('');
-                
-                // Add click handlers to join buttons
-                listEl.querySelectorAll('button[data-party-code]').forEach(btn => {
-                    btn.addEventListener('click', async (e) => {
-                        const code = e.target.dataset.partyCode;
-                        try {
-                            const result = await Parties.joinParty(code, true);
-                            if (result.success) {
-                                showNotification('Joined public party!', 'success');
-                                updatePartyDisplay();
-                            } else {
-                                showNotification(result.error || 'Failed to join party', 'error');
-                            }
-                        } catch (error) {
-                            showNotification('Failed to join party', 'error');
-                        }
-                    });
-                });
-            } catch (error) {
-                listEl.innerHTML = '<p style="opacity: 0.7;">Failed to load parties</p>';
-            }
+                    <button class="btn btn-primary" data-action="join-public-party" data-party-code="${party.code}">
+                        Join
+                    </button>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Refresh parties error:', error);
+            listEl.innerHTML = '<p style="opacity: 0.7;">Failed to load parties</p>';
         }
-    });
-    
-    // Handle enter key for chat
-    const chatInput = document.getElementById('partyChatInput');
-    if (chatInput) {
-        chatInput.addEventListener('keypress', async (e) => {
-            if (e.key === 'Enter') {
-                const input = e.target;
-                if (!input.value.trim()) return;
-                
-                try {
-                    const result = await Parties.sendPartyMessage(input.value);
-                    if (result.success) {
-                        input.value = '';
-                    }
-                } catch (error) {
-                    showNotification('Failed to send message', 'error');
-                }
+    }
+
+    // Handle refresh friends' parties
+    async handleRefreshFriendsParties() {
+        const listEl = document.getElementById('friendsPartiesList');
+        if (!listEl) return;
+        
+        listEl.innerHTML = '<p style="opacity: 0.7;">Loading friends\' parties...</p>';
+        
+        try {
+            const parties = await Parties.getFriendsParties();
+            
+            if (parties.length === 0) {
+                listEl.innerHTML = '<p style="opacity: 0.7;">No friends\' parties found.</p>';
+                return;
             }
-        });
+            
+            listEl.innerHTML = parties.map(party => `
+                <div class="friend-item" style="margin-bottom: 15px;">
+                    <div class="friend-info">
+                        <div class="friend-avatar-small">🎉</div>
+                        <div class="friend-details">
+                            <h4>${party.name}</h4>
+                            <p style="opacity: 0.7;">
+                                👤 by ${party.creatorName} • 
+                                👥 ${party.memberCount} members
+                                ${party.address ? ` • 📍 ${party.address}` : ''}
+                                ${party.duration === '24h' ? ' • ⏰ 24h party' : ''}
+                            </p>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" data-action="join-public-party" data-party-code="${party.code}">
+                        Join
+                    </button>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Refresh friends parties error:', error);
+            listEl.innerHTML = '<p style="opacity: 0.7;">Failed to load friends\' parties</p>';
+        }
+    }
+
+    // Handle join public party
+    async handleJoinPublicParty(code) {
+        if (!code) return;
+        
+        try {
+            const result = await Parties.joinParty(code, true);
+            if (result.success) {
+                showNotification('Joined party!', 'success');
+                updatePartyDisplay();
+                // Refresh the list
+                await this.handleRefreshParties();
+            } else {
+                showNotification(result.error || 'Failed to join party', 'error');
+            }
+        } catch (error) {
+            console.error('Join public party error:', error);
+            showNotification('Failed to join party', 'error');
+        }
+    }
+
+    // Clean up event handlers
+    destroy() {
+        if (this.delegationHandler) {
+            document.removeEventListener('click', this.delegationHandler);
+        }
+        this.handlers.clear();
+        this.initialized = false;
     }
 }
+
+// Create global instance
+const partyEventManager = new PartyEventManager();
 
 // ========================================
 // INITIALIZE APP
@@ -405,11 +560,14 @@ document.addEventListener('DOMContentLoaded', () => {
     Parties = PartiesModule;
     window.Parties = PartiesModule; // Also expose globally for debugging
     
-    // Expose all non-party functions globally first
+    // Expose all functions globally first
     exposeGlobalFunctions();
     
-    // Initialize party buttons with event listeners
-    initializePartyButtons();
+    // Initialize the party event manager
+    partyEventManager.init().catch(err => {
+        console.error('Failed to initialize party event manager:', err);
+        showNotification('Party features may not work properly', 'warning');
+    });
     
     // First, unregister any existing service workers that might be blocking auth
     if ('serviceWorker' in navigator) {
@@ -513,9 +671,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
-    // Save data before unload
+    // Save data and cleanup before unload
     window.addEventListener('beforeunload', () => {
         Drinks.saveDrinkHistory();
+        partyEventManager.destroy();
     });
     
     // Error recovery
@@ -566,11 +725,6 @@ async function onUserAuthenticated(user) {
         // Load and display party
         await Parties.loadCurrentParty();
         updatePartyDisplay();
-        
-        // Re-initialize party buttons after auth
-        setTimeout(() => {
-            initializePartyButtons();
-        }, 100);
         
         const userData = getAppState().userData;
         const displayName = userData.username || user.email.split('@')[0];
