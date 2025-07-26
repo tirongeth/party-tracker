@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>BoozeLens | Picture Perfect Party</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#00ff88">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BoozeLens">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="BoozeLens">
+    <meta name="msapplication-TileColor" content="#00ff88">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./assets/manifest-J-60a_zD.json">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="./assets/icon-152x152-ZmjigwZl.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./assets/icon-32x32-Cbc_6fOs.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./assets/icon-16x16-B69A_4X1.png">
+    <link rel="shortcut icon" href="./assets/icon-32x32-Cbc_6fOs.png">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- BoozeLens Styles -->
+
+
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+
+
+
+  
+  <!-- Party events will be handled by the main module system -->
+  <script type="module" crossorigin src="./assets/index-BHS5ZQeh.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BdtuB5GJ.css">
+</head>
+<body>
+    <div class="background"></div>
+    <div class="particles" id="particles"></div>
+    
+    <!-- Auth Container (Login/Signup) -->
+    <div class="auth-container" id="authContainer">
+        <div class="auth-box">
+            <h2 id="authTitle">Welcome to BoozeLens</h2>
+            
+            <div class="auth-error" id="authError"></div>
+            
+            <div class="auth-loading" id="authLoading">
+                <div class="loading-spinner"></div>
+                <p>Please wait...</p>
+            </div>
+            
+            <form id="authForm" autocomplete="on">
+                <div class="form-group">
+                    <label for="authEmail">Email</label>
+                    <input type="email" id="authEmail" required autocomplete="email" placeholder="your.email@hsg.ch">
+                </div>
+                <div class="form-group">
+                    <label for="authPassword">Password</label>
+                    <input type="password" id="authPassword" required autocomplete="current-password" placeholder="••••••••">
+                </div>
+                <div class="form-group" id="usernameGroup" style="display: none;">
+                    <label for="authUsername">Username</label>
+                    <input type="text" id="authUsername" autocomplete="username" placeholder="Choose a unique username">
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;" id="authSubmitBtn">
+                    <span id="authButton">Login</span>
+                </button>
+            </form>
+            <div class="auth-toggle">
+                <span id="authToggleText">Don't have an account?</span>
+                <a onclick="toggleAuthMode()" id="authToggleLink">Sign up</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alert Banner -->
+    <div class="alert-banner" id="alertBanner">
+        <span id="alertText"></span>
+    </div>
+    
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo" onclick="switchSection('dashboard')">
+                <img src="./assets/web_icon-AzaWpxpe.png" alt="BoozeLens">
+                BoozeLens
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><button class="nav-item active" onclick="switchSection('dashboard')" type="button" title="Dashboard">
+                    <i class="fas fa-home"></i><span>Dashboard</span>
+                </button></li>
+                <li><button class="nav-item" onclick="switchSection('friends')" type="button" title="Friends">
+                    <i class="fas fa-users"></i><span>Friends</span>
+                </button></li>
+                <li><button class="nav-item" onclick="switchSection('photos')" type="button" title="Photos">
+                    <i class="fas fa-camera-retro"></i><span>Photos</span>
+                </button></li>
+                <li><button class="nav-item" onclick="switchSection('parties')" type="button" title="Parties">
+                    <i class="fas fa-champagne-glasses"></i><span>Parties</span>
+                </button></li>
+                <li><button class="nav-item" onclick="switchSection('games')" type="button" title="Games">
+                    <i class="fas fa-gamepad"></i><span>Games</span>
+                </button></li>
+                <li><button class="nav-item" onclick="switchSection('achievements')" type="button" title="Achievements">
+                    <i class="fas fa-trophy"></i><span>Achievements</span>
+                </button></li>
+                <li><button class="nav-item" onclick="switchSection('drinks')" type="button" title="Drinks">
+                    <i class="fas fa-beer"></i><span>Drinks</span>
+                </button></li>
+                <li><button class="nav-item" onclick="switchSection('emergency')" type="button" title="Emergency">
+                    <i class="fas fa-ambulance"></i><span>Emergency</span>
+                </button></li>
+                <li><button class="nav-item" onclick="switchSection('settings')" type="button" title="Settings">
+                    <i class="fas fa-cog"></i><span>Settings</span>
+                </button></li>
+            </ul>
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" type="button">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+    
+    <!-- User Profile Widget -->
+    <div class="user-profile" id="userProfile" style="display: none;">
+        <h4 id="profileName">Loading...</h4>
+        <p id="profileEmail">...</p>
+        <p>Devices: <span id="deviceCount">0</span></p>
+        <p>Friends: <span id="friendCount">0</span></p>
+        <button class="btn" onclick="signOut()">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+        </button>
+    </div>
+    
+    <!-- Connection Status -->
+    <div class="connection-status">
+        <span class="status-dot"></span>
+        <span id="connectionStatus">Connecting...</span>
+    </div>
+    
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>BoozeLens</h1>
+                <p class="subtitle">Picture Perfect Party</p>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="showModal('pair-device')">
+                    <i class="fas fa-link"></i> Pair Device
+                </button>
+                <button class="btn" onclick="showModal('checkin')">
+                    <i class="fas fa-location-dot"></i> Check In
+                </button>
+                <button class="btn" onclick="callUber()">
+                    <i class="fas fa-taxi"></i> Call Uber
+                </button>
+                <button class="btn btn-danger" onclick="showModal('emergency')">
+                    <i class="fas fa-exclamation-triangle"></i> Emergency
+                </button>
+            </div>
+        </header>
+        
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section active">
+            <!-- Party Info (shown when in a party) -->
+            <div id="dashboardPartyInfo" style="display: none; margin-bottom: 30px; background: rgba(0, 255, 136, 0.1); border: 2px solid #00ff88; padding: 20px; border-radius: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="color: #00ff88; margin: 0;">🎆 Party: <span id="dashboardPartyName"></span></h3>
+                    <div style="font-size: 1.5em; font-weight: bold; color: #00ff88;" id="dashboardPartyCode"></div>
+                </div>
+                <button class="btn" onclick="switchSection('parties')" style="margin-top: 15px;">
+                    <i class="fas fa-users"></i> View Party
+                </button>
+            </div>
+            
+            <div class="party-stats">
+                <div class="stat-card" onclick="showNotification('Party statistics!')">
+                    <div class="stat-icon">🎊</div>
+                    <div class="stat-value" id="partyAverage">0.00‰</div>
+                    <div class="stat-label">Party Average</div>
+                </div>
+                <div class="stat-card" onclick="showModal('safe-friends')">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value" id="safeFriends">0</div>
+                    <div class="stat-label">Safe to Drive</div>
+                </div>
+                <div class="stat-card" onclick="showModal('locations')">
+                    <div class="stat-icon">📍</div>
+                    <div class="stat-value" id="activeLocations">3</div>
+                    <div class="stat-label">Party Spots</div>
+                </div>
+                <div class="stat-card" onclick="showHydrationReminder()">
+                    <div class="stat-icon">💧</div>
+                    <div class="stat-value" id="hydrationTime">15m</div>
+                    <div class="stat-label">Until Water Break</div>
+                </div>
+            </div>
+            
+            <div class="visualizer" id="visualizer">
+                <!-- Music visualizer bars will be generated here -->
+            </div>
+            
+            <div class="dashboard" id="friendsGrid">
+                <!-- Friend cards will be dynamically inserted here -->
+            </div>
+            
+            <div class="leaderboard">
+                <h2>🏆 Tonight's Champions 🏆</h2>
+                <div id="leaderboardList">
+                    <!-- Leaderboard items will be inserted here -->
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <h3>🔌 How to Connect Your Breathalyzer</h3>
+                <p><strong>For Arduino/ESP32 Devices:</strong></p>
+                <ol style="margin-left: 20px;">
+                    <li>Power on your device and connect to its WiFi hotspot</li>
+                    <li>Complete the setup and note your unique Device ID</li>
+                    <li>Click "Pair Device" and enter your Device ID</li>
+                    <li>Your BAC readings will update in real-time</li>
+                </ol>
+            </div>
+            
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-message">
+                        <div class="chat-author">System</div>
+                        <div>Welcome to BoozeLens Chat! Stay safe and have fun! 🎉</div>
+                    </div>
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="handleChatEnter(event)">
+                    <button class="btn" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        
+        <!-- Friends Section -->
+        <section id="friends" class="section">
+            <h2>👥 Friends</h2>
+            
+            <div class="friends-search">
+                <input type="text" class="search-input" id="friendSearchInput" placeholder="Search for friends by username or email...">
+                <button class="btn btn-primary" onclick="searchFriends()">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+            
+            <div id="searchResults" style="margin-bottom: 30px;">
+                <!-- Search results will appear here -->
+            </div>
+            
+            <div class="card">
+                <h3>Friend Requests</h3>
+                <div id="friendRequests">
+                    <!-- Friend requests will be shown here -->
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>My Friends</h3>
+                <div id="friendsList">
+                    <!-- Friends list will be populated here -->
+                </div>
+            </div>
+        </section>
+        
+        <!-- Photos Section -->
+        <section id="photos" class="section">
+            <h2>📸 Party Photos Feed</h2>
+            
+            <!-- Upload Status for ESP32 devices -->
+            <div id="uploadStatus" class="upload-status" style="display: none;">
+                <div class="upload-progress">
+                    <i class="fas fa-spinner fa-spin"></i> Uploading photo from your BoozeLens...
+                </div>
+            </div>
+            
+            <!-- Photo Feed Controls -->
+            <div class="photo-controls">
+                <button class="btn btn-primary" onclick="refreshPhotoFeed()">
+                    <i class="fas fa-sync"></i> Refresh Feed
+                </button>
+                <select id="photoFilter" onchange="filterPhotos()" class="photo-filter">
+                    <option value="all">All Photos</option>
+                    <option value="recent">Last 24 Hours</option>
+                    <option value="party">Current Party Only</option>
+                    <option value="high-bac">High BAC Moments 🔥</option>
+                </select>
+            </div>
+            
+            <!-- Photo Feed Grid -->
+            <div class="photo-feed" id="photoFeed">
+                <!-- Photos will be dynamically loaded here -->
+                <div class="photo-placeholder">
+                    <i class="fas fa-camera-retro" style="font-size: 4em; opacity: 0.3;"></i>
+                    <p style="opacity: 0.5;">No photos yet! Connect your BoozeLens to start capturing moments!</p>
+                </div>
+            </div>
+            
+            <!-- Photo Upload Instructions -->
+            <div class="info-box" style="margin-top: 30px;">
+                <h3>🎞️ BoozeLens Setup</h3>
+                <p>Your BoozeLens keychain automatically uploads photos when:</p>
+                <ol>
+                    <li>You take a photo with the button</li>
+                    <li>Your device is connected to WiFi</li>
+                    <li>Optional: BAC reading can be included</li>
+                </ol>
+                <p><strong>Privacy:</strong> Photos are only visible to your friends!</p>
+            </div>
+        </section>
+        
+        <!-- Games Section -->
+        <section id="games" class="section">
+            <h2>🎮 Party Games 🎮</h2>
+            <div class="games-grid">
+                <div class="game-card" onclick="startGame('never-have-i-ever')">
+                    <div class="game-icon">🙊</div>
+                    <div class="game-title">Never Have I Ever</div>
+                    <div class="game-players">2-20 players</div>
+                </div>
+                <div class="game-card" onclick="startGame('truth-or-dare')">
+                    <div class="game-icon">🎯</div>
+                    <div class="game-title">Truth or Dare</div>
+                    <div class="game-players">3-10 players</div>
+                </div>
+                <div class="game-card" onclick="startGame('kings-cup')">
+                    <div class="game-icon">👑</div>
+                    <div class="game-title">King's Cup</div>
+                    <div class="game-players">4-12 players</div>
+                </div>
+                <div class="game-card" onclick="startGame('beer-pong')">
+                    <div class="game-icon">🏓</div>
+                    <div class="game-title">Beer Pong Tracker</div>
+                    <div class="game-players">2v2</div>
+                </div>
+                <div class="game-card" onclick="startGame('flip-cup')">
+                    <div class="game-icon">🥤</div>
+                    <div class="game-title">Flip Cup Timer</div>
+                    <div class="game-players">Teams</div>
+                </div>
+                <div class="game-card" onclick="startGame('trivia')">
+                    <div class="game-icon">🧠</div>
+                    <div class="game-title">Party Trivia</div>
+                    <div class="game-players">Unlimited</div>
+                </div>
+                <div class="game-card" onclick="startGame('would-you-rather')">
+                    <div class="game-icon">🤔</div>
+                    <div class="game-title">Would You Rather</div>
+                    <div class="game-players">2-20 players</div>
+                </div>
+                <div class="game-card" onclick="startGame('most-likely-to')">
+                    <div class="game-icon">👉</div>
+                    <div class="game-title">Most Likely To</div>
+                    <div class="game-players">3-20 players</div>
+                </div>
+                <div class="game-card" onclick="startGame('spin-the-bottle')">
+                    <div class="game-icon">🍾</div>
+                    <div class="game-title">Spin the Bottle</div>
+                    <div class="game-players">3-10 players</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Achievements Section -->
+        <section id="achievements" class="section">
+            <h2>🏅 Party Achievements 🏅</h2>
+            <div class="achievement-stats">
+                <p>Unlocked: <span data-achievement-stats>0/0</span></p>
+            </div>
+            <div class="achievements-grid">
+                <div class="achievement unlocked" title="Joined your first party!">
+                    <div class="achievement-icon">🎉</div>
+                    <div class="achievement-name">First Timer</div>
+                </div>
+                <div class="achievement unlocked" title="Stayed safe all night">
+                    <div class="achievement-icon">😇</div>
+                    <div class="achievement-name">Responsible</div>
+                </div>
+                <div class="achievement" title="Win 5 party games">
+                    <div class="achievement-icon">🏆</div>
+                    <div class="achievement-name">Game Master</div>
+                </div>
+                <div class="achievement" title="Check in at 10 parties">
+                    <div class="achievement-icon">📍</div>
+                    <div class="achievement-name">Party Animal</div>
+                </div>
+                <div class="achievement" title="Help a friend get home safe">
+                    <div class="achievement-icon">🦸</div>
+                    <div class="achievement-name">Guardian Angel</div>
+                </div>
+                <div class="achievement" title="Stay hydrated for 3 hours">
+                    <div class="achievement-icon">💧</div>
+                    <div class="achievement-name">Hydro Homie</div>
+                </div>
+                <div class="achievement" title="Dance for 30 minutes straight">
+                    <div class="achievement-icon">🕺</div>
+                    <div class="achievement-name">Dance Machine</div>
+                </div>
+                <div class="achievement" title="Make it to sunrise">
+                    <div class="achievement-icon">🌅</div>
+                    <div class="achievement-name">Sunrise Warrior</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Drinks Section -->
+        <section id="drinks" class="section">
+            <h2>🍻 Drink Tracker 🍻</h2>
+            
+            <div class="card" style="margin-bottom: 30px;">
+                <h3>Log a Drink</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0;">
+                    <div>
+                        <label style="display: block; margin-bottom: 10px;">Drink Type:</label>
+                        <select id="drinkType" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white;">
+                            <option value="beer">🍺 Beer</option>
+                            <option value="wine">🍷 Wine</option>
+                            <option value="shot">🥃 Shot</option>
+                            <option value="cocktail">🍸 Cocktail</option>
+                            <option value="mixed">🥤 Mixed Drink</option>
+                            <option value="champagne">🥂 Champagne</option>
+                            <option value="water">💧 Water</option>
+                            <option value="other">🍹 Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 10px;">Amount (ml):</label>
+                        <input type="number" id="drinkAmount" placeholder="330" value="330" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 10px;">Alcohol %:</label>
+                        <input type="number" id="alcoholPercent" placeholder="5" value="5" step="0.1" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; color: white;">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="logDrink()">
+                    <i class="fas fa-plus"></i> Add Drink
+                </button>
+            </div>
+            
+            <div class="party-stats">
+                <div class="stat-card">
+                    <div class="stat-icon">🍺</div>
+                    <div class="stat-value" id="totalDrinks">0</div>
+                    <div class="stat-label">Total Drinks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🥃</div>
+                    <div class="stat-value" id="totalAlcohol">0ml</div>
+                    <div class="stat-label">Pure Alcohol</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💧</div>
+                    <div class="stat-value" id="totalWater">0</div>
+                    <div class="stat-label">Waters</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-value" id="drinkRate">0</div>
+                    <div class="stat-label">Drinks/Hour</div>
+                </div>
+            </div>
+            
+            <div class="card chart-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3>📊 Drink Distribution</h3>
+                    <button class="chart-toggle" onclick="toggleChart()">
+                        <span id="chartToggleText">Hide Chart</span>
+                    </button>
+                </div>
+                <div class="chart-wrapper" id="chartWrapper">
+                    <canvas id="drinkChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>📜 Drink History</h3>
+                <div id="drinkHistory" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Drink history will be populated here -->
+                </div>
+            </div>
+            
+            <div class="card" style="background: rgba(255, 68, 68, 0.1); border: 1px solid rgba(255, 68, 68, 0.3);">
+                <h3>🚨 Emergency Information</h3>
+                <div id="emergencyDrinkInfo" style="margin: 20px 0;">
+                    <p><strong>For First Responders:</strong></p>
+                    <div id="emergencySummary">
+                        <!-- Emergency summary will be populated here -->
+                    </div>
+                </div>
+                <button class="btn btn-danger" onclick="showEmergencyReport()">
+                    <i class="fas fa-file-medical"></i> Generate Emergency Report
+                </button>
+            </div>
+        </section>
+        
+        <!-- Emergency Section -->
+        <section id="emergency" class="section">
+            <h2>🚨 Emergency Services 🚨</h2>
+            <div class="emergency-grid">
+                <div class="emergency-card" onclick="callEmergency('ambulance')">
+                    <div class="emergency-icon">🚑</div>
+                    <div class="game-title">Call Ambulance</div>
+                    <div class="game-players">Emergency: 112</div>
+                </div>
+                <div class="emergency-card" onclick="callEmergency('campus-security')">
+                    <div class="emergency-icon">👮</div>
+                    <div class="game-title">Campus Security</div>
+                    <div class="game-players">HSG: +41 71 224 2424</div>
+                </div>
+                <div class="emergency-card" onclick="callEmergency('taxi')">
+                    <div class="emergency-icon">🚕</div>
+                    <div class="game-title">Safe Ride Home</div>
+                    <div class="game-players">Multiple Options</div>
+                </div>
+                <div class="emergency-card" onclick="showModal('first-aid')">
+                    <div class="emergency-icon">🏥</div>
+                    <div class="game-title">First Aid Guide</div>
+                    <div class="game-players">Quick Help</div>
+                </div>
+                <div class="emergency-card" onclick="showModal('buddy-system')">
+                    <div class="emergency-icon">👥</div>
+                    <div class="game-title">Find My Buddy</div>
+                    <div class="game-players">Location Sharing</div>
+                </div>
+                <div class="emergency-card" onclick="showModal('sober-friend')">
+                    <div class="emergency-icon">🤝</div>
+                    <div class="game-title">Call Sober Friend</div>
+                    <div class="game-players">Designated Helpers</div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Parties Section - SIMPLIFIED -->
+        <section id="parties" class="section">
+            <h2>🎉 Party Mode 🎉</h2>
+            
+            <!-- Current Party -->
+            <div id="currentPartySection" class="card" style="display: none; background: rgba(0, 255, 136, 0.1); border: 2px solid #00ff88;">
+                <h3 style="color: #00ff88; margin-bottom: 20px;">🎆 Current Party: <span id="currentPartyName"></span></h3>
+                
+                <div style="background: rgba(0, 0, 0, 0.3); padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px;">
+                    <p style="margin-bottom: 10px;">Share this code:</p>
+                    <div style="font-size: 3em; font-weight: bold; letter-spacing: 0.2em; color: #00ff88;" id="currentPartyCode"></div>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <h4>👥 Party Members</h4>
+                    <div id="partyMembersList" style="margin-top: 15px;">
+                        <!-- Members show here -->
+                    </div>
+                </div>
+                
+                <!-- Party Stats -->
+                <div id="partyStats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin: 20px 0;">
+                    <!-- Stats will show here -->
+                </div>
+                
+                <!-- Party Leaderboard -->
+                <div style="margin: 20px 0;">
+                    <h4>🏆 Party Leaderboard</h4>
+                    <div id="partyLeaderboard" style="margin-top: 15px;">
+                        <!-- Leaderboard will show here -->
+                    </div>
+                </div>
+                
+                <!-- Pending Requests (for creator only) -->
+                <div id="pendingRequestsSection" style="display: none; margin: 20px 0;">
+                    <h4>📋 Join Requests</h4>
+                    <div id="pendingRequestsList" style="margin-top: 15px;">
+                        <!-- Requests will show here -->
+                    </div>
+                </div>
+                
+                <!-- Creator Controls (for creator only) -->
+                <div id="creatorControlsSection" style="display: none; margin: 20px 0;">
+                    <h4>🎛️ Host Controls</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 15px;">
+                        <button class="btn" onclick="togglePartyLockUI()" id="lockPartyBtn">
+                            <i class="fas fa-lock"></i> Lock Party
+                        </button>
+                        <button class="btn" onclick="editPartySettings()">
+                            <i class="fas fa-edit"></i> Edit Settings
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Party Chat -->
+                <div style="margin: 20px 0;">
+                    <h4>💬 Party Chat</h4>
+                    <div id="partyChat" style="background: rgba(0, 0, 0, 0.3); border-radius: 10px; padding: 15px; height: 200px; overflow-y: auto; margin: 10px 0;">
+                        <!-- Chat messages show here -->
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="partyChatInput" placeholder="Type a message..." style="flex: 1; padding: 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; color: white;">
+                        <button class="btn" id="sendPartyChatBtn">
+                            <i class="fas fa-paper-plane"></i> Send
+                        </button>
+                    </div>
+                </div>
+                
+                <button class="btn btn-danger" id="leavePartyBtn" style="width: 100%;">
+                    <i class="fas fa-door-open"></i> Leave Party
+                </button>
+            </div>
+            
+            <!-- Create or Join -->
+            <div class="card">
+                <h3>🎊 Start the Party</h3>
+                
+                <div style="margin: 20px 0;">
+                    <h4>Create New Party</h4>
+                    <div style="display: grid; gap: 15px; margin-top: 15px;">
+                        <input type="text" id="partyName" placeholder="Party Name" style="padding: 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; font-size: 1.1em;">
+                        
+                        <select id="partyPrivacy" style="padding: 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white;">
+                            <option value="private">🔒 Private - Join by code only</option>
+                            <option value="friends-only">👥 Friends Only</option>
+                            <option value="public">🌍 Public - Anyone can join</option>
+                        </select>
+                        
+                        <select id="partyDuration" style="padding: 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white;">
+                            <option value="24h">⏰ 24 Hour Party</option>
+                            <option value="ongoing">♾️ Ongoing Party</option>
+                        </select>
+                        
+                        <input type="text" id="partyAddress" placeholder="📍 Party Location (optional)" style="padding: 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white;">
+                        
+                        <button class="btn btn-primary" id="createPartyBtn" style="padding: 15px 30px;">
+                            <i class="fas fa-plus"></i> Create Party
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0; opacity: 0.7;">- OR -</div>
+                
+                <div style="margin: 20px 0;">
+                    <h4>Join Existing Party</h4>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <input type="text" id="joinPartyCode" placeholder="ENTER CODE" maxlength="6" style="flex: 1; padding: 15px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; color: white; font-size: 1.3em; text-align: center; text-transform: uppercase; letter-spacing: 0.1em;">
+                        <button class="btn btn-primary" id="joinPartyBtn" style="padding: 15px 30px;">
+                            <i class="fas fa-sign-in-alt"></i> Join
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Friends' Parties -->
+            <div class="card" style="margin-top: 20px;">
+                <h3>👥 Friends' Parties</h3>
+                <div id="friendsPartiesList" style="margin-top: 15px;">
+                    <!-- Friends' parties will show here -->
+                </div>
+                <button class="btn" id="refreshFriendsPartiesBtn" style="margin-top: 15px;">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+            </div>
+            
+            <!-- Public Parties -->
+            <div class="card" style="margin-top: 20px;">
+                <h3>🌍 Public Parties Near You</h3>
+                <div id="publicPartiesList" style="margin-top: 15px;">
+                    <!-- Public parties will show here -->
+                </div>
+                <button class="btn" id="refreshPartiesBtn" style="margin-top: 15px;">
+                    <i class="fas fa-sync"></i> Refresh
+                </button>
+            </div>
+        </section>
+        
+        <!-- Settings Section -->
+        <section id="settings" class="section">
+            <div class="profile-header">
+                <div class="profile-avatar" onclick="showNotification('Profile picture upload coming soon!')">
+                    <span id="profileInitial">?</span>
+                </div>
+                <div class="profile-info">
+                    <h2 id="settingsUsername">Loading...</h2>
+                    <p id="settingsEmail">...</p>
+                    <p id="settingsPhone" style="display: none;">...</p>
+                </div>
+            </div>
+            
+            <div class="settings-grid">
+                <div class="settings-section">
+                    <h3>👤 Profile Information</h3>
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" id="username" placeholder="Enter your username">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="emailDisplay" disabled style="opacity: 0.7;">
+                        </div>
+                        <button class="btn btn-primary" onclick="updateProfile()">Update Profile</button>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>🔒 Account Security</h3>
+                    <div class="linked-accounts">
+                        <div class="account-item">
+                            <div class="account-info">
+                                <div class="account-icon email-icon">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div>
+                                    <strong>Email</strong>
+                                    <p id="linkedEmail" style="margin: 0; opacity: 0.7;">...</p>
+                                </div>
+                            </div>
+                            <span style="color: #00ff88;">✓ Linked</span>
+                        </div>
+                    </div>
+                    <button class="btn" onclick="changePassword()" style="margin-top: 20px; width: 100%;">
+                        <i class="fas fa-key"></i> Change Password
+                    </button>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>🚨 Emergency Information</h3>
+                    <div class="settings-form">
+                        <div class="form-group">
+                            <label>Home Address</label>
+                            <textarea id="homeAddress" placeholder="Enter your home address for quick Uber rides"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Emergency Contact</label>
+                            <input type="tel" id="emergencyContact" placeholder="+41 XX XXX XX XX">
+                        </div>
+                        <div class="form-group">
+                            <label>Medical Information</label>
+                            <textarea id="medicalInfo" placeholder="Allergies, conditions, medications..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Safety Notes</label>
+                            <textarea id="safetyNotes" placeholder="Any other important information"></textarea>
+                        </div>
+                        <button class="btn btn-primary" onclick="saveEmergencyInfo()">Save Emergency Info</button>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>🔔 Privacy & Notifications</h3>
+                    <div class="toggle-group">
+                        <div class="toggle-label">
+                            <span>Share Location with Friends</span>
+                            <small>Allow friends to see your party location</small>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="shareLocation">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-group">
+                        <div class="toggle-label">
+                            <span>Enable Notifications</span>
+                            <small>Get alerts for friend requests and safety reminders</small>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="notifications" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-group">
+                        <div class="toggle-label">
+                            <span>Public Profile</span>
+                            <small>Allow others to find you by username</small>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="publicProfile" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <button class="btn btn-primary" onclick="savePrivacySettings()" style="margin-top: 20px; width: 100%;">Save Privacy Settings</button>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>💾 Data Management</h3>
+                    <div style="display: grid; gap: 10px;">
+                        <button class="btn" onclick="exportData()">
+                            <i class="fas fa-download"></i> Export All Data
+                        </button>
+                        <button class="btn" onclick="clearDrinkHistory()">
+                            <i class="fas fa-trash"></i> Clear Drink History
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteAccount()">
+                            <i class="fas fa-user-times"></i> Delete Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div id="modalBody"></div>
+        </div>
+    </div>
+    
+    <!-- BoozeLens App JavaScript -->
+
+<!-- Main App Module -->
+
+</body>
+</html>
