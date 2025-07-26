@@ -41,7 +41,8 @@
       "WebFetch(domain:tirongeth.github.io)",
       "WebFetch(domain:api.github.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(start http://localhost:8000)"
     ],
     "deny": []
   }
