@@ -18,36 +18,10 @@ if (window.matchMedia('(display-mode: standalone)').matches ||
 // REGISTER SERVICE WORKER
 // ========================================
 export async function registerServiceWorker() {
-    if ('serviceWorker' in navigator) {
-        try {
-            // Debug: try different paths
-            console.log('Current location:', window.location.href);
-            console.log('Trying to register service worker...');
-            
-            // First, let's check if the file exists
-            const testFetch = await fetch('./sw.js');
-            console.log('Fetch test for sw.js:', testFetch.status, testFetch.statusText);
-            
-            // Use relative path for service worker
-            const registration = await navigator.serviceWorker.register('./sw.js');
-            console.log('ServiceWorker registered:', registration);
-            
-            // Check for updates
-            registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        showNotification('New version available! Refresh to update.', 'info');
-                    }
-                });
-            });
-            
-            return registration;
-        } catch (error) {
-            console.error('ServiceWorker registration failed:', error);
-            return null;
-        }
-    }
+    // Service worker registration is now handled by register-sw.js
+    // This avoids the GitHub Pages 404 issue
+    console.log('Service worker registration handled by register-sw.js');
+    return null;
 }
 
 // ========================================
