@@ -34,6 +34,10 @@ function updateFriendsGrid() {
     grid.innerHTML = '';
     
     Object.entries(partyData).forEach(([deviceId, data]) => {
+        // Skip data older than 24 hours
+        const isRecent = Date.now() - data.lastUpdate < 24 * 60 * 60 * 1000;
+        if (!isRecent) return;
+        
         const status = getBACStatus(data.bac);
         const timeSince = getTimeSince(data.lastUpdate);
         
@@ -78,7 +82,10 @@ function updateFriendsGrid() {
 // ========================================
 function updateStats() {
     const partyData = getStateValue('partyData') || {};
-    const friends = Object.values(partyData);
+    // Filter only recent data (within 24 hours)
+    const friends = Object.values(partyData).filter(data => 
+        Date.now() - data.lastUpdate < 24 * 60 * 60 * 1000
+    );
     
     // Average BAC
     const avgBac = friends.reduce((sum, f) => sum + f.bac, 0) / friends.length || 0;
@@ -183,7 +190,10 @@ function updateVisualizer() {
 // ========================================
 function checkForAlerts() {
     const partyData = getStateValue('partyData') || {};
-    const criticalFriends = Object.values(partyData).filter(f => f.bac >= 0.08);
+    // Only check recent data (within 24 hours)
+    const criticalFriends = Object.values(partyData).filter(f => 
+        Date.now() - f.lastUpdate < 24 * 60 * 60 * 1000 && f.bac >= 0.08
+    );
     
     if (criticalFriends.length > 0) {
         const alertBanner = document.getElementById('alertBanner');

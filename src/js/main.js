@@ -8,7 +8,7 @@ import { initializeDevices } from './features/devices.js';
 import { updateUI } from './ui/dashboard.js';
 import { showNotification } from './ui/notifications.js';
 import { DRINK_PRESETS } from './config/constants.js';
-import { ref, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+import { ref, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 import { 
     getAppState, 
     setStateValue, 
@@ -757,12 +757,18 @@ async function onUserAuthenticated(user) {
         // Track first timer achievement
         Achievements.onFirstLogin();
         
+        // Clean up old BAC data on login
+        cleanupOldBACData();
+        
         // Initialize UI
         updateUI();
         
         // Load and display parties
         await Parties.loadUserParties();
         updatePartyDisplay();
+        
+        // Set up periodic cleanup (every hour)
+        setInterval(cleanupOldBACData, 60 * 60 * 1000);
         
         const userData = getAppState().userData;
         const displayName = userData.username || user.email.split('@')[0];
@@ -773,8 +779,12 @@ async function onUserAuthenticated(user) {
         if (isDeveloper(user.uid)) {
             console.log('✅ You have developer rights!');
             showNotification('🛠️ Developer mode active', 'info');
+            // Enable chat input
+            updateChatUIForDeveloper(true);
         } else {
             console.log('💡 To get developer rights, add this UID to DEVELOPER_UIDS in constants.js');
+            // Disable chat input
+            updateChatUIForDeveloper(false);
         }
         
     } catch (error) {
@@ -820,6 +830,61 @@ function setupFirebaseListeners() {
         const connected = snapshot.val();
         updateConnectionStatus(connected);
     });
+    
+    // Listen for main chat messages
+    onValue(ref(database, 'chat'), (snapshot) => {
+        const chatMessages = document.getElementById('chatMessages');
+        if (!chatMessages) return;
+        
+        // Clear current messages except system message
+        chatMessages.innerHTML = `
+            <div class="chat-message">
+                <div class="chat-author">System</div>
+                <div>Welcome to BoozeLens Chat! Stay safe and have fun! 🎉</div>
+            </div>
+        `;
+        
+        if (snapshot.exists()) {
+            const messages = [];
+            snapshot.forEach((child) => {
+                messages.push({ id: child.key, ...child.val() });
+            });
+            
+            // Sort by timestamp and take last 50 messages
+            messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+            const recentMessages = messages.slice(-50);
+            
+            recentMessages.forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'chat-message';
+                messageDiv.style.position = 'relative';
+                const devBadge = msg.isDeveloper ? ' <span style="color: #00ff88;">🛠️</span>' : '';
+                
+                // Add delete button for developers
+                const deleteBtn = isDeveloper(currentUser.uid) ? 
+                    `<button onclick="deleteMessage('${msg.id}')" style="position: absolute; right: 10px; top: 5px; background: rgba(255,68,68,0.2); border: 1px solid rgba(255,68,68,0.5); color: #ff4444; padding: 2px 8px; border-radius: 5px; cursor: pointer; font-size: 0.8em;">×</button>` : '';
+                
+                messageDiv.innerHTML = `
+                    ${deleteBtn}
+                    <div class="chat-author">${msg.username || 'Anonymous'}${devBadge}</div>
+                    <div>${escapeHtml(msg.message || '')}</div>
+                `;
+                chatMessages.appendChild(messageDiv);
+            });
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    });
+}
+
+// Helper function to escape HTML
+function escapeHtml(unsafe) {
+    return unsafe
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 // Listen to friend's data
@@ -869,6 +934,21 @@ function processFriendData(friendId, friendData) {
     }
 }
 
+// Clean up old BAC data
+function cleanupOldBACData() {
+    const partyData = getAppState().partyData || {};
+    const cleaned = {};
+    
+    Object.entries(partyData).forEach(([deviceId, data]) => {
+        // Only keep data from last 24 hours
+        if (Date.now() - data.lastUpdate < 24 * 60 * 60 * 1000) {
+            cleaned[deviceId] = data;
+        }
+    });
+    
+    setStateValue('partyData', cleaned);
+}
+
 // Listen to device
 function listenToDevice(deviceId) {
     const database = getFirebaseDatabase();
@@ -916,8 +996,9 @@ function processDeviceReading(deviceId, reading) {
     setStateValue('partyData', partyData);
     updateUI();
     
-    // Check for alerts
-    if (reading.bac >= 0.08) {
+    // Check for alerts only if reading is less than 24 hours old
+    const isRecent = Date.now() - partyData[deviceId].lastUpdate < 24 * 60 * 60 * 1000;
+    if (isRecent && reading.bac >= 0.08) {
         showNotification(`⚠️ Your BAC is too high: ${reading.bac.toFixed(3)}‰`, 'error');
     }
 }
@@ -1411,12 +1492,56 @@ function editPartySettings() {
 }
 
 
+// Update chat UI based on developer status
+function updateChatUIForDeveloper(isDev) {
+    const chatInput = document.getElementById('chatInput');
+    const sendButton = document.querySelector('.chat-input button');
+    
+    if (chatInput && sendButton) {
+        if (isDev) {
+            chatInput.placeholder = "Type a message... (Dev mode 🛠️)";
+            chatInput.disabled = false;
+            sendButton.disabled = false;
+            chatInput.style.opacity = '1';
+            sendButton.style.opacity = '1';
+        } else {
+            chatInput.placeholder = "Chat is read-only (Developers only)";
+            chatInput.disabled = true;
+            sendButton.disabled = true;
+            chatInput.style.opacity = '0.5';
+            sendButton.style.opacity = '0.5';
+        }
+    }
+}
+
+// Delete chat message (developers only)
+async function deleteMessage(messageId) {
+    const currentUser = getCurrentUser();
+    if (!currentUser || !isDeveloper(currentUser.uid)) {
+        showNotification('Not authorized', 'error');
+        return;
+    }
+    
+    const database = getFirebaseDatabase();
+    if (!database) return;
+    
+    try {
+        await remove(ref(database, `chat/${messageId}`));
+        showNotification('Message deleted', 'info');
+    } catch (error) {
+        console.error('Delete message error:', error);
+        showNotification('Failed to delete message', 'error');
+    }
+}
+
 // Expose globally
 window.updatePartyDisplay = updatePartyDisplay;
 window.updatePartyChat = updatePartyChat;
 window.updatePartyLeaderboard = updatePartyLeaderboard;
 window.handlePartyRequest = handlePartyRequest;
 window.kickMemberFromParty = kickMemberFromParty;
+window.updateChatUIForDeveloper = updateChatUIForDeveloper;
+window.deleteMessage = deleteMessage;
 
 // Developer function to delete any party
 async function deletePartyAsDev(partyId) {

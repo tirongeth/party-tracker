@@ -272,17 +272,27 @@ export async function removeFriend(friendId) {
 // ========================================
 // CHAT FUNCTIONS
 // ========================================
-export function sendMessage() {
+export async function sendMessage() {
     const input = document.getElementById('chatInput');
     const message = input.value.trim();
     
     if (message) {
+        const currentUser = getCurrentUser();
         const userData = getAppState().userData;
+        
+        // Check if user is developer
+        const { isDeveloper } = await import('../config/constants.js');
+        if (!isDeveloper(currentUser.uid)) {
+            showNotification('❌ Only developers can send messages in the main chat', 'error');
+            input.value = '';
+            return;
+        }
+        
         const chatMessages = document.getElementById('chatMessages');
         const messageDiv = document.createElement('div');
         messageDiv.className = 'chat-message own';
         messageDiv.innerHTML = `
-            <div class="chat-author">${userData.username || 'You'}</div>
+            <div class="chat-author">${userData.username || 'You'} <span style="color: #00ff88;">🛠️</span></div>
             <div>${escapeHtml(message)}</div>
         `;
         chatMessages.appendChild(messageDiv);
@@ -291,13 +301,13 @@ export function sendMessage() {
         
         // Save to Firebase
         const database = getFirebaseDatabase();
-        const currentUser = getCurrentUser();
         if (database && currentUser) {
             push(ref(database, 'chat'), {
                 uid: currentUser.uid,
                 username: userData.username,
                 message: message,
-                timestamp: serverTimestamp()
+                timestamp: serverTimestamp(),
+                isDeveloper: true
             });
         }
     }
