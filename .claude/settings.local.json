@@ -35,7 +35,9 @@
       "Bash(start index.html)",
       "Bash(sed:*)",
       "Bash(fc:*)",
-      "Bash(start cmd /c \"npm run dev\")"
+      "Bash(start cmd /c \"npm run dev\")",
+      "Bash(timeout 15 npm run dev)",
+      "Bash(node:*)"
     ],
     "deny": []
   }

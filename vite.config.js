@@ -36,21 +36,37 @@ export default defineConfig(({ mode }) => {
   
   // Plugins
   plugins: [{
-    name: 'copy-icons',
+    name: 'copy-logo-assets',
     writeBundle() {
-      // Copy icons to dist during build
-      const iconsDir = resolve(__dirname, 'icons');
-      const distIconsDir = resolve(__dirname, 'dist/icons');
+      // Copy logo and PWA icons to dist during build
+      const logoDir = resolve(__dirname, 'logo');
+      const pwaIconsDir = resolve(__dirname, 'logo/pwa-icons');
+      const distLogoDir = resolve(__dirname, 'dist/logo');
+      const distPwaIconsDir = resolve(__dirname, 'dist/logo/pwa-icons');
       
-      if (!existsSync(distIconsDir)){
-        mkdirSync(distIconsDir, { recursive: true });
+      // Create directories
+      if (!existsSync(distLogoDir)){
+        mkdirSync(distLogoDir, { recursive: true });
+      }
+      if (!existsSync(distPwaIconsDir)){
+        mkdirSync(distPwaIconsDir, { recursive: true });
       }
       
-      readdirSync(iconsDir).forEach(file => {
-        if (file.endsWith('.png')) {
-          copyFileSync(join(iconsDir, file), join(distIconsDir, file));
+      // Copy logo files
+      readdirSync(logoDir).forEach(file => {
+        if (file.endsWith('.png') || file.endsWith('.svg')) {
+          copyFileSync(join(logoDir, file), join(distLogoDir, file));
         }
       });
+      
+      // Copy PWA icons
+      if (existsSync(pwaIconsDir)) {
+        readdirSync(pwaIconsDir).forEach(file => {
+          if (file.endsWith('.png')) {
+            copyFileSync(join(pwaIconsDir, file), join(distPwaIconsDir, file));
+          }
+        });
+      }
     }
   }]
   }

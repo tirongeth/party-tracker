@@ -1,0 +1,70 @@
+<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Clean white/light background gradient -->
+    <radialGradient id="cleanBackground" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" style="stop-color:#ffffff"/>
+      <stop offset="70%" style="stop-color:#f8f8f8"/>
+      <stop offset="100%" style="stop-color:#f0f0f0"/>
+    </radialGradient>
+    
+    <!-- Brand gradient for the glass -->
+    <linearGradient id="glassGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00ff88"/>
+      <stop offset="50%" style="stop-color:#00d4ff"/>
+      <stop offset="100%" style="stop-color:#ff00ff"/>
+    </linearGradient>
+    
+    <!-- Subtle shadow -->
+    <filter id="subtleShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.1"/>
+    </filter>
+    
+    <!-- Glow for the glass -->
+    <filter id="glassGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Clean rounded square background -->
+  <rect width="1024" height="1024" rx="180" ry="180" fill="url(#cleanBackground)"/>
+  
+  <!-- Main cocktail glass (much larger and centered) -->
+  <g transform="translate(512, 512)">
+    
+    <!-- Large, bold cocktail glass -->
+    <path d="M -220 -180 L 220 -180 L 30 120 L 30 220 L -30 220 L -30 120 Z" 
+          fill="none" 
+          stroke="url(#glassGradient)" 
+          stroke-width="40" 
+          stroke-linejoin="round" 
+          stroke-linecap="round"
+          filter="url(#glassGlow)"/>
+    
+    <!-- Glass fill (subtle) -->
+    <path d="M -180 -140 L 180 -140 L 0 100 Z" fill="url(#glassGradient)" opacity="0.15"/>
+    
+    <!-- Large olive for visibility -->
+    <circle cx="0" cy="30" r="45" fill="#00ff88" opacity="0.9" filter="url(#subtleShadow)"/>
+    <circle cx="0" cy="30" r="30" fill="#00d4ff" opacity="0.8"/>
+    <circle cx="-12" cy="18" r="15" fill="#ffffff" opacity="0.6"/>
+    
+    <!-- Clean breath bubbles (minimal) -->
+    <circle cx="-100" cy="-280" r="20" fill="#00d4ff" opacity="0.7">
+      <animate attributeName="opacity" values="0.4;0.9;0.4" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="80" cy="-300" r="15" fill="#ff00ff" opacity="0.6">
+      <animate attributeName="opacity" values="0.3;0.8;0.3" dur="2.5s" repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="0" cy="-320" r="18" fill="#00ff88" opacity="0.8">
+      <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    
+  </g>
+  
+</svg>
