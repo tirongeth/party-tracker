@@ -2,11 +2,18 @@
 
 import { database, auth, ref, set, push, update, get, onValue, serverTimestamp, remove } from '../config/firebase.js';
 import { showNotification } from '../ui/notifications.js';
+import { partyCache, leaderboardCache, batchReadingsCache, CACHE_TTL, createCacheKey } from '../utils/cache.js';
 
 // Current party state
 export let currentParty = null;
 let partyListener = null;
 let chatListener = null;
+
+// Chat optimization
+const CHAT_PAGE_SIZE = 50;
+const CHAT_BUFFER_SIZE = 100;
+let chatMessages = [];
+let oldestChatKey = null;
 
 // Create party - ENHANCED
 export async function createParty(name, options = {}) {
@@ -321,13 +328,53 @@ function startPartyListeners(partyId) {
         }
     });
     
-    // Listen to chat
-    chatListener = onValue(ref(database, `parties/${partyId}/chat`), (snapshot) => {
-        const messages = [];
+    // Listen to chat with pagination
+    const chatRef = ref(database, `parties/${partyId}/chat`);
+    
+    // Initial load - get last CHAT_PAGE_SIZE messages
+    get(chatRef).then((snapshot) => {
+        chatMessages = [];
+        const allMessages = [];
+        
         snapshot.forEach((child) => {
-            messages.push({ id: child.key, ...child.val() });
+            allMessages.push({ id: child.key, ...child.val() });
         });
-        window.updatePartyChat && window.updatePartyChat(messages);
+        
+        // Get the last CHAT_PAGE_SIZE messages
+        chatMessages = allMessages.slice(-CHAT_PAGE_SIZE);
+        if (allMessages.length > 0) {
+            oldestChatKey = allMessages[0].id;
+        }
+        
+        // Update UI with initial messages
+        window.updatePartyChat && window.updatePartyChat(chatMessages);
+    });
+    
+    // Listen only to new messages (not the entire chat)
+    chatListener = onValue(chatRef, (snapshot) => {
+        if (!snapshot.exists()) return;
+        
+        const newMessages = [];
+        let hasNewMessages = false;
+        
+        snapshot.forEach((child) => {
+            const message = { id: child.key, ...child.val() };
+            
+            // Check if this is a new message (not in our current list)
+            const existingIndex = chatMessages.findIndex(m => m.id === message.id);
+            if (existingIndex === -1) {
+                newMessages.push(message);
+                hasNewMessages = true;
+            }
+        });
+        
+        if (hasNewMessages) {
+            // Add new messages and maintain buffer size
+            chatMessages = [...chatMessages, ...newMessages].slice(-CHAT_BUFFER_SIZE);
+            
+            // Update UI with optimized message list
+            window.updatePartyChat && window.updatePartyChat(chatMessages.slice(-CHAT_PAGE_SIZE));
+        }
     });
 }
 
@@ -436,28 +483,75 @@ export async function handleJoinRequest(userId, approve) {
     }
 }
 
-// Get party leaderboard
+// Get party leaderboard with caching
 export async function getPartyLeaderboard() {
     if (!currentParty) return [];
     
-    const leaderboard = [];
+    // Check cache first
+    const cacheKey = createCacheKey('leaderboard', currentParty.id);
+    const cached = leaderboardCache.get(cacheKey);
+    if (cached) {
+        return cached;
+    }
     
-    // Get BAC data for all party members
+    const leaderboard = [];
+    const memberIds = Object.keys(currentParty.members || {});
+    
+    // Batch fetch all user devices and readings in parallel
+    const devicePromises = memberIds.map(userId => 
+        get(ref(database, `users/${userId}/devices`))
+    );
+    
+    const devicesResults = await Promise.all(devicePromises);
+    
+    // Collect all device IDs that need reading
+    const allDeviceIds = [];
+    const userDeviceMap = new Map();
+    
+    devicesResults.forEach((snapshot, index) => {
+        const userId = memberIds[index];
+        if (snapshot.exists()) {
+            const deviceIds = Object.keys(snapshot.val());
+            userDeviceMap.set(userId, deviceIds);
+            allDeviceIds.push(...deviceIds);
+        } else {
+            userDeviceMap.set(userId, []);
+        }
+    });
+    
+    // Check cache for device readings
+    const cachedReadings = batchReadingsCache.getMany(allDeviceIds);
+    const uncachedDeviceIds = allDeviceIds.filter(id => !cachedReadings.has(id));
+    
+    // Batch fetch only uncached readings
+    const readingPromises = uncachedDeviceIds.map(deviceId => 
+        get(ref(database, `readings/${deviceId}`))
+    );
+    
+    const readingsResults = await Promise.all(readingPromises);
+    
+    // Create a map of device readings (combining cached and fresh data)
+    const deviceReadings = new Map(cachedReadings);
+    
+    uncachedDeviceIds.forEach((deviceId, index) => {
+        const snapshot = readingsResults[index];
+        if (snapshot.exists()) {
+            const bac = snapshot.val().bac || 0;
+            deviceReadings.set(deviceId, bac);
+            // Cache the fresh reading
+            batchReadingsCache.set(deviceId, bac, CACHE_TTL.DEVICE_READINGS);
+        }
+    });
+    
+    // Build leaderboard with fetched data
     for (const [userId, member] of Object.entries(currentParty.members || {})) {
-        // Get user's latest BAC from their devices
-        const devicesSnapshot = await get(ref(database, `users/${userId}/devices`));
         let highestBac = 0;
+        const userDevices = userDeviceMap.get(userId) || [];
         
-        if (devicesSnapshot.exists()) {
-            const devices = devicesSnapshot.val();
-            for (const deviceId of Object.keys(devices)) {
-                const readingSnapshot = await get(ref(database, `readings/${deviceId}`));
-                if (readingSnapshot.exists()) {
-                    const reading = readingSnapshot.val();
-                    if (reading.bac > highestBac) {
-                        highestBac = reading.bac;
-                    }
-                }
+        for (const deviceId of userDevices) {
+            const bac = deviceReadings.get(deviceId) || 0;
+            if (bac > highestBac) {
+                highestBac = bac;
             }
         }
         
@@ -472,6 +566,9 @@ export async function getPartyLeaderboard() {
     
     // Sort by BAC descending
     leaderboard.sort((a, b) => b.bac - a.bac);
+    
+    // Cache the result
+    leaderboardCache.set(cacheKey, leaderboard, CACHE_TTL.LEADERBOARD);
     
     return leaderboard;
 }
@@ -526,6 +623,13 @@ export async function getFriendsParties() {
 // Get nearby public parties
 export async function getNearbyParties() {
     try {
+        // Check cache first
+        const cacheKey = 'public:parties';
+        const cached = partyCache.get(cacheKey);
+        if (cached) {
+            return cached;
+        }
+        
         const partiesSnapshot = await get(ref(database, 'parties'));
         if (!partiesSnapshot.exists()) return [];
         
@@ -547,6 +651,9 @@ export async function getNearbyParties() {
         
         // Sort by member count (popularity)
         publicParties.sort((a, b) => b.memberCount - a.memberCount);
+        
+        // Cache the result
+        partyCache.set(cacheKey, publicParties, CACHE_TTL.PUBLIC_PARTIES);
         
         return publicParties;
     } catch (error) {
