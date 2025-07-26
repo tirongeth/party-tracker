@@ -26,7 +26,9 @@
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- BoozeLens Styles -->
+    <!-- BoozeLens Styles -->
+
+
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -34,7 +36,9 @@
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
-
+
+
+
   <script type="module" crossorigin src="./src/js/main.js"></script>
   <link rel="stylesheet" href="./src/css/boozelens.css">
   <link rel="stylesheet" href="./src/css/mobile.css">
@@ -359,9 +363,6 @@
                 <li><button class="nav-item active" onclick="switchSection('dashboard')" type="button">
                     <i class="fas fa-home"></i> Dashboard
                 </button></li>
-                <li><button class="nav-item" onclick="switchSection('devices')" type="button">
-                    <i class="fas fa-microchip"></i> Devices
-                </button></li>
                 <li><button class="nav-item" onclick="switchSection('friends')" type="button">
                     <i class="fas fa-users"></i> Friends
                 </button></li>
@@ -506,39 +507,6 @@
             </div>
         </section>
         
-        <!-- Devices Section -->
-        <section id="devices" class="section">
-            <h2>📱 My Devices</h2>
-            
-            <div class="card">
-                <h3>Pair New Device</h3>
-                <p>After setting up your breathalyzer via its WiFi hotspot, enter the Device ID shown on the device:</p>
-                
-                <div class="form-group" style="margin: 20px 0;">
-                    <input type="text" id="deviceIdInput" placeholder="Enter Device ID (e.g., HSG_abc123)" style="text-transform: uppercase;">
-                </div>
-                
-                <button class="btn btn-primary" onclick="pairDeviceById()">
-                    <i class="fas fa-link"></i> Pair Device
-                </button>
-                
-                <div class="info-box" style="margin-top: 20px;">
-                    <h4>Setup Instructions:</h4>
-                    <ol>
-                        <li>Power on your breathalyzer device</li>
-                        <li>Double-flip the switch to enter setup mode</li>
-                        <li>Connect to the device's WiFi network</li>
-                        <li>Complete the setup in your browser</li>
-                        <li>Note the Device ID shown on the screen</li>
-                        <li>Enter the Device ID above to pair</li>
-                    </ol>
-                </div>
-            </div>
-            
-            <div class="device-list" id="deviceList">
-                <!-- Devices will be populated here -->
-            </div>
-        </section>
         
         <!-- Friends Section -->
         <section id="friends" class="section">
@@ -1050,6 +1018,7 @@
     
     <!-- BoozeLens App JavaScript -->
 
-<!-- Main App Module -->
+<!-- Main App Module -->
+
 </body>
 </html>

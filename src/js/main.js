@@ -741,8 +741,6 @@ function switchSection(sectionId) {
             Drinks.updateDrinkChart();
             Drinks.updateDrinkHistory();
             Drinks.updateEmergencySummary();
-        } else if (sectionId === 'devices') {
-            // Already handled by device module
         } else if (sectionId === 'friends') {
             AllFunctions.updateFriendsList();
         } else if (sectionId === 'settings') {
@@ -826,6 +824,9 @@ async function showModal(type, data = null) {
     
     switch(type) {
         case 'pair-device':
+            const deviceData = getAppState().deviceData || {};
+            const hasDevices = Object.keys(deviceData).length > 0;
+            
             content = `
                 <h2>📱 Pair New Device</h2>
                 <p>After setting up your breathalyzer, enter the Device ID shown on its screen:</p>
@@ -848,6 +849,37 @@ async function showModal(type, data = null) {
                         <li>Complete setup to see your Device ID</li>
                     </ol>
                 </div>
+                
+                ${hasDevices ? `
+                    <div class="paired-devices" style="margin-top: 30px;">
+                        <h3>My Paired Devices</h3>
+                        <div id="modalDeviceList">
+                            ${Object.entries(deviceData).map(([deviceId, device]) => {
+                                const partyData = getAppState().partyData || {};
+                                const lastReading = partyData[deviceId];
+                                return `
+                                    <div class="device-item" style="padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 10px;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 15px;">
+                                            <div style="flex: 1;">
+                                                <h4 style="margin: 0 0 5px 0;">${device.name || 'My Breathalyzer'}</h4>
+                                                <p style="margin: 0; opacity: 0.7; font-size: 0.9em;">ID: ${deviceId}</p>
+                                                <p style="margin: 0; opacity: 0.7; font-size: 0.9em;">Last Reading: ${lastReading ? lastReading.bac.toFixed(3) + '‰' : 'No data'}</p>
+                                            </div>
+                                            <div style="display: flex; gap: 8px;">
+                                                <button class="btn" onclick="renameDevice('${deviceId}')" title="Rename">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-danger" onclick="unpairDevice('${deviceId}')" title="Unpair">
+                                                    <i class="fas fa-unlink"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                ` : ''}
             `;
             break;
             
