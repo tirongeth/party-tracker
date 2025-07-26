@@ -37,7 +37,8 @@
       "Bash(fc:*)",
       "Bash(start cmd /c \"npm run dev\")",
       "Bash(timeout 15 npm run dev)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "WebFetch(domain:tirongeth.github.io)"
     ],
     "deny": []
   }
