@@ -21,7 +21,7 @@ export async function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         try {
             // Use relative path for service worker
-            const registration = await navigator.serviceWorker.register('./service-worker.js');
+            const registration = await navigator.serviceWorker.register('./sw.js');
             console.log('ServiceWorker registered:', registration);
             
             // Check for updates
