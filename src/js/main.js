@@ -15,7 +15,9 @@ import {
     getCurrentUser,
     clearAppState
 } from './config/app-state.js';
+import { isDeveloper } from './config/constants.js';
 import { registerServiceWorker, initializePWA, initializeOfflineStorage } from './utils/pwa.js';
+import { safeUpdatePartyDisplay } from './main-party-display.js';
 
 // Import all functions from feature modules
 import * as AllFunctions from './features/all-functions.js';
@@ -99,6 +101,10 @@ function exposeGlobalFunctions() {
         window.kickMember = Parties.kickMember;
         window.updatePartySettings = Parties.updatePartySettings;
         window.togglePartyLock = Parties.togglePartyLock;
+        
+        // Multi-party support
+        window.switchToParty = Parties.switchToParty;
+        window.getUserParties = () => Parties.userParties;
     }
     
     // Party UI functions
@@ -108,6 +114,7 @@ function exposeGlobalFunctions() {
     window.sendPartyChat = PartiesUI.sendPartyChat;
     window.refreshPublicParties = PartiesUI.refreshPublicParties;
     window.joinPublicParty = PartiesUI.joinPublicParty;
+    window.isDeveloper = isDeveloper; // Expose for parties-ui.js
     
     // Game functions
     window.startGame = Games.startGame;
@@ -753,13 +760,22 @@ async function onUserAuthenticated(user) {
         // Initialize UI
         updateUI();
         
-        // Load and display party
-        await Parties.loadCurrentParty();
+        // Load and display parties
+        await Parties.loadUserParties();
         updatePartyDisplay();
         
         const userData = getAppState().userData;
         const displayName = userData.username || user.email.split('@')[0];
         showNotification(`🎉 Welcome, ${displayName}!`, 'success');
+        
+        // Log UID for developer setup
+        console.log('🔑 Your Firebase UID:', user.uid);
+        if (isDeveloper(user.uid)) {
+            console.log('✅ You have developer rights!');
+            showNotification('🛠️ Developer mode active', 'info');
+        } else {
+            console.log('💡 To get developer rights, add this UID to DEVELOPER_UIDS in constants.js');
+        }
         
     } catch (error) {
         console.error('Error during authentication:', error);
@@ -1270,170 +1286,8 @@ function loadUserSettings() {
 
 // ENHANCED party display update
 function updatePartyDisplay() {
-    const party = Parties.currentParty;
-    const currentSection = document.getElementById('currentPartySection');
-    const dashboardInfo = document.getElementById('dashboardPartyInfo');
-    
-    if (party) {
-        // Show party sections
-        if (currentSection) currentSection.style.display = 'block';
-        if (dashboardInfo) dashboardInfo.style.display = 'block';
-        
-        // Update party info
-        const nameEls = document.querySelectorAll('#currentPartyName, #dashboardPartyName');
-        const codeEls = document.querySelectorAll('#currentPartyCode, #dashboardPartyCode');
-        
-        nameEls.forEach(el => { 
-            if (el) {
-                el.innerHTML = party.name + ` <span style="font-size: 0.8em; opacity: 0.7;">by ${party.creatorName || 'Unknown'}</span>`;
-            }
-        });
-        codeEls.forEach(el => { if (el) el.textContent = party.code; });
-        
-        // Update members
-        const membersList = document.getElementById('partyMembersList');
-        if (membersList && party.members) {
-            const currentUser = getCurrentUser();
-            const isCreator = currentUser && party.creatorId === currentUser.uid;
-            const memberCount = Object.keys(party.members).length;
-            
-            membersList.innerHTML = Object.entries(party.members).map(([id, member]) => {
-                const isThisUserCreator = id === party.creatorId;
-                const isCurrentUser = currentUser && id === currentUser.uid;
-                
-                return `
-                    <div class="friend-item">
-                        <div class="friend-info">
-                            <div class="friend-avatar-small">${isThisUserCreator ? '👑' : '👤'}</div>
-                            <div class="friend-details">
-                                <h4>${member.name} ${isThisUserCreator ? '<span style="color: #00ff88;">(Host)</span>' : ''}</h4>
-                                <p style="opacity: 0.7; font-size: 0.9em;">
-                                    ${member.role === 'creator' ? 'Party Host • ' : ''}
-                                    Joined ${new Date(member.joinedAt).toLocaleTimeString()}
-                                </p>
-                            </div>
-                        </div>
-                        ${isCreator && !isCurrentUser && !isThisUserCreator ? `
-                            <button class="btn btn-danger" style="padding: 5px 10px; font-size: 0.9em;" 
-                                    onclick="kickMemberFromParty('${id}', '${member.name}')">
-                                <i class="fas fa-user-times"></i> Kick
-                            </button>
-                        ` : ''}
-                    </div>
-                `;
-            }).join('');
-        }
-        
-        // Update stats
-        const statsEl = document.getElementById('partyStats');
-        if (statsEl) {
-            const stats = Parties.getPartyStats();
-            if (stats) {
-                statsEl.innerHTML = `
-                    <div style="text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
-                        <div style="font-size: 2em;">👥</div>
-                        <div style="font-size: 1.5em; font-weight: bold;">${stats.memberCount}</div>
-                        <div style="opacity: 0.7;">Members</div>
-                    </div>
-                    <div style="text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
-                        <div style="font-size: 2em;">⏱️</div>
-                        <div style="font-size: 1.5em; font-weight: bold;">${stats.duration}</div>
-                        <div style="opacity: 0.7;">Duration</div>
-                    </div>
-                    <div style="text-align: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px;">
-                        <div style="font-size: 2em;">🎆</div>
-                        <div style="font-size: 1.5em; font-weight: bold;">${stats.code}</div>
-                        <div style="opacity: 0.7;">Party Code</div>
-                    </div>
-                `;
-            }
-        }
-        
-        // Update leaderboard
-        updatePartyLeaderboard();
-        
-        // Update leave/delete button based on user role
-        const leaveBtn = document.getElementById('leavePartyBtn');
-        const currentUser = getCurrentUser();
-        const isCreator = currentUser && party.creatorId === currentUser.uid;
-        
-        if (leaveBtn) {
-            if (isCreator) {
-                leaveBtn.innerHTML = '<i class="fas fa-trash"></i> Delete Party';
-                leaveBtn.className = 'btn btn-danger';
-            } else {
-                leaveBtn.innerHTML = '<i class="fas fa-door-open"></i> Leave Party';
-                leaveBtn.className = 'btn btn-danger';
-            }
-        }
-        
-        // Show creator-only sections
-        if (isCreator) {
-            // Show creator controls
-            const creatorControlsSection = document.getElementById('creatorControlsSection');
-            if (creatorControlsSection) {
-                creatorControlsSection.style.display = 'block';
-                
-                // Update lock button text
-                const lockBtn = document.getElementById('lockPartyBtn');
-                if (lockBtn) {
-                    if (party.locked) {
-                        lockBtn.innerHTML = '<i class="fas fa-lock-open"></i> Unlock Party';
-                    } else {
-                        lockBtn.innerHTML = '<i class="fas fa-lock"></i> Lock Party';
-                    }
-                }
-            }
-            
-            // Show pending requests
-            const pendingSection = document.getElementById('pendingRequestsSection');
-            const pendingList = document.getElementById('pendingRequestsList');
-            
-            if (pendingSection && pendingList && party.pendingRequests && Object.keys(party.pendingRequests).length > 0) {
-                pendingSection.style.display = 'block';
-                
-                pendingList.innerHTML = Object.entries(party.pendingRequests).map(([userId, request]) => `
-                    <div class="friend-item" style="margin-bottom: 10px;">
-                        <div class="friend-info">
-                            <div class="friend-avatar-small">👤</div>
-                            <div class="friend-details">
-                                <h4>${request.name}</h4>
-                                <p style="opacity: 0.7;">Requested ${new Date(request.requestedAt).toLocaleTimeString()}</p>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button class="btn btn-primary" onclick="handlePartyRequest('${userId}', true)">
-                                <i class="fas fa-check"></i> Approve
-                            </button>
-                            <button class="btn" onclick="handlePartyRequest('${userId}', false)">
-                                <i class="fas fa-times"></i> Decline
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-            } else if (pendingSection) {
-                pendingSection.style.display = 'none';
-            }
-        } else {
-            // Hide creator-only sections for non-creators
-            const creatorControlsSection = document.getElementById('creatorControlsSection');
-            if (creatorControlsSection) creatorControlsSection.style.display = 'none';
-            
-            const pendingSection = document.getElementById('pendingRequestsSection');
-            if (pendingSection) pendingSection.style.display = 'none';
-        }
-    } else {
-        // Hide party sections
-        if (currentSection) currentSection.style.display = 'none';
-        if (dashboardInfo) dashboardInfo.style.display = 'none';
-        
-        // Also hide creator sections
-        const creatorControlsSection = document.getElementById('creatorControlsSection');
-        if (creatorControlsSection) creatorControlsSection.style.display = 'none';
-        
-        const pendingSection = document.getElementById('pendingRequestsSection');
-        if (pendingSection) pendingSection.style.display = 'none';
-    }
+    // Delegate to the safe implementation
+    safeUpdatePartyDisplay(Parties);
 }
 
 // Update party chat
@@ -1563,5 +1417,82 @@ window.updatePartyChat = updatePartyChat;
 window.updatePartyLeaderboard = updatePartyLeaderboard;
 window.handlePartyRequest = handlePartyRequest;
 window.kickMemberFromParty = kickMemberFromParty;
+
+// Developer function to delete any party
+async function deletePartyAsDev(partyId) {
+    const currentUser = getCurrentUser();
+    if (!currentUser || !isDeveloper(currentUser.uid)) {
+        showNotification('Not authorized', 'error');
+        return;
+    }
+    
+    if (!confirm('Developer action: Delete this party permanently?')) {
+        return;
+    }
+    
+    try {
+        const result = await Parties.deleteParty(partyId);
+        if (result.success) {
+            showNotification('Party deleted', 'success');
+            // Refresh the public parties list
+            if (window.refreshPublicParties) {
+                window.refreshPublicParties();
+            }
+        } else {
+            showNotification(result.error || 'Failed to delete party', 'error');
+        }
+    } catch (error) {
+        showNotification('Failed to delete party', 'error');
+    }
+}
+window.deletePartyAsDev = deletePartyAsDev;
+window.switchToParty = (partyId) => {
+    if (Parties && Parties.switchToParty) {
+        Parties.switchToParty(partyId);
+    }
+};
+
+// Add party switcher UI
+function addPartySwitcher() {
+    const userParties = Parties.userParties || [];
+    const currentParty = Parties.currentParty;
+    
+    // Remove old switcher if exists
+    const oldSwitcher = document.getElementById('partySwitcher');
+    if (oldSwitcher) {
+        oldSwitcher.remove();
+    }
+    
+    // Create new switcher
+    const switcher = document.createElement('div');
+    switcher.id = 'partySwitcher';
+    switcher.style.cssText = 'position: fixed; top: 80px; right: 20px; background: rgba(0,0,0,0.95); border: 2px solid #00ff88; border-radius: 10px; padding: 15px; z-index: 1000; max-width: 250px; box-shadow: 0 4px 20px rgba(0,255,136,0.3); max-height: 400px; overflow-y: auto;';
+    
+    document.body.appendChild(switcher);
+    
+    // Update switcher content
+    switcher.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h4 style="margin: 0; color: #00ff88;">My Parties (${userParties.length})</h4>
+            <button onclick="document.getElementById('partySwitcher').remove()" 
+                    style="background: none; border: none; color: #fff; cursor: pointer; font-size: 20px;">×</button>
+        </div>
+        ${userParties.map(party => {
+            const memberCount = party.members ? Object.keys(party.members).length : 0;
+            const isActive = currentParty && currentParty.id === party.id;
+            return `
+                <button class="btn ${isActive ? 'btn-primary' : ''}" 
+                        style="display: block; width: 100%; margin: 5px 0; text-align: left; padding: 10px;"
+                        onclick="switchToParty('${party.id}')">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>🎉 ${party.name}</span>
+                        <span style="font-size: 0.8em; opacity: 0.7;">${memberCount} 👥</span>
+                    </div>
+                    ${isActive ? '<small style="color: #00ff88;">Currently viewing</small>' : ''}
+                </button>
+            `;
+        }).join('')}
+    `;
+}
 window.togglePartyLockUI = togglePartyLockUI;
 window.editPartySettings = editPartySettings;

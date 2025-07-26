@@ -124,6 +124,10 @@ export async function refreshPublicParties() {
             return;
         }
         
+        // Check if current user is developer
+        const currentUser = window.firebase?.auth?.currentUser;
+        const isDev = currentUser && window.isDeveloper && window.isDeveloper(currentUser.uid);
+        
         listEl.innerHTML = publicParties.map(party => `
             <div class="friend-item" style="margin-bottom: 15px;">
                 <div class="friend-info">
@@ -137,9 +141,16 @@ export async function refreshPublicParties() {
                         </p>
                     </div>
                 </div>
-                <button class="btn btn-primary" onclick="joinPublicParty('${party.code}')">
-                    Join
-                </button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="joinPublicParty('${party.code}')">
+                        Join
+                    </button>
+                    ${isDev ? `
+                        <button class="btn btn-danger" onclick="deletePartyAsDev('${party.id}')" title="Developer: Delete this party">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    ` : ''}
+                </div>
             </div>
         `).join('');
     } catch (error) {

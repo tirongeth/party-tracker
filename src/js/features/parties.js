@@ -4,10 +4,12 @@ import { database, auth, ref, set, push, update, get, onValue, serverTimestamp, 
 import { showNotification } from '../ui/notifications.js';
 import { partyCache, leaderboardCache, batchReadingsCache, CACHE_TTL, createCacheKey } from '../utils/cache.js';
 import { getAppState } from '../config/app-state.js';
+import { isDeveloper, DEV_PERMISSIONS } from '../config/constants.js';
 
-// Current party state
-export let currentParty = null;
-let partyListener = null;
+// Party state - support multiple parties
+export let currentParty = null;  // Currently viewing party
+export let userParties = [];     // All parties user is member of
+let partyListeners = new Map();  // Map of partyId -> listener
 let chatListener = null;
 
 // Chat optimization
@@ -60,9 +62,12 @@ export async function createParty(name, options = {}) {
         
         await set(partyRef, party);
         
-        // Join the party
+        // Add to user's parties list
+        addToUserParties(party);
+        
+        // Set as current party
         currentParty = party;
-        localStorage.setItem('currentPartyId', party.id);
+        saveUserParties();
         
         // Start listening to party updates
         startPartyListeners(party.id);
@@ -105,22 +110,23 @@ export async function joinParty(code, autoJoin = false) {
         const foundParty = await getPartyByCode(code);
         if (!foundParty) throw new Error('Invalid code');
         
-        // Check if user is banned
+        // Check if user is banned (unless developer)
         const isBanned = await isUserBanned(foundParty.id, user.uid);
-        if (isBanned) {
+        if (isBanned && !isDeveloper(user.uid)) {
             throw new Error('You have been banned from this party');
         }
         
-        // Check if party is locked
-        if (foundParty.locked && !autoJoin) {
+        // Check if party is locked (unless developer)
+        if (foundParty.locked && !autoJoin && !isDeveloper(user.uid)) {
             throw new Error('This party is locked. No new members allowed.');
         }
         
         // Check if already a member
         if (foundParty.members && foundParty.members[user.uid]) {
-            // Already in party, just set as current
+            // Already in party, just switch to it
+            addToUserParties(foundParty);
             currentParty = foundParty;
-            localStorage.setItem('currentPartyId', foundParty.id);
+            saveUserParties();
             startPartyListeners(foundParty.id);
             return { success: true, alreadyMember: true };
         }
@@ -149,9 +155,10 @@ export async function joinParty(code, autoJoin = false) {
                 role: 'member'
             });
             
-            // Set as current party
+            // Add to user's parties
+            addToUserParties(foundParty);
             currentParty = foundParty;
-            localStorage.setItem('currentPartyId', foundParty.id);
+            saveUserParties();
             
             // Start listening to party updates
             startPartyListeners(foundParty.id);
@@ -172,8 +179,9 @@ export async function joinParty(code, autoJoin = false) {
                 role: 'friend'
             });
             
+            addToUserParties(foundParty);
             currentParty = foundParty;
-            localStorage.setItem('currentPartyId', foundParty.id);
+            saveUserParties();
             startPartyListeners(foundParty.id);
             
             return { success: true };
@@ -195,30 +203,38 @@ export async function joinParty(code, autoJoin = false) {
 }
 
 // Leave party - ENHANCED with creator check
-export async function leaveParty() {
+export async function leaveParty(partyId = null) {
     try {
-        if (!currentParty) return { success: true };
+        const targetParty = partyId ? userParties.find(p => p.id === partyId) : currentParty;
+        if (!targetParty) return { success: true };
         
         const user = auth.currentUser;
         if (!user) throw new Error('Not logged in');
         
         // Check if user is the creator
-        if (currentParty.creatorId === user.uid) {
+        if (targetParty.creatorId === user.uid) {
             // Creator leaving should delete the party
-            return await deleteParty();
+            return await deleteParty(targetParty.id);
         }
         
         // Regular member leaving
         await set(
-            ref(database, `parties/${currentParty.id}/members/${user.uid}`), 
+            ref(database, `parties/${targetParty.id}/members/${user.uid}`), 
             null
         );
         
-        currentParty = null;
-        localStorage.removeItem('currentPartyId');
+        // Remove from user's parties list
+        removeFromUserParties(targetParty.id);
         
-        // Stop listeners
-        stopPartyListeners();
+        // If it was the current party, switch to another or null
+        if (currentParty && currentParty.id === targetParty.id) {
+            currentParty = userParties.length > 0 ? userParties[0] : null;
+        }
+        
+        saveUserParties();
+        
+        // Stop listeners for this party
+        stopPartyListener(targetParty.id);
         
         return { success: true };
     } catch (error) {
@@ -227,33 +243,48 @@ export async function leaveParty() {
     }
 }
 
-// Delete party (creator only)
-export async function deleteParty() {
+// Delete party (creator only or developer)
+export async function deleteParty(partyId = null) {
     try {
         if (!auth.currentUser) {
             return { success: false, error: 'Not authenticated' };
         }
         
-        if (!currentParty) {
-            return { success: false, error: 'Not in a party' };
+        const targetParty = partyId ? userParties.find(p => p.id === partyId) : currentParty;
+        
+        // If developer is trying to delete any party by ID
+        if (partyId && !targetParty && isDeveloper(auth.currentUser.uid)) {
+            // Delete directly without checks
+            await remove(ref(database, `parties/${partyId}`));
+            return { success: true };
+        }
+        
+        if (!targetParty) {
+            return { success: false, error: 'Party not found' };
         }
         
         const user = auth.currentUser;
         
-        // Check if user is the creator
-        if (currentParty.creatorId !== user.uid) {
+        // Check if user is the creator or developer
+        if (targetParty.creatorId !== user.uid && !isDeveloper(user.uid)) {
             return { success: false, error: 'Only the party creator can delete the party' };
         }
         
         // Delete the entire party from Firebase
-        await remove(ref(database, `parties/${currentParty.id}`));
+        await remove(ref(database, `parties/${targetParty.id}`));
         
-        // Clear local state
-        currentParty = null;
-        localStorage.removeItem('currentPartyId');
+        // Remove from user's parties list
+        removeFromUserParties(targetParty.id);
+        
+        // If it was the current party, switch to another or null
+        if (currentParty && currentParty.id === targetParty.id) {
+            currentParty = userParties.length > 0 ? userParties[0] : null;
+        }
+        
+        saveUserParties();
         
         // Stop listeners
-        stopPartyListeners();
+        stopPartyListener(targetParty.id);
         
         return { success: true };
     } catch (error) {
@@ -262,57 +293,69 @@ export async function deleteParty() {
     }
 }
 
-// Load current party on startup
-export async function loadCurrentParty() {
+// Load user's parties on startup
+export async function loadUserParties() {
     try {
-        const partyId = localStorage.getItem('currentPartyId');
-        if (!partyId) return;
-        
         const user = auth.currentUser;
         if (!user) {
-            console.log('No authenticated user, clearing party state');
-            localStorage.removeItem('currentPartyId');
+            console.log('No authenticated user');
             return;
         }
         
-        const partySnapshot = await get(ref(database, `parties/${partyId}`));
-        if (partySnapshot.exists()) {
-            const partyData = partySnapshot.val();
-            
-            // Validate membership
-            if (!partyData.members || !partyData.members[user.uid]) {
-                console.log('User not a member of stored party');
-                localStorage.removeItem('currentPartyId');
-                return;
+        // Load saved party IDs
+        const savedParties = JSON.parse(localStorage.getItem('userParties') || '[]');
+        const currentPartyId = localStorage.getItem('currentPartyId');
+        
+        // Clear arrays
+        userParties = [];
+        currentParty = null;
+        
+        // Check each saved party
+        for (const partyId of savedParties) {
+            const partySnapshot = await get(ref(database, `parties/${partyId}`));
+            if (partySnapshot.exists()) {
+                const partyData = { ...partySnapshot.val(), id: partyId };
+                
+                // Validate membership
+                if (partyData.members && partyData.members[user.uid]) {
+                    // Check expiration
+                    if (!partyData.expiresAt || Date.now() <= partyData.expiresAt) {
+                        userParties.push(partyData);
+                        startPartyListeners(partyId);
+                        
+                        // Set current party if it matches
+                        if (partyId === currentPartyId) {
+                            currentParty = partyData;
+                        }
+                    }
+                }
             }
-            
-            // Check expiration
-            if (partyData.expiresAt && Date.now() > partyData.expiresAt) {
-                console.log('Stored party has expired');
-                localStorage.removeItem('currentPartyId');
-                return;
-            }
-            
-            // Set current party and start listeners
-            currentParty = { ...partyData, id: partyId };
-            startPartyListeners(partyId);
-        } else {
-            console.log('Stored party no longer exists');
-            localStorage.removeItem('currentPartyId');
+        }
+        
+        // If no current party but user has parties, set the first one
+        if (!currentParty && userParties.length > 0) {
+            currentParty = userParties[0];
+        }
+        
+        // Save cleaned up list
+        saveUserParties();
+        
+        // Update UI
+        if (typeof window !== 'undefined' && window.updatePartyDisplay) {
+            window.updatePartyDisplay();
         }
     } catch (error) {
-        console.error('Load party error:', error);
-        localStorage.removeItem('currentPartyId');
+        console.error('Load parties error:', error);
     }
 }
 
 // Start party listeners
 function startPartyListeners(partyId) {
-    // Stop existing listeners
-    stopPartyListeners();
+    // Don't create duplicate listeners
+    if (partyListeners.has(partyId)) return;
     
     // Listen to party updates
-    partyListener = onValue(ref(database, `parties/${partyId}`), (snapshot) => {
+    const partyListener = onValue(ref(database, `parties/${partyId}`), (snapshot) => {
         if (snapshot.exists()) {
             const partyData = snapshot.val();
             const user = auth.currentUser;
@@ -326,22 +369,28 @@ function startPartyListeners(partyId) {
             // Check if user is still a member
             if (!partyData.members || !partyData.members[user.uid]) {
                 console.log('User no longer a member of party');
-                handlePartyRemoved();
+                handlePartyRemoved(partyId);
                 return;
             }
             
             // Check if party has expired
             if (partyData.expiresAt && Date.now() > partyData.expiresAt) {
                 console.log('Party has expired');
-                handlePartyRemoved();
+                handlePartyRemoved(partyId);
                 return;
             }
             
-            // Update state with validated data
-            currentParty = { ...partyData, id: partyId };
+            // Update party data in our list
+            const updatedParty = { ...partyData, id: partyId };
+            addToUserParties(updatedParty);
             
-            // Ensure localStorage is in sync
-            localStorage.setItem('currentPartyId', partyId);
+            // Update current party if it's the one being viewed
+            if (currentParty && currentParty.id === partyId) {
+                currentParty = updatedParty;
+            }
+            
+            // Save state
+            saveUserParties();
             
             // Update UI
             if (typeof window !== 'undefined' && window.updatePartyDisplay) {
@@ -350,9 +399,12 @@ function startPartyListeners(partyId) {
         } else {
             // Party was deleted or doesn't exist
             console.log('Party no longer exists in Firebase');
-            handlePartyRemoved();
+            handlePartyRemoved(partyId);
         }
     });
+    
+    // Store the listener
+    partyListeners.set(partyId, partyListener);
     
     // Listen to chat with pagination
     const chatRef = ref(database, `parties/${partyId}/chat`);
@@ -404,36 +456,95 @@ function startPartyListeners(partyId) {
     });
 }
 
-// Stop party listeners
-function stopPartyListeners() {
-    if (partyListener) {
-        partyListener();
-        partyListener = null;
-    }
+// Stop all party listeners
+function stopAllPartyListeners() {
+    partyListeners.forEach((listener, partyId) => {
+        listener();
+    });
+    partyListeners.clear();
+    
     if (chatListener) {
         chatListener();
         chatListener = null;
     }
 }
 
-// Handle party removal (deleted, expired, or kicked out)
-function handlePartyRemoved() {
-    // Clear state
-    currentParty = null;
-    localStorage.removeItem('currentPartyId');
-    
-    // Stop listeners
-    stopPartyListeners();
-    
-    // Update UI
-    if (typeof window !== 'undefined' && window.updatePartyDisplay) {
-        window.updatePartyDisplay();
+// Stop specific party listener
+function stopPartyListener(partyId) {
+    const listener = partyListeners.get(partyId);
+    if (listener) {
+        listener();
+        partyListeners.delete(partyId);
     }
+}
+
+// Handle party removal (deleted, expired, or kicked out)
+function handlePartyRemoved(partyId) {
+    if (!partyId) return;
+    
+    // Remove from user's parties
+    removeFromUserParties(partyId);
+    
+    // If it was the current party, switch to another
+    if (currentParty && currentParty.id === partyId) {
+        currentParty = userParties.length > 0 ? userParties[0] : null;
+    }
+    
+    saveUserParties();
+    
+    // Stop listeners for this party
+    stopPartyListener(partyId);
+    
+    // Update UI with a small delay to ensure state is settled
+    setTimeout(() => {
+        if (typeof window !== 'undefined' && window.updatePartyDisplay) {
+            window.updatePartyDisplay();
+        }
+    }, 100);
     
     // Show notification
     if (typeof window !== 'undefined' && window.showNotification) {
         window.showNotification('You have left the party', 'info');
     }
+}
+
+// Helper functions for multi-party support
+function addToUserParties(party) {
+    // Remove if already exists (to update data)
+    userParties = userParties.filter(p => p.id !== party.id);
+    // Add to list
+    userParties.push(party);
+}
+
+function removeFromUserParties(partyId) {
+    userParties = userParties.filter(p => p.id !== partyId);
+}
+
+function saveUserParties() {
+    const partyIds = userParties.map(p => p.id);
+    localStorage.setItem('userParties', JSON.stringify(partyIds));
+    if (currentParty) {
+        localStorage.setItem('currentPartyId', currentParty.id);
+    } else {
+        localStorage.removeItem('currentPartyId');
+    }
+}
+
+// Switch to a different party
+export function switchToParty(partyId) {
+    const party = userParties.find(p => p.id === partyId);
+    if (party) {
+        currentParty = party;
+        saveUserParties();
+        
+        // Update UI
+        if (typeof window !== 'undefined' && window.updatePartyDisplay) {
+            window.updatePartyDisplay();
+        }
+        
+        return true;
+    }
+    return false;
 }
 
 // Send party message
@@ -699,8 +810,8 @@ export async function kickMember(memberId, reason = '') {
             return { success: false, error: 'Not in a party or not authenticated' };
         }
         
-        // Only creator can kick
-        if (currentParty.creatorId !== auth.currentUser.uid) {
+        // Only creator or developer can kick
+        if (currentParty.creatorId !== auth.currentUser.uid && !isDeveloper(auth.currentUser.uid)) {
             return { success: false, error: 'Only the party creator can kick members' };
         }
         
@@ -748,8 +859,8 @@ export async function updatePartySettings(settings) {
             return { success: false, error: 'Not in a party or not authenticated' };
         }
         
-        // Only creator can update settings
-        if (currentParty.creatorId !== auth.currentUser.uid) {
+        // Only creator or developer can update settings
+        if (currentParty.creatorId !== auth.currentUser.uid && !isDeveloper(auth.currentUser.uid)) {
             return { success: false, error: 'Only the party creator can update settings' };
         }
         

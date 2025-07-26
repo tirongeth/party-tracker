@@ -83,3 +83,26 @@ export function getBACStatus(bac) {
     if (bac < BAC_STATUS.IMPAIRED.max) return BAC_STATUS.IMPAIRED;
     return BAC_STATUS.DRUNK;
 }
+
+// Developer/Admin UIDs - Add your UID here
+export const DEVELOPER_UIDS = [
+    // Add your Firebase UID here after checking it in the console
+    // You can find it in Firebase Console > Authentication > Users
+    // Example: 'abc123def456'
+    'k1OvkYapqbZUAf9RbvfmnhgWcY23'  // rongtimon@gmail.com
+];
+
+// Developer permissions
+export const DEV_PERMISSIONS = {
+    DELETE_ANY_PARTY: true,
+    KICK_ANY_MEMBER: true,
+    JOIN_LOCKED_PARTIES: true,
+    BYPASS_BANS: true,
+    VIEW_ALL_PARTIES: true,
+    MODERATE_CHAT: true
+};
+
+// Check if user is developer
+export function isDeveloper(uid) {
+    return DEVELOPER_UIDS.includes(uid);
+}
